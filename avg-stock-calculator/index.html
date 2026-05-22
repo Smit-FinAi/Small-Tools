@@ -1,1 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avg Stock Price Calculator — Smit Parekh</title>
+
+<!-- ══ PWA Meta Tags ══ -->
+<meta name="application-name" content="Avg Stock Calc">
+<meta name="description" content="Average Stock Price Calculator with Zerodha brokerage charges. Made by Smit Parekh.">
+<meta name="theme-color" content="#1565c0" id="themeColorMeta">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Avg Stock Calc">
+<meta name="msapplication-TileColor" content="#1565c0">
+<meta name="msapplication-tap-highlight" content="no">
+
+<!-- ══ PWA Manifest (inline as data URI) ══ -->
+<link rel="manifest" id="pwaManifest">
+
+<!-- ══ Apple Touch Icons (inline SVG as data URI) ══ -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%231565c0'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='100' font-family='Arial'>📈%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231565c0'/%3E%3Ctext x='16' y='24' text-anchor='middle' font-size='20' font-family='Arial'>📈%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --surface2: #f0f2f5;
+  --border: #e0e4ea;
+  --text: #1a1d23;
+  --text2: #5a6270;
+  --text3: #9aa3b0;
+  --accent: #1565c0;
+  --accent-bg: #e8f0fe;
+  --accent-text: #1565c0;
+  --green: #1b7a42;
+  --green-bg: #e6f4ec;
+  --red: #c0392b;
+  --red-bg: #fdf0ee;
+  --amber: #b45309;
+  --amber-bg: #fef3c7;
+  --shadow: 0 2px 8px rgba(0,0,0,0.07);
+  --shadow-lg: 0 4px 24px rgba(0,0,0,0.10);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --input-bg: #f8f9fb;
+  --row-hover: #f5f7fc;
+  --tag-bg: #eef2ff;
+}
+[data-theme="dark"] {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222533;
+  --border: #2e3347;
+  --text: #e8eaf0;
+  --text2: #8d93a8;
+  --text3: #545c72;
+  --accent: #5b8dee;
+  --accent-bg: #1a2442;
+  --accent-text: #7aa6ff;
+  --green: #34c468;
+  --green-bg: #0d2519;
+  --red: #f06055;
+  --red-bg: #2a1212;
+  --amber: #f5a623;
+  --amber-bg: #2a1e08;
+  --shadow: 0 2px 12px rgba(0,0,0,0.35);
+  --shadow-lg: 0 6px 32px rgba(0,0,0,0.45);
+  --input-bg: #222533;
+  --row-hover: #222840;
+  --tag-bg: #1a2442;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Roboto', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.mono { font-family: 'Roboto Mono', monospace; }
+
+/* ── Header ── */
+.header {
+  background: var(--surface);
+  border-bottom: 1.5px solid var(--border);
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+.header-left { display: flex; flex-direction: column; gap: 2px; }
+.header-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.header-title span { color: var(--accent); }
+.header-sub {
+  font-size: 12px;
+  color: var(--text3);
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+/* ── Toggle ── */
+.theme-toggle {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  padding: 5px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  font-family: 'Roboto', sans-serif;
+  transition: all 0.2s;
+  user-select: none;
+}
+.theme-toggle:hover { background: var(--border); }
+.theme-toggle .icon { font-size: 16px; }
+
+/* ── PWA Install Button ── */
+#pwaInstallBtn {
+  display: none;
+  background: var(--accent-bg);
+  border: 1.5px solid var(--accent);
+  border-radius: 24px;
+  padding: 5px 14px;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-text);
+  font-family: 'Roboto', sans-serif;
+  transition: all 0.2s;
+  user-select: none;
+  white-space: nowrap;
+}
+#pwaInstallBtn:hover { background: var(--accent); color: #fff; }
+#pwaInstallBtn .install-icon { font-size: 15px; }
+
+/* ── PWA Banner (iOS prompt) ── */
+#iosBanner {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  padding: 16px 20px;
+  max-width: 340px;
+  width: calc(100% - 32px);
+  z-index: 999;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { transform: translateX(-50%) translateY(20px); opacity:0; }
+  to   { transform: translateX(-50%) translateY(0);    opacity:1; }
+}
+.ios-banner-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.ios-banner-body  { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.ios-banner-body b { color: var(--accent-text); }
+.ios-banner-close {
+  position: absolute; top: 10px; right: 12px;
+  background: transparent; border: none;
+  font-size: 18px; cursor: pointer; color: var(--text3);
+  line-height: 1;
+}
+.ios-banner-arrow {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 28px;
+}
+
+/* ── Main Layout ── */
+.main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface2);
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.card-title-icon { color: var(--accent); margin-right: 8px; }
+
+/* ── Segment + Settings ── */
+.settings-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+}
+.field-group { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+.field-input, .field-select {
+  background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  transition: border-color 0.2s, background 0.2s;
+  outline: none;
+}
+.field-input:focus, .field-select:focus { border-color: var(--accent); background: var(--surface); }
+.field-select { cursor: pointer; appearance: none; padding-right: 32px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238d93a8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+.exchange-pill {
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  transition: all 0.15s;
+  font-family: 'Roboto', sans-serif;
+}
+.exchange-pill.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent-text); }
+
+/* ── Trades Table ── */
+.trades-table { width: 100%; border-collapse: collapse; }
+.trades-table thead th {
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text3);
+  text-align: left;
+  border-bottom: 1.5px solid var(--border);
+  background: var(--surface2);
+}
+.trades-table thead th:last-child { width: 44px; text-align: center; }
+.trades-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.trades-table tbody tr:last-child { border-bottom: none; }
+.trades-table tbody tr:hover { background: var(--row-hover); }
+.trades-table td { padding: 8px 12px; vertical-align: middle; }
+.row-num {
+  width: 36px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--tag-bg);
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.trade-input {
+  background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.trade-input:focus { border-color: var(--accent); }
+.trade-input.invalid { border-color: var(--red); background: var(--red-bg); }
+.amount-cell {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+}
+.delete-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text3);
+  font-size: 15px;
+  transition: all 0.15s;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+.delete-btn:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+.add-row-wrap { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--surface2); }
+.add-btn {
+  background: var(--accent-bg);
+  border: 1.5px dashed var(--accent);
+  color: var(--accent-text);
+  border-radius: var(--radius-sm);
+  padding: 8px 18px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.add-btn:hover { background: var(--accent); color: #fff; border-style: solid; }
+
+/* ── Summary Cards ── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  padding: 20px;
+}
+.summary-card {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.summary-card.blue::before { background: var(--accent); }
+.summary-card.green::before { background: var(--green); }
+.summary-card.amber::before { background: var(--amber); }
+.summary-card.red::before { background: var(--red); }
+.summary-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.summary-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'Roboto Mono', monospace;
+  letter-spacing: -0.5px;
+}
+.summary-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+
+/* ── Charges Table ── */
+.charges-wrap { padding: 0; }
+.charges-table { width: 100%; border-collapse: collapse; }
+.charges-table tr { border-bottom: 1px solid var(--border); }
+.charges-table tr:last-child { border-bottom: none; }
+.charges-table td { padding: 10px 20px; font-size: 13px; }
+.charges-table .ch-name { color: var(--text); font-weight: 500; }
+.charges-table .ch-rate {
+  color: var(--text3);
+  font-size: 12px;
+  font-family: 'Roboto Mono', monospace;
+}
+.charges-table .ch-amount {
+  text-align: right;
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+  color: var(--text);
+}
+.charges-table .ch-note {
+  font-size: 11px;
+  color: var(--text3);
+  padding-top: 1px;
+}
+.charges-table tr.total-row {
+  background: var(--accent-bg);
+  border-top: 2px solid var(--accent);
+}
+.charges-table tr.total-row td {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent-text);
+}
+.charges-table tr.subtotal-row { background: var(--surface2); }
+.charges-table tr.subtotal-row td { font-weight: 600; }
+.charges-section-header {
+  padding: 8px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text3);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.tag-green { background: var(--green-bg); color: var(--green); }
+.tag-red { background: var(--red-bg); color: var(--red); }
+.tag-amber { background: var(--amber-bg); color: var(--amber); }
+.tag-blue { background: var(--accent-bg); color: var(--accent-text); }
+
+/* ── Breakeven Section ── */
+.breakeven-wrap {
+  display: flex;
+  gap: 14px;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+.breakeven-item {
+  flex: 1;
+  min-width: 160px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-align: center;
+}
+.breakeven-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.breakeven-value { font-size: 20px; font-weight: 700; font-family: 'Roboto Mono', monospace; }
+
+/* ── No data ── */
+.no-data { padding: 32px; text-align: center; color: var(--text3); font-size: 14px; }
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  padding: 24px 20px 32px;
+  color: var(--text3);
+  font-size: 13px;
+  border-top: 1.5px solid var(--border);
+  margin-top: 12px;
+  background: var(--surface);
+}
+.footer strong { color: var(--accent-text); font-weight: 700; }
+.footer .disclaimer { font-size: 11px; color: var(--text3); margin-top: 6px; }
+.footer .yt-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  color: #ff0000;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 12px;
+  transition: opacity 0.2s;
+}
+.footer .yt-link:hover { opacity: 0.75; }
+
+/* ── Responsive ── */
+@media (max-width: 650px) {
+  .settings-row { gap: 10px; }
+  .header { padding: 14px 16px; }
+  .main { padding: 16px 12px 60px; }
+  .summary-value { font-size: 18px; }
+  #pwaInstallBtn span.install-label { display: none; }
+}
+.segment-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+input[type=number] { -moz-appearance: textfield; }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-title">📈 Avg <span>Stock Price</span> Calculator</div>
+    <div class="header-sub">Made by Smit Parekh · Zerodha Brokerage Structure</div>
+  </div>
+  <div class="header-right">
+    <!-- PWA Install Button (shown by JS when prompt is available) -->
+    <button id="pwaInstallBtn" title="Install App">
+      <span class="install-icon">📲</span>
+      <span class="install-label">Install App</span>
+    </button>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">
+      <span class="icon" id="themeIcon">🌙</span>
+      <span id="themeLabel">Dark</span>
+    </button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Settings -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">⚙ Trade Settings</div>
+      <div id="segmentBadge" class="segment-badge tag-blue">Equity Delivery</div>
+    </div>
+    <div class="settings-row">
+      <div class="field-group">
+        <div class="field-label">Segment</div>
+        <select class="field-select" id="segmentSelect" onchange="onSegmentChange()" style="min-width:190px">
+          <option value="delivery">Equity Delivery</option>
+          <option value="intraday">Equity Intraday (MIS)</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Exchange</div>
+        <div style="display:flex;gap:6px">
+          <button class="exchange-pill active" id="nseBtn" onclick="setExchange('NSE')">NSE</button>
+          <button class="exchange-pill" id="bseBtn" onclick="setExchange('BSE')">BSE</button>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Stock Symbol (Optional)</div>
+        <input class="field-input" id="stockSymbol" type="text" placeholder="e.g. RELIANCE" style="width:180px" oninput="renderSummary()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Trades Entry -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 Trade Entries</div>
+      <span id="tradeCount" style="font-size:12px;color:var(--text3)">0 trades</span>
+    </div>
+    <table class="trades-table">
+      <thead>
+        <tr>
+          <th style="width:48px">#</th>
+          <th>Quantity (Shares)</th>
+          <th>Buy Price (₹)</th>
+          <th>Amount (₹)</th>
+          <th>Charges</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tradeBody"></tbody>
+    </table>
+    <div class="add-row-wrap">
+      <button class="add-btn" onclick="addRow()">+ Add Trade</button>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card" id="summaryCard">
+    <div class="card-header">
+      <div class="card-title">📊 Summary</div>
+    </div>
+    <div class="summary-grid" id="summaryGrid">
+      <div class="no-data">Add trades above to see summary</div>
+    </div>
+  </div>
+
+  <!-- Charges Breakdown -->
+  <div class="card" id="chargesCard">
+    <div class="card-header">
+      <div class="card-title">💰 Zerodha Charges Breakdown</div>
+      <span style="font-size:12px;color:var(--text3)">On Buy Side</span>
+    </div>
+    <div class="charges-wrap" id="chargesWrap">
+      <div class="no-data">Add trades to see charges</div>
+    </div>
+  </div>
+
+  <!-- Breakeven -->
+  <div class="card" id="breakevenCard" style="display:none">
+    <div class="card-header">
+      <div class="card-title">🎯 Breakeven Analysis</div>
+    </div>
+    <div class="breakeven-wrap" id="breakevenWrap"></div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div>Made with ❤️ by <strong>Smit Parekh</strong></div>
+  <a class="yt-link" href="https://www.youtube.com/@TheParekhShow" target="_blank" rel="noopener">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.5 6.2s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.8 2 12 2 12 2s-4.8 0-7.3.1c-.6.1-1.9.1-3 1.3C.8 4.2.5 6.2.5 6.2S.2 8.5.2 10.8v2.1c0 2.3.3 4.6.3 4.6s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7 21.6 12 21.6 12 21.6s4.8 0 7.3-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.3.3-4.6v-2.1C23.8 8.5 23.5 6.2 23.5 6.2zM9.7 15.5V8.4l8.1 3.6-8.1 3.5z"/></svg>
+    @TheParekhShow
+  </a>
+  <div class="disclaimer">Charges are calculated as per Zerodha's brokerage structure. This tool is for informational purposes only. Actual charges may vary slightly. Always verify with your broker.</div>
+</div>
+
+<!-- iOS PWA Banner -->
+<div id="iosBanner">
+  <button class="ios-banner-close" onclick="dismissIosBanner()" aria-label="Close">×</button>
+  <div class="ios-banner-title">📲 Install this App</div>
+  <div class="ios-banner-body">
+    To add to your Home Screen, tap <b>Share</b> (<b>⬆</b>) in Safari, then choose <b>"Add to Home Screen"</b>.
+    <span class="ios-banner-arrow">⬆️</span>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   PWA — Manifest injection (data URI)
+══════════════════════════════════════════ */
+(function () {
+  const iconSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%231565c0'/><text x='96' y='130' text-anchor='middle' font-size='100' font-family='Arial'>📈</text></svg>`;
+  const icon512 = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%231565c0'/><text x='256' y='360' text-anchor='middle' font-size='280' font-family='Arial'>📈</text></svg>`;
+
+  const manifest = {
+    name: "Avg Stock Price Calculator",
+    short_name: "Stock Calc",
+    description: "Average Stock Price Calculator with Zerodha brokerage charges breakdown. Made by Smit Parekh.",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#f4f6f9",
+    theme_color: "#1565c0",
+    orientation: "any",
+    categories: ["finance", "utilities"],
+    icons: [
+      {
+        src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='#1565c0'/><text x='96' y='130' text-anchor='middle' font-size='100' font-family='Arial'>📈</text></svg>`),
+        sizes: "192x192",
+        type: "image/svg+xml",
+        purpose: "any maskable"
+      },
+      {
+        src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='#1565c0'/><text x='256' y='360' text-anchor='middle' font-size='280' font-family='Arial'>📈</text></svg>`),
+        sizes: "512x512",
+        type: "image/svg+xml",
+        purpose: "any maskable"
+      }
+    ],
+    screenshots: [],
+    shortcuts: []
+  };
+
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const manifestURL  = URL.createObjectURL(manifestBlob);
+  document.getElementById('pwaManifest').href = manifestURL;
+})();
+
+/* ══════════════════════════════════════════
+   PWA — Service Worker (inline via Blob)
+══════════════════════════════════════════ */
+(function () {
+  const swCode = `
+const CACHE = 'avg-stock-calc-v1';
+const ASSETS = [
+  self.registration.scope,
+  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {}))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return fetch(e.request).then(resp => {
+        if (resp && resp.status === 200 && resp.type === 'basic') {
+          const clone = resp.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return resp;
+      }).catch(() => cached || new Response('Offline', { status: 503 }));
+    })
+  );
+});
+`;
+
+  if ('serviceWorker' in navigator) {
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    const swURL = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swURL, { scope: './' }).then(() => {
+      console.log('[PWA] Service Worker registered.');
+    }).catch(err => {
+      console.warn('[PWA] SW registration failed:', err);
+    });
+  }
+})();
+
+/* ══════════════════════════════════════════
+   PWA — Install prompt handling
+══════════════════════════════════════════ */
+let deferredPrompt = null;
+const installBtn = document.getElementById('pwaInstallBtn');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'flex';
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    installBtn.style.display = 'none';
+  }
+  deferredPrompt = null;
+});
+
+window.addEventListener('appinstalled', () => {
+  installBtn.style.display = 'none';
+  deferredPrompt = null;
+  console.log('[PWA] App installed successfully.');
+});
+
+/* ── iOS Safari detection & banner ── */
+function isIos() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+function isInStandaloneMode() {
+  return ('standalone' in navigator && navigator.standalone) ||
+         window.matchMedia('(display-mode: standalone)').matches;
+}
+function dismissIosBanner() {
+  document.getElementById('iosBanner').style.display = 'none';
+  sessionStorage.setItem('iosBannerDismissed', '1');
+}
+
+if (isIos() && !isInStandaloneMode() && !sessionStorage.getItem('iosBannerDismissed')) {
+  setTimeout(() => {
+    document.getElementById('iosBanner').style.display = 'block';
+  }, 2500);
+}
+
+/* ══════════════════════════════════════════
+   App Logic
+══════════════════════════════════════════ */
+let trades = [];
+let exchange = 'NSE';
+let rowIdCounter = 0;
+
+const CHARGES = {
+  NSE: { equity: 0.00297 / 100, fo_futures: 0.002 / 100, fo_options: 0.053 / 100 },
+  BSE: { equity: 0.00375 / 100, fo_futures: 0.002 / 100, fo_options: 0.05 / 100 }
+};
+
+function fmt(n) { return '₹' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function fmtN(n, d=2) { return n.toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+function pct(n) { return (n * 100).toFixed(4) + '%'; }
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
+  document.getElementById('themeLabel').textContent = isDark ? 'Dark' : 'Light';
+  document.getElementById('themeColorMeta').content = isDark ? '#1565c0' : '#0f1117';
+}
+
+function setExchange(ex) {
+  exchange = ex;
+  document.getElementById('nseBtn').classList.toggle('active', ex === 'NSE');
+  document.getElementById('bseBtn').classList.toggle('active', ex === 'BSE');
+  renderSummary();
+}
+
+function onSegmentChange() {
+  const seg = document.getElementById('segmentSelect').value;
+  const badge = document.getElementById('segmentBadge');
+  if (seg === 'delivery') {
+    badge.textContent = 'Equity Delivery';
+    badge.className = 'segment-badge tag-blue';
+  } else {
+    badge.textContent = 'Equity Intraday (MIS)';
+    badge.className = 'segment-badge tag-amber';
+  }
+  renderAllRows();
+  renderSummary();
+}
+
+function calcTrade(qty, price, seg) {
+  const turnover = qty * price;
+  const exchRate = CHARGES[exchange].equity;
+  const sebi = turnover * 0.000001;
+  let brokerage = 0;
+  if (seg === 'intraday') {
+    brokerage = Math.min(turnover * 0.0003, 20);
+  }
+  const stt = seg === 'delivery' ? turnover * 0.001 : 0;
+  const exch = turnover * exchRate;
+  const stampDuty = seg === 'delivery' ? turnover * 0.00015 : turnover * 0.00003;
+  const gst = (brokerage + exch + sebi) * 0.18;
+  const total = brokerage + stt + exch + sebi + stampDuty + gst;
+  return { brokerage, stt, exch, sebi, stampDuty, gst, total, turnover };
+}
+
+function addRow() {
+  const id = rowIdCounter++;
+  trades.push({ id, qty: '', price: '' });
+  renderAllRows();
+  const inputs = document.querySelectorAll('.trade-input');
+  if (inputs.length > 0) inputs[inputs.length - 2].focus();
+  renderSummary();
+}
+
+function removeRow(id) {
+  trades = trades.filter(t => t.id !== id);
+  renderAllRows();
+  renderSummary();
+}
+
+function onInput(id, field, val) {
+  const t = trades.find(t => t.id === id);
+  if (t) t[field] = val;
+  renderRowAmount(id);
+  renderSummary();
+}
+
+function renderRowAmount(id) {
+  const t = trades.find(t => t.id === id);
+  if (!t) return;
+  const qty = parseFloat(t.qty);
+  const price = parseFloat(t.price);
+  const amtEl = document.getElementById('amt_' + id);
+  const chEl = document.getElementById('ch_' + id);
+  if (amtEl && chEl) {
+    if (qty > 0 && price > 0) {
+      const seg = document.getElementById('segmentSelect').value;
+      const c = calcTrade(qty, price, seg);
+      amtEl.textContent = fmt(c.turnover);
+      chEl.textContent = fmt(c.total);
+      amtEl.style.color = 'var(--text)';
+      chEl.style.color = 'var(--amber)';
+    } else {
+      amtEl.textContent = '—';
+      chEl.textContent = '—';
+      amtEl.style.color = 'var(--text3)';
+      chEl.style.color = 'var(--text3)';
+    }
+  }
+}
+
+function renderAllRows() {
+  const tbody = document.getElementById('tradeBody');
+  tbody.innerHTML = '';
+  trades.forEach((t, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="row-num">${idx + 1}</div></td>
+      <td style="min-width:130px">
+        <input class="trade-input" type="number" min="1" step="1" placeholder="e.g. 100"
+          value="${t.qty}" oninput="onInput(${t.id},'qty',this.value)"
+          onkeydown="handleKey(event,${t.id},'qty')">
+      </td>
+      <td style="min-width:140px">
+        <input class="trade-input" type="number" min="0.01" step="0.05" placeholder="e.g. 450.00"
+          value="${t.price}" oninput="onInput(${t.id},'price',this.value)"
+          onkeydown="handleKey(event,${t.id},'price')">
+      </td>
+      <td class="amount-cell" id="amt_${t.id}">—</td>
+      <td class="amount-cell" id="ch_${t.id}" style="color:var(--text3)">—</td>
+      <td><button class="delete-btn" onclick="removeRow(${t.id})" title="Remove">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+    renderRowAmount(t.id);
+  });
+  document.getElementById('tradeCount').textContent = trades.length + ' trade' + (trades.length !== 1 ? 's' : '');
+}
+
+function handleKey(e, id, field) {
+  if (e.key === 'Enter') {
+    const idx = trades.findIndex(t => t.id === id);
+    if (field === 'qty') {
+      const priceInput = document.querySelectorAll('.trade-input')[idx * 2 + 1];
+      if (priceInput) priceInput.focus();
+    } else {
+      if (idx === trades.length - 1) addRow();
+      else {
+        const nextQty = document.querySelectorAll('.trade-input')[(idx + 1) * 2];
+        if (nextQty) nextQty.focus();
+      }
+    }
+  }
+}
+
+function renderSummary() {
+  const seg = document.getElementById('segmentSelect').value;
+  const validTrades = trades.filter(t => parseFloat(t.qty) > 0 && parseFloat(t.price) > 0);
+
+  if (validTrades.length === 0) {
+    document.getElementById('summaryGrid').innerHTML = '<div class="no-data">Add trades above to see summary</div>';
+    document.getElementById('chargesWrap').innerHTML = '<div class="no-data">Add trades to see charges</div>';
+    document.getElementById('breakevenCard').style.display = 'none';
+    return;
+  }
+
+  let totalQty = 0, totalInvestment = 0;
+  let totalBrok = 0, totalSTT = 0, totalExch = 0, totalSebi = 0, totalStamp = 0, totalGST = 0, totalCharges = 0;
+
+  validTrades.forEach(t => {
+    const qty = parseFloat(t.qty), price = parseFloat(t.price);
+    totalQty += qty;
+    const turnover = qty * price;
+    totalInvestment += turnover;
+    const c = calcTrade(qty, price, seg);
+    totalBrok += c.brokerage;
+    totalSTT += c.stt;
+    totalExch += c.exch;
+    totalSebi += c.sebi;
+    totalStamp += c.stampDuty;
+    totalGST += c.gst;
+    totalCharges += c.total;
+  });
+
+  const avgPrice = totalInvestment / totalQty;
+  const netInvestment = totalInvestment + totalCharges;
+  const effectiveAvg = netInvestment / totalQty;
+  const dpCharges = seg === 'delivery' ? 15.93 : 0;
+
+  const sym = document.getElementById('stockSymbol').value.trim().toUpperCase();
+  document.getElementById('summaryGrid').innerHTML = `
+    <div class="summary-card blue">
+      <div class="summary-label">Total Quantity</div>
+      <div class="summary-value">${fmtN(totalQty, 0)}</div>
+      <div class="summary-sub">${validTrades.length} bracket${validTrades.length>1?'s':''} · ${sym||'Stock'}</div>
+    </div>
+    <div class="summary-card green">
+      <div class="summary-label">Average Price</div>
+      <div class="summary-value">₹${fmtN(avgPrice)}</div>
+      <div class="summary-sub">Before charges</div>
+    </div>
+    <div class="summary-card amber">
+      <div class="summary-label">Total Investment</div>
+      <div class="summary-value" style="font-size:18px">₹${fmtN(totalInvestment)}</div>
+      <div class="summary-sub">Gross amount paid</div>
+    </div>
+    <div class="summary-card red">
+      <div class="summary-label">Total Charges</div>
+      <div class="summary-value" style="font-size:18px">₹${fmtN(totalCharges)}</div>
+      <div class="summary-sub">${((totalCharges/totalInvestment)*100).toFixed(4)}% of investment</div>
+    </div>
+  `;
+
+  const segLabel = seg === 'delivery' ? 'Equity Delivery' : 'Equity Intraday';
+  const brokNote = seg === 'delivery' ? 'Zerodha: FREE for delivery' : '0.03% or ₹20/order (lower)';
+  const sttNote = seg === 'delivery' ? '0.1% on buy + 0.1% on sell' : '0.025% on sell side only (estimated)';
+  const exchRate = (CHARGES[exchange].equity * 100).toFixed(5);
+
+  document.getElementById('chargesWrap').innerHTML = `
+    <div class="charges-section-header">📦 ${segLabel} · ${exchange} · Buy Side Charges</div>
+    <table class="charges-table">
+      <tr>
+        <td>
+          <div class="ch-name">Brokerage <span class="tag tag-green">${seg==='delivery'?'FREE':''}</span></div>
+          <div class="ch-note">${brokNote}</div>
+        </td>
+        <td class="ch-rate">${seg==='delivery'?'0%':'0.03% or ₹20'}</td>
+        <td class="ch-amount">${fmt(totalBrok)}</td>
+      </tr>
+      ${seg === 'delivery' ? `
+      <tr>
+        <td>
+          <div class="ch-name">STT — Securities Transaction Tax <span class="tag tag-red">0.1%</span></div>
+          <div class="ch-note">0.1% on buy turnover (delivery)</div>
+        </td>
+        <td class="ch-rate">0.1%</td>
+        <td class="ch-amount">${fmt(totalSTT)}</td>
+      </tr>` : `
+      <tr>
+        <td>
+          <div class="ch-name">STT — Securities Transaction Tax <span class="tag tag-amber">Sell Only</span></div>
+          <div class="ch-note">0.025% on sell turnover (not charged on buy for intraday)</div>
+        </td>
+        <td class="ch-rate">—</td>
+        <td class="ch-amount" style="color:var(--text3)">₹0.00</td>
+      </tr>`}
+      <tr>
+        <td>
+          <div class="ch-name">Exchange Transaction Charges</div>
+          <div class="ch-note">${exchange} equity charges</div>
+        </td>
+        <td class="ch-rate">${exchRate}%</td>
+        <td class="ch-amount">${fmt(totalExch)}</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="ch-name">SEBI Regulatory Charges</div>
+          <div class="ch-note">₹10 per crore of turnover</div>
+        </td>
+        <td class="ch-rate">₹10/Cr</td>
+        <td class="ch-amount">${fmt(totalSebi)}</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="ch-name">Stamp Duty <span class="tag tag-blue">Buy Only</span></div>
+          <div class="ch-note">${seg==='delivery'?'0.015% on buy turnover':'0.003% on buy turnover'}</div>
+        </td>
+        <td class="ch-rate">${seg==='delivery'?'0.015%':'0.003%'}</td>
+        <td class="ch-amount">${fmt(totalStamp)}</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="ch-name">GST — Goods & Services Tax</div>
+          <div class="ch-note">18% on (Brokerage + Exch charges + SEBI charges)</div>
+        </td>
+        <td class="ch-rate">18%</td>
+        <td class="ch-amount">${fmt(totalGST)}</td>
+      </tr>
+      ${seg === 'delivery' ? `
+      <tr>
+        <td>
+          <div class="ch-name">DP Charges (CDSL/NSDL) <span class="tag tag-amber">On Sell</span></div>
+          <div class="ch-note">₹15.93 per scrip per day — charged when you sell</div>
+        </td>
+        <td class="ch-rate">₹15.93</td>
+        <td class="ch-amount" style="color:var(--text3)">₹${fmtN(dpCharges)} <small>(on sell)</small></td>
+      </tr>` : ''}
+      <tr class="subtotal-row">
+        <td colspan="2"><div class="ch-name">Total Buy-Side Charges</div></td>
+        <td class="ch-amount">${fmt(totalCharges)}</td>
+      </tr>
+      <tr class="total-row">
+        <td colspan="2"><div>Net Total Investment (incl. charges)</div></td>
+        <td class="ch-amount">${fmt(netInvestment)}</td>
+      </tr>
+    </table>
+  `;
+
+  document.getElementById('breakevenCard').style.display = 'block';
+  const sellSTT = seg === 'delivery' ? totalInvestment * 0.001 : totalInvestment * 0.00025;
+  const sellExch = totalInvestment * CHARGES[exchange].equity;
+  const sellSebi = totalInvestment * 0.000001;
+  const sellBrok = seg === 'delivery' ? 0 : Math.min(totalInvestment * 0.0003, 20 * validTrades.length);
+  const sellGST = (sellBrok + sellExch + sellSebi) * 0.18;
+  const totalSellCharges = sellSTT + sellExch + sellSebi + sellGST + sellBrok + dpCharges;
+  const breakevenPrice = (netInvestment + totalSellCharges) / totalQty;
+  const minProfitTarget = breakevenPrice * 1.01;
+
+  document.getElementById('breakevenWrap').innerHTML = `
+    <div class="breakeven-item">
+      <div class="breakeven-label">Avg Price (Before Charges)</div>
+      <div class="breakeven-value" style="color:var(--accent-text)">₹${fmtN(avgPrice)}</div>
+    </div>
+    <div class="breakeven-item">
+      <div class="breakeven-label">Effective Avg (Buy charges)</div>
+      <div class="breakeven-value" style="color:var(--amber)">₹${fmtN(effectiveAvg)}</div>
+    </div>
+    <div class="breakeven-item">
+      <div class="breakeven-label">Breakeven Price (All charges)</div>
+      <div class="breakeven-value" style="color:var(--red)">₹${fmtN(breakevenPrice)}</div>
+    </div>
+    <div class="breakeven-item">
+      <div class="breakeven-label">1% Profit Target</div>
+      <div class="breakeven-value" style="color:var(--green)">₹${fmtN(minProfitTarget)}</div>
+    </div>
+    <div class="breakeven-item">
+      <div class="breakeven-label">Est. Sell-Side Charges</div>
+      <div class="breakeven-value" style="font-size:17px;color:var(--text2)">₹${fmtN(totalSellCharges)}</div>
+    </div>
+    <div class="breakeven-item">
+      <div class="breakeven-label">Round-trip Charges</div>
+      <div class="breakeven-value" style="font-size:17px;color:var(--red)">₹${fmtN(totalCharges + totalSellCharges)}</div>
+    </div>
+  `;
+}
+
+// Init with 2 default rows
+addRow();
+addRow();
+</script>
+</body>
+</html>
 
