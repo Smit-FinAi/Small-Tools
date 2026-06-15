@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The PDF Factory — by Smit Parekh</title>
+<meta name="description" content="40 PDF tools — merge, split, compress, convert, sign, watermark and more. 100% offline. Created by Smit Parekh.">
+
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#ef4444" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0e18" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="./icons/favicon-64.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PDF Factory">
+
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -193,6 +208,12 @@ input[type="color"]{height:38px;border:none;border-radius:7px;cursor:pointer;pad
 .mt3{margin-top:12px}
 .mt4{margin-top:16px}
 
+/* FOOTER */
+.ftr{text-align:center;padding:28px 24px 36px;color:var(--muted);font-size:12px;border-top:1px solid var(--bdr);margin-top:20px}
+.ftr p{margin:0}
+.ftr strong{color:var(--txt2);font-weight:700}
+.ftr-sub{margin-top:4px;font-size:11px;opacity:.8}
+
 /* RESPONSIVE */
 @media(max-width:640px){
   .hdr{padding:0 14px}
@@ -223,6 +244,9 @@ input[type="color"]{height:38px;border:none;border-radius:7px;cursor:pointer;pad
     <input id="searchInput" type="text" placeholder="Search 40 PDF tools…">
   </div>
   <div class="hdr-r">
+    <button class="pbtn" id="installBtn" onclick="installApp()" style="display:none">
+      <span>⬇️</span><span>Install App</span>
+    </button>
     <button class="pbtn" onclick="toggleTheme()">
       <span id="themeIco">🌙</span><span id="themeLbl">Dark Mode</span>
     </button>
@@ -242,6 +266,12 @@ input[type="color"]{height:38px;border:none;border-radius:7px;cursor:pointer;pad
     <p>No tools match "<span id="noresQ"></span>"</p>
   </div>
 </div>
+
+<!-- FOOTER -->
+<footer class="ftr">
+  <p>The PDF Factory · Created by <strong>Smit Parekh</strong></p>
+  <p class="ftr-sub">100% offline · No data ever leaves your device</p>
+</footer>
 
 <!-- MODAL -->
 <div class="ovr" id="ovr" onclick="ovrClick(event)">
@@ -1293,7 +1323,40 @@ async function doPort(){
 document.getElementById('searchInput').addEventListener('input',function(){renderGrid(this.value.trim())});
 initTheme();
 renderGrid();
+
+// ── PWA: SERVICE WORKER + INSTALL PROMPT ───────────────────────────
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('SW registration failed:',err));
+  });
+}
+
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  document.getElementById('installBtn').style.display='flex';
+});
+async function installApp(){
+  if(!deferredInstallPrompt){
+    toast('Use your browser menu → "Install app" / "Add to Home screen"','inf',4000);
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  const{outcome}=await deferredInstallPrompt.userChoice;
+  if(outcome==='accepted')toast('✅ App installed!','ok');
+  deferredInstallPrompt=null;
+  document.getElementById('installBtn').style.display='none';
+}
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('installBtn').style.display='none';
+  toast('✅ Installed! Open it from your home screen / app list.','ok');
+});
+// Hide install button if already running as installed app
+if(window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone){
+  const ib=document.getElementById('installBtn'); if(ib)ib.style.display='none';
+}
+
 </script>
 </body>
 </html>
-
