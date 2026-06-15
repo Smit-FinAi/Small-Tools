@@ -599,10 +599,6 @@ details[open] .faq-q::after { transform: rotate(90deg); }
         <summary class="faq-q">What image sizes does it support?</summary>
         <p class="faq-a">Images larger than 1024×1024 pixels use the 96×96px watermark map with 64px margins. Smaller images use the 48×48px map with 32px margins. Both are handled automatically.</p>
       </details>
-      <details class="faq-item">
-        <summary class="faq-q">Why did the original tool fail with a canvas error?</summary>
-        <p class="faq-a">The original version loaded watermark maps from separate PNG files. When opened via file:// protocol, browsers block canvas pixel access on externally-loaded images (canvas taint). This version embeds everything inline, solving that issue entirely.</p>
-      </details>
     </div>
   </section>
 
