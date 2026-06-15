@@ -1,1 +1,1809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LexDraft — Agreement Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --ink: #0f0e0c;
+    --parchment: #faf7f2;
+    --cream: #f4f0e8;
+    --gold: #b8952a;
+    --gold-light: #d4aa45;
+    --gold-pale: #f5e9c8;
+    --charcoal: #2c2b28;
+    --mid: #6b6760;
+    --muted: #a09d97;
+    --border: #ddd9ce;
+    --section-bg: #ffffff;
+    --red: #c0392b;
+    --green: #1a6b4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--parchment);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: var(--ink);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    border-bottom: 1px solid #2a2926;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: var(--gold);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: #ffffff;
+    letter-spacing: 0.03em;
+  }
+  .logo-text span { color: var(--gold); }
+  .header-tag {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* ─── LAYOUT ─── */
+  .app {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    background: var(--ink);
+    padding: 32px 0;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+  .sidebar-section-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    padding: 0 28px 12px;
+    font-weight: 600;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 28px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+    font-size: 13.5px;
+    color: #9d9a93;
+    font-weight: 400;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.04); color: #ccc9c0; }
+  .nav-item.active {
+    background: rgba(184,149,42,0.12);
+    border-left-color: var(--gold);
+    color: #e8d68a;
+    font-weight: 500;
+  }
+  .nav-item .nav-num {
+    width: 22px; height: 22px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+  }
+  .nav-item.active .nav-num {
+    background: var(--gold);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .nav-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 16px 0; }
+  .type-badge {
+    margin: 0 28px 24px;
+    background: rgba(184,149,42,0.15);
+    border: 1px solid rgba(184,149,42,0.3);
+    border-radius: 6px;
+    padding: 10px 14px;
+  }
+  .type-badge-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .type-badge-value { font-size: 13px; color: var(--gold-light); font-weight: 600; font-family: 'Playfair Display', serif; }
+
+  /* ─── MAIN ─── */
+  main {
+    padding: 40px 60px 80px;
+    max-width: 900px;
+  }
+
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--ink);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--mid);
+    margin-bottom: 40px;
+    line-height: 1.5;
+  }
+
+  /* ─── TYPE SELECTOR ─── */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .type-card {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .type-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transition: transform 0.2s;
+  }
+  .type-card:hover { border-color: var(--gold-light); box-shadow: 0 4px 20px rgba(184,149,42,0.1); }
+  .type-card.selected { border-color: var(--gold); box-shadow: 0 4px 24px rgba(184,149,42,0.18); }
+  .type-card.selected::before { transform: scaleX(1); }
+  .type-icon { font-size: 26px; margin-bottom: 10px; }
+  .type-name { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .type-desc { font-size: 12px; color: var(--mid); line-height: 1.5; }
+  .type-check {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 20px; height: 20px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: white;
+  }
+  .type-card.selected .type-check { display: flex; }
+
+  /* ─── FORM SECTIONS ─── */
+  .form-section {
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+  .form-section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 30px 32px;
+    margin-bottom: 24px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--cream);
+  }
+  .section-icon {
+    width: 36px; height: 36px;
+    background: var(--gold-pale);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .section-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 24px;
+  }
+  .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.cols-1 { grid-template-columns: 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.span-2 { grid-column: span 2; }
+  .field.span-3 { grid-column: span 3; }
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--charcoal);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  label .req { color: var(--gold); margin-left: 2px; }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="number"],
+  input[type="email"],
+  input[type="tel"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--parchment);
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 10px 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(184,149,42,0.12);
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  select { cursor: pointer; }
+
+  .field-hint { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  /* Toggle group */
+  .toggle-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .toggle-btn {
+    padding: 7px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    background: var(--parchment);
+    color: var(--mid);
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+  .toggle-btn:hover { border-color: var(--gold-light); color: var(--gold); }
+  .toggle-btn.on { background: var(--gold-pale); border-color: var(--gold); color: #7a6010; font-weight: 600; }
+
+  /* Checkbox row */
+  .check-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--charcoal);
+  }
+  .check-item input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--gold);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ─── NAVIGATION BUTTONS ─── */
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    padding: 11px 28px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.18s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--mid);
+  }
+  .btn-ghost:hover { border-color: var(--charcoal); color: var(--charcoal); }
+  .btn-primary {
+    background: var(--gold);
+    color: var(--ink);
+    box-shadow: 0 2px 12px rgba(184,149,42,0.3);
+  }
+  .btn-primary:hover { background: var(--gold-light); box-shadow: 0 4px 20px rgba(184,149,42,0.4); transform: translateY(-1px); }
+  .btn-generate {
+    background: var(--ink);
+    color: var(--gold-light);
+    font-size: 15px;
+    padding: 14px 36px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    border: 1px solid rgba(184,149,42,0.3);
+  }
+  .btn-generate:hover { background: #1e1d1a; transform: translateY(-2px); box-shadow: 0 6px 30px rgba(0,0,0,0.3); }
+
+  .step-indicator {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.08em;
+  }
+
+  /* ─── PREVIEW PANEL ─── */
+  .preview-section {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 30px 32px;
+    margin-bottom: 24px;
+  }
+  .preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--cream);
+  }
+  .preview-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .preview-doc {
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 32px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--charcoal);
+    max-height: 480px;
+    overflow-y: auto;
+    font-family: 'Georgia', serif;
+  }
+  .preview-doc h2 {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .preview-doc .center { text-align: center; color: var(--mid); font-size: 12px; margin-bottom: 20px; }
+  .preview-doc .clause-title { font-weight: 700; font-size: 13px; margin-top: 16px; margin-bottom: 4px; color: var(--ink); text-transform: uppercase; letter-spacing: 0.04em; }
+  .preview-doc p { margin-bottom: 10px; }
+  .preview-doc .sig-line { border-bottom: 1px solid var(--charcoal); display: inline-block; min-width: 200px; margin-right: 16px; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    background: var(--ink);
+    color: #fff;
+    padding: 14px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(.175,.885,.32,1.275);
+    z-index: 1000;
+    border-left: 4px solid var(--gold);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ─── PROGRESS BAR ─── */
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.06);
+    height: 3px;
+    border-radius: 2px;
+    margin: 0 28px 28px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* ─── SUMMARY ROW ─── */
+  .summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--cream);
+    font-size: 13.5px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-label { color: var(--mid); font-weight: 500; }
+  .summary-val { color: var(--ink); font-weight: 600; font-family: 'DM Mono', monospace; font-size: 13px; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-gold { background: var(--gold-pale); color: #7a6010; border: 1px solid rgba(184,149,42,0.3); }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    main { padding: 24px 20px 60px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid.cols-3 { grid-template-columns: 1fr; }
+    .field.span-2 { grid-column: span 1; }
+    .type-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark"></div>
+    <div class="logo-text">Lex<span>Draft</span></div>
+  </div>
+  <div class="header-tag">Professional Agreement Generator</div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div style="padding: 0 28px 20px;">
+      <div class="type-badge" id="sidebarTypeBadge">
+        <div class="type-badge-label">Agreement Type</div>
+        <div class="type-badge-value" id="sidebarTypeName">Not Selected</div>
+      </div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:16%"></div>
+    </div>
+    <div class="sidebar-section-label">Sections</div>
+    <div class="nav-item active" onclick="goToStep(0)" id="nav0">
+      <div class="nav-num">1</div> Agreement Type
+    </div>
+    <div class="nav-item" onclick="goToStep(1)" id="nav1">
+      <div class="nav-num">2</div> Parties & Identity
+    </div>
+    <div class="nav-item" onclick="goToStep(2)" id="nav2">
+      <div class="nav-num">3</div> Property Details
+    </div>
+    <div class="nav-item" onclick="goToStep(3)" id="nav3">
+      <div class="nav-num">4</div> Lease Terms
+    </div>
+    <div class="nav-item" onclick="goToStep(4)" id="nav4">
+      <div class="nav-num">5</div> Financial Terms
+    </div>
+    <div class="nav-item" onclick="goToStep(5)" id="nav5">
+      <div class="nav-num">6</div> Rules & Conditions
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-item" onclick="goToStep(6)" id="nav6">
+      <div class="nav-num">7</div> Preview & Export
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main>
+
+    <!-- STEP 0: Agreement Type -->
+    <div class="form-section active" id="step0">
+      <div class="page-title">Choose Agreement Type</div>
+      <div class="page-subtitle">Select the type of legal agreement you want to generate. Each template is tailored with the appropriate legal language and clauses.</div>
+
+      <div class="type-grid">
+        <div class="type-card" onclick="selectType('residential', this)" id="typeResidential">
+          <div class="type-check">✓</div>
+          <div class="type-icon">🏠</div>
+          <div class="type-name">Residential Lease</div>
+          <div class="type-desc">Standard apartment or house rental agreement between landlord and tenant with full legal protection.</div>
+        </div>
+        <div class="type-card" onclick="selectType('commercial', this)" id="typeCommercial">
+          <div class="type-check">✓</div>
+          <div class="type-icon">🏢</div>
+          <div class="type-name">Commercial Lease</div>
+          <div class="type-desc">Business premises rental agreement for office, retail, or industrial spaces.</div>
+        </div>
+        <div class="type-card" onclick="selectType('roommate', this)" id="typeRoommate">
+          <div class="type-check">✓</div>
+          <div class="type-icon">🤝</div>
+          <div class="type-name">Live-In / Roommate</div>
+          <div class="type-desc">Shared living arrangement agreement covering shared spaces, costs, and house rules.</div>
+        </div>
+        <div class="type-card" onclick="selectType('sublease', this)" id="typeSublease">
+          <div class="type-check">✓</div>
+          <div class="type-icon">🔑</div>
+          <div class="type-name">Sublease Agreement</div>
+          <div class="type-desc">Agreement for a tenant to sublet part or all of a property to a subtenant.</div>
+        </div>
+        <div class="type-card" onclick="selectType('vacation', this)" id="typeVacation">
+          <div class="type-check">✓</div>
+          <div class="type-icon">🏖️</div>
+          <div class="type-name">Short-Term Rental</div>
+          <div class="type-desc">Vacation or short-term rental agreement for stays under 30 days.</div>
+        </div>
+        <div class="type-card" onclick="selectType('month', this)" id="typeMonth">
+          <div class="type-check">✓</div>
+          <div class="type-icon">📅</div>
+          <div class="type-name">Month-to-Month</div>
+          <div class="type-desc">Flexible rental agreement with no fixed end date, renewable each month.</div>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <div></div>
+        <button class="btn btn-primary" onclick="nextStep()">Continue &rarr;</button>
+      </div>
+    </div>
+
+    <!-- STEP 1: Parties -->
+    <div class="form-section" id="step1">
+      <div class="page-title">Parties & Identity</div>
+      <div class="page-subtitle">Provide full legal names and contact information for all parties to the agreement.</div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">👤</div>
+          <div>
+            <div class="section-title" id="lessorLabel">Landlord / Lessor</div>
+            <div class="section-subtitle">The party granting possession of the property</div>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Full Legal Name <span class="req">*</span></label>
+            <input type="text" id="lessorName" placeholder="e.g. Jonathan R. Whitfield">
+          </div>
+          <div class="field">
+            <label>Entity Type</label>
+            <select id="lessorEntity">
+              <option value="individual">Individual</option>
+              <option value="company">Company / LLC</option>
+              <option value="trust">Trust</option>
+              <option value="partnership">Partnership</option>
+            </select>
+          </div>
+          <div class="field span-2">
+            <label>Mailing Address</label>
+            <input type="text" id="lessorAddress" placeholder="Street address, City, State, ZIP">
+          </div>
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="lessorEmail" placeholder="landlord@email.com">
+          </div>
+          <div class="field">
+            <label>Phone Number</label>
+            <input type="tel" id="lessorPhone" placeholder="(555) 000-0000">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">👥</div>
+          <div>
+            <div class="section-title" id="lesseeLabel">Tenant / Lessee</div>
+            <div class="section-subtitle">The party taking possession of the property</div>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Full Legal Name <span class="req">*</span></label>
+            <input type="text" id="lesseeName" placeholder="e.g. Sarah M. Collins">
+          </div>
+          <div class="field">
+            <label>Co-Tenant (if any)</label>
+            <input type="text" id="lesseeCoName" placeholder="Full legal name of co-tenant">
+          </div>
+          <div class="field span-2">
+            <label>Current Address (before move-in)</label>
+            <input type="text" id="lesseeCurrentAddress" placeholder="Current mailing address">
+          </div>
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="lesseeEmail" placeholder="tenant@email.com">
+          </div>
+          <div class="field">
+            <label>Phone Number</label>
+            <input type="tel" id="lesseePhone" placeholder="(555) 000-0000">
+          </div>
+          <div class="field">
+            <label>ID / Passport Number</label>
+            <input type="text" id="lesseeID" placeholder="Government-issued ID number">
+          </div>
+          <div class="field">
+            <label>Number of Occupants</label>
+            <input type="number" id="occupants" placeholder="2" min="1" max="20">
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-ghost" onclick="prevStep()">&larr; Back</button>
+        <div class="step-indicator" id="stepInd1">Step 2 of 7</div>
+        <button class="btn btn-primary" onclick="nextStep()">Continue &rarr;</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Property -->
+    <div class="form-section" id="step2">
+      <div class="page-title">Property Details</div>
+      <div class="page-subtitle">Describe the property being leased, including its address and key features.</div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">📍</div>
+          <div>
+            <div class="section-title">Property Information</div>
+            <div class="section-subtitle">Full address and description of the premises</div>
+          </div>
+        </div>
+        <div class="form-grid cols-1">
+          <div class="field">
+            <label>Property Full Address <span class="req">*</span></label>
+            <input type="text" id="propAddress" placeholder="123 Main Street, Apt 4B, New York, NY 10001">
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:18px;">
+          <div class="field">
+            <label>Property Type</label>
+            <select id="propType">
+              <option value="apartment">Apartment / Condo</option>
+              <option value="house">Single-Family House</option>
+              <option value="townhouse">Townhouse</option>
+              <option value="studio">Studio Unit</option>
+              <option value="room">Private Room</option>
+              <option value="office">Office Space</option>
+              <option value="retail">Retail Space</option>
+              <option value="warehouse">Warehouse / Industrial</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Unit / Suite Number</label>
+            <input type="text" id="propUnit" placeholder="Apt 4B / Unit 201">
+          </div>
+          <div class="field">
+            <label>Bedrooms</label>
+            <select id="propBedrooms">
+              <option value="Studio">Studio</option>
+              <option value="1 Bedroom">1 Bedroom</option>
+              <option value="2 Bedrooms" selected>2 Bedrooms</option>
+              <option value="3 Bedrooms">3 Bedrooms</option>
+              <option value="4 Bedrooms">4 Bedrooms</option>
+              <option value="5+ Bedrooms">5+ Bedrooms</option>
+              <option value="N/A">N/A (Commercial)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Bathrooms</label>
+            <select id="propBathrooms">
+              <option value="1 Bathroom">1 Bathroom</option>
+              <option value="1.5 Bathrooms">1.5 Bathrooms</option>
+              <option value="2 Bathrooms" selected>2 Bathrooms</option>
+              <option value="3 Bathrooms">3 Bathrooms</option>
+              <option value="4+ Bathrooms">4+ Bathrooms</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Square Footage</label>
+            <input type="number" id="propSqft" placeholder="950">
+          </div>
+          <div class="field">
+            <label>Floor / Level</label>
+            <input type="text" id="propFloor" placeholder="3rd Floor">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">🅿️</div>
+          <div>
+            <div class="section-title">Included Amenities</div>
+            <div class="section-subtitle">Select all items included with the rental</div>
+          </div>
+        </div>
+        <div class="check-list">
+          <label class="check-item"><input type="checkbox" id="inclParking"> Parking Space</label>
+          <label class="check-item"><input type="checkbox" id="inclStorage"> Storage Unit</label>
+          <label class="check-item"><input type="checkbox" id="inclLaundry"> In-Unit Laundry</label>
+          <label class="check-item"><input type="checkbox" id="inclGym"> Gym / Fitness Center</label>
+          <label class="check-item"><input type="checkbox" id="inclPool"> Swimming Pool</label>
+          <label class="check-item"><input type="checkbox" id="inclBalcony"> Balcony / Patio</label>
+          <label class="check-item"><input type="checkbox" id="inclAC"> Air Conditioning</label>
+          <label class="check-item"><input type="checkbox" id="inclFurnished"> Furnished</label>
+        </div>
+        <div class="form-grid cols-1" style="margin-top:18px;">
+          <div class="field">
+            <label>Parking Space Details</label>
+            <input type="text" id="parkingDetail" placeholder="e.g. Covered spot #12 in underground garage">
+          </div>
+          <div class="field">
+            <label>Additional Property Description</label>
+            <textarea id="propDescription" placeholder="Any additional details about the property, special features, or condition notes..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-ghost" onclick="prevStep()">&larr; Back</button>
+        <div class="step-indicator">Step 3 of 7</div>
+        <button class="btn btn-primary" onclick="nextStep()">Continue &rarr;</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Lease Terms -->
+    <div class="form-section" id="step3">
+      <div class="page-title">Lease Terms</div>
+      <div class="page-subtitle">Define the duration, commencement date, and key conditions of the agreement.</div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">📆</div>
+          <div>
+            <div class="section-title">Term & Duration</div>
+            <div class="section-subtitle">When does the lease begin and end?</div>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Lease Start Date <span class="req">*</span></label>
+            <input type="date" id="leaseStart">
+          </div>
+          <div class="field">
+            <label>Lease End Date</label>
+            <input type="date" id="leaseEnd">
+            <div class="field-hint">Leave blank for month-to-month</div>
+          </div>
+          <div class="field">
+            <label>Lease Term</label>
+            <select id="leaseTerm">
+              <option value="Month-to-Month">Month-to-Month</option>
+              <option value="3 Months">3 Months</option>
+              <option value="6 Months">6 Months</option>
+              <option value="12 Months" selected>12 Months (1 Year)</option>
+              <option value="24 Months">24 Months (2 Years)</option>
+              <option value="36 Months">36 Months (3 Years)</option>
+              <option value="Custom">Custom (see dates above)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Notice to Vacate</label>
+            <select id="noticeVacate">
+              <option value="15 days">15 Days</option>
+              <option value="30 days" selected>30 Days</option>
+              <option value="45 days">45 Days</option>
+              <option value="60 days">60 Days</option>
+              <option value="90 days">90 Days</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">⚡</div>
+          <div>
+            <div class="section-title">Utilities Responsibility</div>
+            <div class="section-subtitle">Who pays for each utility?</div>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Electricity</label>
+            <select id="utilElec"><option value="Tenant">Tenant</option><option value="Landlord">Landlord</option><option value="Included in Rent">Included in Rent</option><option value="Split">Split</option></select>
+          </div>
+          <div class="field">
+            <label>Water / Sewer</label>
+            <select id="utilWater"><option value="Landlord" selected>Landlord</option><option value="Tenant">Tenant</option><option value="Included in Rent">Included in Rent</option><option value="Split">Split</option></select>
+          </div>
+          <div class="field">
+            <label>Gas / Heating</label>
+            <select id="utilGas"><option value="Tenant">Tenant</option><option value="Landlord">Landlord</option><option value="Included in Rent">Included in Rent</option><option value="Split">Split</option></select>
+          </div>
+          <div class="field">
+            <label>Internet / Cable</label>
+            <select id="utilInternet"><option value="Tenant">Tenant</option><option value="Landlord">Landlord</option><option value="Included in Rent">Included in Rent</option></select>
+          </div>
+          <div class="field">
+            <label>Trash / Recycling</label>
+            <select id="utilTrash"><option value="Landlord" selected>Landlord</option><option value="Tenant">Tenant</option><option value="Included in Rent">Included in Rent</option></select>
+          </div>
+          <div class="field">
+            <label>Lawn / Snow Removal</label>
+            <select id="utilLawn"><option value="Landlord" selected>Landlord</option><option value="Tenant">Tenant</option><option value="N/A">N/A</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-ghost" onclick="prevStep()">&larr; Back</button>
+        <div class="step-indicator">Step 4 of 7</div>
+        <button class="btn btn-primary" onclick="nextStep()">Continue &rarr;</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Financial -->
+    <div class="form-section" id="step4">
+      <div class="page-title">Financial Terms</div>
+      <div class="page-subtitle">Specify rent, deposits, and payment conditions clearly.</div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">💵</div>
+          <div>
+            <div class="section-title">Rent & Payment</div>
+            <div class="section-subtitle">Monthly rent amount and payment schedule</div>
+          </div>
+        </div>
+        <div class="form-grid cols-3">
+          <div class="field">
+            <label>Monthly Rent <span class="req">*</span></label>
+            <input type="number" id="rentAmount" placeholder="2500">
+          </div>
+          <div class="field">
+            <label>Currency</label>
+            <select id="currency">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="CAD">CAD (C$)</option>
+              <option value="AUD">AUD (A$)</option>
+              <option value="INR">INR (₹)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Due Day of Month</label>
+            <select id="rentDueDay">
+              <option value="1st">1st</option>
+              <option value="5th">5th</option>
+              <option value="10th">10th</option>
+              <option value="15th">15th</option>
+              <option value="Last day">Last Day</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Payment Method</label>
+            <select id="paymentMethod">
+              <option value="Bank Transfer / ACH">Bank Transfer / ACH</option>
+              <option value="Check">Check</option>
+              <option value="Cash">Cash</option>
+              <option value="Online Portal">Online Portal</option>
+              <option value="Zelle / Venmo">Zelle / Venmo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Grace Period</label>
+            <select id="gracePeriod">
+              <option value="None">No Grace Period</option>
+              <option value="3 days">3 Days</option>
+              <option value="5 days" selected>5 Days</option>
+              <option value="7 days">7 Days</option>
+              <option value="10 days">10 Days</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Late Fee</label>
+            <input type="text" id="lateFee" placeholder="$50 or 5%">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">🔐</div>
+          <div>
+            <div class="section-title">Security Deposit</div>
+            <div class="section-subtitle">Deposit amount, conditions, and return terms</div>
+          </div>
+        </div>
+        <div class="form-grid cols-3">
+          <div class="field">
+            <label>Deposit Amount <span class="req">*</span></label>
+            <input type="number" id="depositAmount" placeholder="5000">
+          </div>
+          <div class="field">
+            <label>Deposit Equivalent</label>
+            <select id="depositMonths">
+              <option value="1 month's rent">1 Month's Rent</option>
+              <option value="2 months' rent">2 Months' Rent</option>
+              <option value="3 months' rent">3 Months' Rent</option>
+              <option value="Custom amount">Custom Amount</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Return Timeframe</label>
+            <select id="depositReturn">
+              <option value="14 days">14 Days</option>
+              <option value="21 days" selected>21 Days</option>
+              <option value="30 days">30 Days</option>
+              <option value="45 days">45 Days</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid cols-1" style="margin-top:18px;">
+          <div class="field">
+            <label>Additional Fees (Pet Deposit, Parking Fee, etc.)</label>
+            <textarea id="additionalFees" placeholder="e.g. Pet deposit: $500 (refundable). Monthly parking fee: $100."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-ghost" onclick="prevStep()">&larr; Back</button>
+        <div class="step-indicator">Step 5 of 7</div>
+        <button class="btn btn-primary" onclick="nextStep()">Continue &rarr;</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: Rules -->
+    <div class="form-section" id="step5">
+      <div class="page-title">Rules & Conditions</div>
+      <div class="page-subtitle">Define the rules governing the tenancy and any special provisions.</div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">📋</div>
+          <div>
+            <div class="section-title">Property Policies</div>
+            <div class="section-subtitle">Select applicable policies for this agreement</div>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Pets</label>
+            <div class="toggle-group">
+              <div class="toggle-btn" onclick="toggle(this, 'pets', 'not_allowed')" id="pets_not_allowed">Not Allowed</div>
+              <div class="toggle-btn" onclick="toggle(this, 'pets', 'allowed')" id="pets_allowed">Allowed</div>
+              <div class="toggle-btn" onclick="toggle(this, 'pets', 'with_approval')" id="pets_with_approval">With Approval</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Smoking</label>
+            <div class="toggle-group">
+              <div class="toggle-btn on" onclick="toggle(this, 'smoking', 'prohibited')" id="smoking_prohibited">Prohibited</div>
+              <div class="toggle-btn" onclick="toggle(this, 'smoking', 'allowed_outside')" id="smoking_allowed_outside">Outside Only</div>
+              <div class="toggle-btn" onclick="toggle(this, 'smoking', 'allowed')" id="smoking_allowed">Allowed</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Subletting</label>
+            <div class="toggle-group">
+              <div class="toggle-btn on" onclick="toggle(this, 'subletting', 'prohibited')" id="subletting_prohibited">Prohibited</div>
+              <div class="toggle-btn" onclick="toggle(this, 'subletting', 'with_approval')" id="subletting_with_approval">With Approval</div>
+              <div class="toggle-btn" onclick="toggle(this, 'subletting', 'allowed')" id="subletting_allowed">Allowed</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Alterations</label>
+            <div class="toggle-group">
+              <div class="toggle-btn on" onclick="toggle(this, 'alterations', 'prohibited')" id="alterations_prohibited">Prohibited</div>
+              <div class="toggle-btn" onclick="toggle(this, 'alterations', 'minor_ok')" id="alterations_minor_ok">Minor OK</div>
+              <div class="toggle-btn" onclick="toggle(this, 'alterations', 'with_approval')" id="alterations_with_approval">With Approval</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid cols-1" style="margin-top:18px;">
+          <div class="field">
+            <label>Quiet Hours</label>
+            <input type="text" id="quietHours" placeholder="e.g. 10:00 PM to 8:00 AM daily">
+          </div>
+          <div class="field">
+            <label>Guest Policy</label>
+            <input type="text" id="guestPolicy" placeholder="e.g. Guests may not stay longer than 7 consecutive nights without written consent">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">🔧</div>
+          <div>
+            <div class="section-title">Maintenance & Repairs</div>
+          </div>
+        </div>
+        <div class="form-grid cols-1">
+          <div class="field">
+            <label>Tenant Maintenance Responsibilities</label>
+            <textarea id="tenantMaint" placeholder="e.g. Tenant responsible for minor repairs under $100, changing light bulbs, HVAC filter replacement, and keeping premises clean and sanitary."></textarea>
+          </div>
+          <div class="field">
+            <label>Landlord Maintenance Responsibilities</label>
+            <textarea id="landlordMaint" placeholder="e.g. Landlord responsible for structural repairs, major appliances, plumbing, electrical systems, and roof maintenance."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">✍️</div>
+          <div>
+            <div class="section-title">Additional Clauses</div>
+            <div class="section-subtitle">Any special terms or conditions specific to this agreement</div>
+          </div>
+        </div>
+        <div class="form-grid cols-1">
+          <div class="field">
+            <label>Special Terms & Conditions</label>
+            <textarea id="specialTerms" style="min-height:120px;" placeholder="Add any additional terms, conditions, addenda, or special provisions..."></textarea>
+          </div>
+          <div class="field">
+            <label>Governing Law / Jurisdiction</label>
+            <input type="text" id="jurisdiction" placeholder="e.g. State of California, County of Los Angeles">
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-ghost" onclick="prevStep()">&larr; Back</button>
+        <div class="step-indicator">Step 6 of 7</div>
+        <button class="btn btn-primary" onclick="nextStep()">Preview Agreement &rarr;</button>
+      </div>
+    </div>
+
+    <!-- STEP 6: Preview & Export -->
+    <div class="form-section" id="step6">
+      <div class="page-title">Preview & Generate PDF</div>
+      <div class="page-subtitle">Review your agreement summary and generate a professional, print-ready PDF document.</div>
+
+      <!-- Summary -->
+      <div class="section-card" id="summaryCard">
+        <div class="section-header">
+          <div class="section-icon">📄</div>
+          <div>
+            <div class="section-title">Agreement Summary</div>
+            <div class="section-subtitle">Confirm all details before generating</div>
+          </div>
+        </div>
+        <div id="summaryContent"></div>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-section">
+        <div class="preview-header">
+          <div class="preview-title">Document Preview</div>
+          <span class="badge badge-gold" id="previewBadge">Residential Lease</span>
+        </div>
+        <div class="preview-doc" id="previewDoc">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div style="display:flex; gap:16px; justify-content:center; padding-top:8px;">
+        <button class="btn btn-ghost" onclick="prevStep()">&larr; Edit Details</button>
+        <button class="btn btn-generate" onclick="generatePDF()">
+          ⬇ Download PDF Agreement
+        </button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ─── STATE ───
+  let currentStep = 0;
+  const totalSteps = 7;
+
+  const typeNames = {
+    residential: 'Residential Lease Agreement',
+    commercial: 'Commercial Lease Agreement',
+    roommate: 'Live-In / Roommate Agreement',
+    sublease: 'Sublease Agreement',
+    vacation: 'Short-Term Rental Agreement',
+    month: 'Month-to-Month Rental Agreement'
+  };
+
+  const policyState = {
+    pets: 'not_allowed',
+    smoking: 'prohibited',
+    subletting: 'prohibited',
+    alterations: 'prohibited'
+  };
+
+  let selectedType = '';
+
+  // ─── TYPE SELECTION ───
+  function selectType(type, el) {
+    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedType = type;
+    document.getElementById('sidebarTypeName').textContent = typeNames[type] || type;
+    
+    // Update labels based on type
+    if (type === 'roommate') {
+      document.getElementById('lessorLabel').textContent = 'Primary Tenant / Host';
+      document.getElementById('lesseeLabel').textContent = 'Roommate / Live-In Tenant';
+    } else if (type === 'commercial') {
+      document.getElementById('lessorLabel').textContent = 'Lessor / Property Owner';
+      document.getElementById('lesseeLabel').textContent = 'Lessee / Business Tenant';
+    } else if (type === 'sublease') {
+      document.getElementById('lessorLabel').textContent = 'Sublessor (Original Tenant)';
+      document.getElementById('lesseeLabel').textContent = 'Sublessee (New Tenant)';
+    } else {
+      document.getElementById('lessorLabel').textContent = 'Landlord / Lessor';
+      document.getElementById('lesseeLabel').textContent = 'Tenant / Lessee';
+    }
+  }
+
+  // ─── TOGGLE ───
+  function toggle(el, group, value) {
+    document.querySelectorAll(`[id^="${group}_"]`).forEach(b => b.classList.remove('on'));
+    el.classList.add('on');
+    policyState[group] = value;
+  }
+
+  // ─── NAV ───
+  function goToStep(n) {
+    document.getElementById(`step${currentStep}`).classList.remove('active');
+    document.getElementById(`nav${currentStep}`).classList.remove('active');
+    currentStep = n;
+    document.getElementById(`step${currentStep}`).classList.add('active');
+    document.getElementById(`nav${currentStep}`).classList.add('active');
+    document.getElementById('progressFill').style.width = `${((currentStep + 1) / totalSteps) * 100}%`;
+    if (n === 6) buildPreview();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function nextStep() {
+    if (currentStep < totalSteps - 1) goToStep(currentStep + 1);
+  }
+  function prevStep() {
+    if (currentStep > 0) goToStep(currentStep - 1);
+  }
+
+  // ─── HELPERS ───
+  function v(id) { return (document.getElementById(id) || {}).value || ''; }
+  function checked(id) { return document.getElementById(id)?.checked; }
+
+  function currencySymbol() {
+    const map = { USD:'$', EUR:'€', GBP:'£', CAD:'C$', AUD:'A$', INR:'₹' };
+    return map[v('currency')] || '$';
+  }
+
+  function formatMoney(n) {
+    const num = parseFloat(n);
+    if (isNaN(num)) return n;
+    return currencySymbol() + num.toLocaleString();
+  }
+
+  function policyLabel(key) {
+    const labels = {
+      not_allowed: 'Not Allowed',
+      allowed: 'Allowed',
+      with_approval: 'Allowed with Written Approval',
+      prohibited: 'Strictly Prohibited',
+      allowed_outside: 'Allowed Outside Only',
+      minor_ok: 'Minor Changes Permitted'
+    };
+    return labels[policyState[key]] || policyState[key];
+  }
+
+  function inclList() {
+    const items = [];
+    if (checked('inclParking')) items.push('Parking Space');
+    if (checked('inclStorage')) items.push('Storage Unit');
+    if (checked('inclLaundry')) items.push('In-Unit Laundry');
+    if (checked('inclGym')) items.push('Gym Access');
+    if (checked('inclPool')) items.push('Pool Access');
+    if (checked('inclBalcony')) items.push('Balcony/Patio');
+    if (checked('inclAC')) items.push('Air Conditioning');
+    if (checked('inclFurnished')) items.push('Furnished');
+    return items.length ? items.join(', ') : 'None specified';
+  }
+
+  // ─── BUILD PREVIEW ───
+  function buildPreview() {
+    // Summary card
+    const summary = document.getElementById('summaryContent');
+    const agreementTitle = typeNames[selectedType] || 'Rental Agreement';
+    document.getElementById('previewBadge').textContent = agreementTitle;
+
+    summary.innerHTML = `
+      <div class="summary-row"><span class="summary-label">Agreement Type</span><span class="summary-val">${agreementTitle}</span></div>
+      <div class="summary-row"><span class="summary-label">Landlord / Lessor</span><span class="summary-val">${v('lessorName') || '—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Tenant / Lessee</span><span class="summary-val">${v('lesseeName') || '—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Property Address</span><span class="summary-val">${v('propAddress') || '—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Lease Term</span><span class="summary-val">${v('leaseTerm') || '—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Start Date</span><span class="summary-val">${v('leaseStart') || '—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Monthly Rent</span><span class="summary-val">${formatMoney(v('rentAmount'))}</span></div>
+      <div class="summary-row"><span class="summary-label">Security Deposit</span><span class="summary-val">${formatMoney(v('depositAmount'))}</span></div>
+    `;
+
+    // Preview doc
+    const doc = document.getElementById('previewDoc');
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    doc.innerHTML = `
+      <h2>${agreementTitle.toUpperCase()}</h2>
+      <div class="center">This Agreement is entered into as of ${v('leaseStart') || '[Date]'} • Jurisdiction: ${v('jurisdiction') || '[State/Country]'}</div>
+
+      <div class="clause-title">1. Parties</div>
+      <p>This ${agreementTitle} ("Agreement") is made and entered into between <strong>${v('lessorName') || '[Landlord Name]'}</strong> ("Landlord/Lessor"), whose address is ${v('lessorAddress') || '[Address]'}, and <strong>${v('lesseeName') || '[Tenant Name]'}${v('lesseeCoName') ? ' and ' + v('lesseeCoName') : ''}</strong> ("Tenant/Lessee").</p>
+
+      <div class="clause-title">2. Premises</div>
+      <p>Landlord hereby leases to Tenant the property located at <strong>${v('propAddress') || '[Property Address]'}</strong> (the "Premises"), described as a ${v('propBedrooms') || '—'}, ${v('propBathrooms') || '—'} ${v('propType') || 'unit'}${v('propSqft') ? ', approximately ' + v('propSqft') + ' sq. ft.' : ''}.</p>
+      <p>Included amenities: ${inclList()}.</p>
+
+      <div class="clause-title">3. Term</div>
+      <p>The lease term shall commence on <strong>${v('leaseStart') || '[Start Date]'}</strong> and ${v('leaseEnd') ? 'terminate on <strong>' + v('leaseEnd') + '</strong>' : 'continue on a month-to-month basis'}. Either party may terminate this Agreement with <strong>${v('noticeVacate') || '30 days'}</strong> written notice.</p>
+
+      <div class="clause-title">4. Rent</div>
+      <p>Tenant agrees to pay <strong>${formatMoney(v('rentAmount'))}</strong> per month, due on the <strong>${v('rentDueDay') || '1st'}</strong> of each month, payable via <strong>${v('paymentMethod') || 'bank transfer'}</strong>. A grace period of <strong>${v('gracePeriod') || '5 days'}</strong> is provided${v('lateFee') ? '; thereafter a late fee of ' + v('lateFee') + ' applies' : ''}.</p>
+
+      <div class="clause-title">5. Security Deposit</div>
+      <p>Upon signing, Tenant shall pay a security deposit of <strong>${formatMoney(v('depositAmount'))}</strong> (${v('depositMonths') || ''}). The deposit shall be returned within <strong>${v('depositReturn') || '21 days'}</strong> after vacating, subject to deductions for damages, unpaid rent, or breach of this Agreement.</p>
+
+      <div class="clause-title">6. Utilities</div>
+      <p>Electricity: ${v('utilElec')} | Water/Sewer: ${v('utilWater')} | Gas: ${v('utilGas')} | Internet/Cable: ${v('utilInternet')} | Trash: ${v('utilTrash')} | Lawn/Snow: ${v('utilLawn')}.</p>
+
+      <div class="clause-title">7. Policies</div>
+      <p>Pets: <strong>${policyLabel('pets')}</strong>. Smoking: <strong>${policyLabel('smoking')}</strong>. Subletting: <strong>${policyLabel('subletting')}</strong>. Alterations/Modifications: <strong>${policyLabel('alterations')}</strong>.${v('quietHours') ? ' Quiet Hours: ' + v('quietHours') + '.' : ''}${v('guestPolicy') ? ' Guests: ' + v('guestPolicy') + '.' : ''}</p>
+
+      <div class="clause-title">8. Maintenance</div>
+      <p><strong>Tenant:</strong> ${v('tenantMaint') || 'Tenant shall maintain the premises in a clean, safe, and sanitary condition.'}</p>
+      <p><strong>Landlord:</strong> ${v('landlordMaint') || 'Landlord shall maintain structural elements, major systems, and appliances in good working order.'}</p>
+
+      ${v('additionalFees') ? `<div class="clause-title">9. Additional Fees</div><p>${v('additionalFees')}</p>` : ''}
+      ${v('specialTerms') ? `<div class="clause-title">10. Special Terms</div><p>${v('specialTerms')}</p>` : ''}
+
+      <div class="clause-title">Signatures</div>
+      <p>By signing below, the parties agree to all terms of this Agreement.</p>
+      <br>
+      <p><span class="sig-line"></span> &nbsp; <span class="sig-line" style="min-width:140px;"></span></p>
+      <p style="font-size:12px;color:#666;">Landlord Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</p>
+      <br>
+      <p><span class="sig-line"></span> &nbsp; <span class="sig-line" style="min-width:140px;"></span></p>
+      <p style="font-size:12px;color:#666;">Tenant Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</p>
+    `;
+  }
+
+  // ─── GENERATE PDF ───
+  function generatePDF() {
+    showToast('⏳ Generating professional PDF...');
+    
+    setTimeout(() => {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+        
+        const agreementTitle = typeNames[selectedType] || 'Rental Agreement';
+        const sym = currencySymbol();
+        const PW = 215.9, PH = 279.4;
+        const ML = 20, MR = PW - 20, TW = MR - ML;
+        let y = 0;
+
+        // ── HELPERS ──
+        const pageCheck = (needed = 15) => {
+          if (y + needed > PH - 18) {
+            doc.addPage();
+            y = addHeader(true);
+          }
+        };
+
+        const addHeader = (mini = false) => {
+          // Dark header bar
+          doc.setFillColor(15, 14, 12);
+          doc.rect(0, 0, PW, mini ? 16 : 28, 'F');
+          // Gold accent line
+          doc.setFillColor(184, 149, 42);
+          doc.rect(0, mini ? 16 : 28, PW, 1.5, 'F');
+          if (!mini) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.setTextColor(184, 149, 42);
+            doc.text('LEXDRAFT', ML, 11);
+            doc.setFontSize(7);
+            doc.setTextColor(160, 157, 151);
+            doc.text('Professional Agreement Generator', ML + 30, 11);
+            doc.setFontSize(7);
+            doc.setTextColor(160, 157, 151);
+            doc.text(`Generated: ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}`, MR - 2, 11, { align: 'right' });
+            return 38;
+          }
+          doc.setFontSize(7); doc.setTextColor(160,157,151);
+          doc.text('LEXDRAFT — CONFIDENTIAL', ML, 11);
+          doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber}`, MR - 2, 11, { align: 'right' });
+          return 24;
+        };
+
+        const addFooter = () => {
+          const totalPages = doc.internal.getNumberOfPages();
+          for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFillColor(240, 236, 229);
+            doc.rect(0, PH - 14, PW, 14, 'F');
+            doc.setFillColor(184, 149, 42);
+            doc.rect(0, PH - 14, PW, 0.8, 'F');
+            doc.setFontSize(7);
+            doc.setTextColor(100, 97, 90);
+            doc.text(`Page ${i} of ${totalPages}`, PW / 2, PH - 6, { align: 'center' });
+            doc.text('This document was generated by LexDraft. Consult a qualified attorney before execution.', ML, PH - 6);
+            doc.text(new Date().getFullYear().toString(), MR - 2, PH - 6, { align: 'right' });
+          }
+        };
+
+        const sectionHeader = (icon, title) => {
+          pageCheck(18);
+          doc.setFillColor(245, 233, 200);
+          doc.roundedRect(ML, y, TW, 10, 2, 2, 'F');
+          doc.setFillColor(184, 149, 42);
+          doc.roundedRect(ML, y, 3, 10, 1.5, 1.5, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(15, 14, 12);
+          doc.text(title.toUpperCase(), ML + 7, y + 6.5);
+          y += 14;
+        };
+
+        const clauseTitle = (num, title) => {
+          pageCheck(12);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9.5);
+          doc.setTextColor(15, 14, 12);
+          doc.text(`${num}. ${title}`, ML, y);
+          y += 6;
+        };
+
+        const paraText = (text, indent = 0) => {
+          const lines = doc.splitTextToSize(text, TW - indent);
+          lines.forEach(line => {
+            pageCheck(6);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9.5);
+            doc.setTextColor(44, 43, 40);
+            doc.text(line, ML + indent, y);
+            y += 5;
+          });
+          y += 2;
+        };
+
+        const twoCol = (label, value, x, colW) => {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(100, 97, 90);
+          doc.text(label.toUpperCase(), x, y);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9.5);
+          doc.setTextColor(15, 14, 12);
+          const lines = doc.splitTextToSize(value || '—', colW - 4);
+          lines.forEach((l, i) => doc.text(l, x, y + 5 + (i * 5)));
+          return 5 + lines.length * 5;
+        };
+
+        const infoGrid = (pairs) => {
+          pageCheck(pairs.length * 8 + 4);
+          const colW = TW / 2;
+          for (let i = 0; i < pairs.length; i += 2) {
+            const h1 = pairs[i] ? twoCol(pairs[i][0], pairs[i][1], ML, colW) : 0;
+            const h2 = pairs[i + 1] ? twoCol(pairs[i + 1][0], pairs[i + 1][1], ML + colW, colW) : 0;
+            y += Math.max(h1, h2) + 4;
+          }
+          y += 2;
+        };
+
+        const divider = (color = [220, 215, 206]) => {
+          doc.setDrawColor(...color);
+          doc.setLineWidth(0.3);
+          doc.line(ML, y, MR, y);
+          y += 5;
+        };
+
+        // ══════════════════════════════════════
+        // PAGE 1
+        // ══════════════════════════════════════
+        y = addHeader(false);
+
+        // Title block
+        y += 8;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(20);
+        doc.setTextColor(15, 14, 12);
+        doc.text(agreementTitle.toUpperCase(), PW / 2, y, { align: 'center' });
+        y += 8;
+
+        // Gold rule
+        doc.setFillColor(184, 149, 42);
+        doc.rect(ML, y, TW, 1, 'F');
+        y += 5;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(100, 97, 90);
+        doc.text(`This Agreement is entered into on ${v('leaseStart') || '___________'}`, PW / 2, y, { align: 'center' });
+        y += 5;
+        doc.text(`Jurisdiction: ${v('jurisdiction') || '[State/Country]'}`, PW / 2, y, { align: 'center' });
+        y += 12;
+
+        // ── PARTIES ──
+        sectionHeader('', 'Parties to the Agreement');
+
+        // Lessor box
+        doc.setFillColor(250, 247, 242);
+        doc.roundedRect(ML, y, TW / 2 - 3, 36, 2, 2, 'F');
+        doc.setFillColor(184, 149, 42);
+        doc.roundedRect(ML, y, TW / 2 - 3, 5, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(255, 255, 255);
+        doc.text('LANDLORD / LESSOR', ML + 4, y + 3.5);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(15, 14, 12);
+        doc.text(v('lessorName') || '—', ML + 4, y + 12);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(80, 77, 72);
+        const lessorAddrLines = doc.splitTextToSize(v('lessorAddress') || '—', TW / 2 - 12);
+        lessorAddrLines.forEach((l, i) => doc.text(l, ML + 4, y + 18 + i * 4.5));
+        doc.text(v('lessorEmail') || '', ML + 4, y + 28);
+        doc.text(v('lessorPhone') || '', ML + 4, y + 33);
+
+        // Lessee box
+        const bx = ML + TW / 2 + 3;
+        const bw = TW / 2 - 3;
+        doc.setFillColor(250, 247, 242);
+        doc.roundedRect(bx, y, bw, 36, 2, 2, 'F');
+        doc.setFillColor(44, 43, 40);
+        doc.roundedRect(bx, y, bw, 5, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(255, 255, 255);
+        doc.text('TENANT / LESSEE', bx + 4, y + 3.5);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(15, 14, 12);
+        doc.text(v('lesseeName') || '—', bx + 4, y + 12);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(80, 77, 72);
+        if (v('lesseeCoName')) doc.text(`& ${v('lesseeCoName')}`, bx + 4, y + 17);
+        doc.text(v('lesseeEmail') || '', bx + 4, y + 23);
+        doc.text(v('lesseePhone') || '', bx + 4, y + 28);
+        if (v('lesseeID')) doc.text(`ID: ${v('lesseeID')}`, bx + 4, y + 33);
+
+        y += 44;
+
+        // Key terms bar
+        doc.setFillColor(15, 14, 12);
+        doc.roundedRect(ML, y, TW, 22, 2, 2, 'F');
+        const cols = [
+          { label: 'Monthly Rent', val: formatMoney(v('rentAmount')) },
+          { label: 'Security Deposit', val: formatMoney(v('depositAmount')) },
+          { label: 'Lease Term', val: v('leaseTerm') || '—' },
+          { label: 'Start Date', val: v('leaseStart') || '—' },
+        ];
+        const cw = TW / cols.length;
+        cols.forEach((c, i) => {
+          const cx = ML + i * cw + 5;
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(160, 157, 151);
+          doc.text(c.label.toUpperCase(), cx, y + 7);
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(184, 149, 42);
+          doc.text(c.val, cx, y + 15);
+        });
+        y += 30;
+
+        // ── PROPERTY ──
+        sectionHeader('', 'Property Description');
+        clauseTitle('1', 'Premises');
+        paraText(`The Landlord hereby leases to the Tenant the premises located at: ${v('propAddress') || '[Property Address]'} (hereinafter "the Premises").`);
+        paraText(`Property Type: ${v('propType') || '—'} | Bedrooms: ${v('propBedrooms') || '—'} | Bathrooms: ${v('propBathrooms') || '—'}${v('propSqft') ? ' | Size: ~' + v('propSqft') + ' sq. ft.' : ''}${v('propFloor') ? ' | Floor: ' + v('propFloor') : ''}`);
+        if (v('propDescription')) paraText(`Additional Description: ${v('propDescription')}`);
+        paraText(`Included Amenities: ${inclList()}.${v('parkingDetail') ? ' Parking: ' + v('parkingDetail') + '.' : ''}`);
+        y += 2;
+
+        // ── TERM ──
+        clauseTitle('2', 'Lease Term');
+        paraText(`The lease term shall commence on ${v('leaseStart') || '___________'} and ${v('leaseEnd') ? 'shall terminate on ' + v('leaseEnd') : 'shall continue on a month-to-month basis until terminated by either party'}. The agreed term is ${v('leaseTerm') || '—'}.`);
+        paraText(`Either party wishing to terminate this Agreement shall provide the other party with no less than ${v('noticeVacate') || '30 days'} written notice prior to the intended termination date.`);
+        y += 2;
+
+        // ── RENT ──
+        clauseTitle('3', 'Rent & Payment');
+        paraText(`Tenant agrees to pay to Landlord the sum of ${formatMoney(v('rentAmount'))} per calendar month as rent for the Premises. Rent shall be due and payable on the ${v('rentDueDay') || '1st'} day of each month.`);
+        paraText(`Payment Method: ${v('paymentMethod') || '—'}. Grace Period: ${v('gracePeriod') || '5 days'} after the due date.${v('lateFee') ? ' Late payments shall incur a late fee of ' + v('lateFee') + ' per occurrence.' : ''}`);
+        y += 2;
+
+        // ── DEPOSIT ──
+        clauseTitle('4', 'Security Deposit');
+        paraText(`Tenant shall pay a security deposit in the amount of ${formatMoney(v('depositAmount'))} (representing ${v('depositMonths') || 'the agreed amount'}) upon execution of this Agreement. The deposit shall be held to secure Tenant's faithful performance of all terms.`);
+        paraText(`The security deposit shall be returned to Tenant within ${v('depositReturn') || '21 days'} after vacating the Premises, less any amounts properly deducted for: unpaid rent, damage beyond normal wear and tear, cleaning costs, or breach of this Agreement.`);
+        if (v('additionalFees')) {
+          y += 2;
+          clauseTitle('5', 'Additional Fees');
+          paraText(v('additionalFees'));
+        }
+        y += 4;
+
+        // PAGE 2 – Utilities, Policies, Maintenance
+        doc.addPage();
+        y = addHeader(true);
+        y += 4;
+
+        // ── UTILITIES ──
+        sectionHeader('', 'Utilities & Services');
+        clauseTitle('6', 'Utilities Responsibility');
+        paraText('The following utility and service responsibilities are agreed upon by the parties:');
+
+        const utilPairs = [
+          ['Electricity', v('utilElec')],
+          ['Water / Sewer', v('utilWater')],
+          ['Gas / Heating', v('utilGas')],
+          ['Internet / Cable', v('utilInternet')],
+          ['Trash / Recycling', v('utilTrash')],
+          ['Lawn / Snow Removal', v('utilLawn')],
+        ];
+
+        doc.setFillColor(250, 247, 242);
+        doc.roundedRect(ML, y, TW, utilPairs.length * 9 + 4, 2, 2, 'F');
+        utilPairs.forEach((u, i) => {
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(80, 77, 72);
+          doc.text(u[0], ML + 5, y + 7 + i * 9);
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 14, 12);
+          doc.text(u[1] || '—', MR - 5, y + 7 + i * 9, { align: 'right' });
+          if (i < utilPairs.length - 1) {
+            doc.setDrawColor(220, 215, 206); doc.setLineWidth(0.2);
+            doc.line(ML + 4, y + 11 + i * 9, MR - 4, y + 11 + i * 9);
+          }
+        });
+        y += utilPairs.length * 9 + 12;
+
+        // ── POLICIES ──
+        sectionHeader('', 'Property Policies & Rules');
+        clauseTitle('7', 'Occupancy & Use');
+        paraText(`The Premises shall be used and occupied solely as a private residence by Tenant${v('lesseeCoName') ? ' and ' + v('lesseeCoName') : ''} and the following approved occupants (total: ${v('occupants') || '—'}). The Premises shall not be used for any commercial, unlawful, or unauthorized purpose.`);
+
+        clauseTitle('8', 'Pet Policy');
+        paraText(`Pets on the Premises are: ${policyLabel('pets')}. ${policyState.pets === 'allowed' || policyState.pets === 'with_approval' ? 'Any authorized pets must comply with all applicable local regulations. Tenant is liable for any damage caused by pets.' : 'No animals of any kind are permitted on the Premises without prior written consent of the Landlord.'}`);
+
+        clauseTitle('9', 'Smoking Policy');
+        paraText(`Smoking of any substance (including tobacco, cannabis, e-cigarettes, or vaporizers) is: ${policyLabel('smoking')}. Violation of this clause may result in deductions from the security deposit to cover remediation costs.`);
+
+        clauseTitle('10', 'Subletting');
+        paraText(`Subletting, assignment of this Agreement, or granting any license or concession to use all or any part of the Premises is: ${policyLabel('subletting')}. Any unauthorized subletting shall constitute a material breach of this Agreement.`);
+
+        clauseTitle('11', 'Alterations & Modifications');
+        paraText(`Tenant shall not make any alterations, additions, or improvements to the Premises without prior written consent of the Landlord. Status: ${policyLabel('alterations')}. All permitted improvements become the property of the Landlord unless otherwise agreed in writing.`);
+
+        if (v('quietHours')) {
+          clauseTitle('12', 'Quiet Hours & Nuisance');
+          paraText(`Tenant agrees to observe quiet hours from ${v('quietHours')}. Tenant shall not disturb the peace or comfort of neighboring occupants.`);
+        }
+
+        if (v('guestPolicy')) {
+          clauseTitle('13', 'Guest Policy');
+          paraText(v('guestPolicy'));
+        }
+
+        y += 4;
+        divider();
+
+        // ── MAINTENANCE ──
+        sectionHeader('', 'Maintenance & Repairs');
+        clauseTitle('14', "Tenant's Maintenance Obligations");
+        paraText(v('tenantMaint') || "Tenant shall maintain the Premises in a clean, safe, and sanitary condition. Tenant shall promptly notify Landlord of any damage, defects, or dangerous conditions. Tenant shall not commit or permit waste upon the Premises.");
+
+        clauseTitle('15', "Landlord's Maintenance Obligations");
+        paraText(v('landlordMaint') || "Landlord shall maintain the structural elements, roof, plumbing, electrical systems, and major appliances in good working order and shall comply with all applicable housing codes and standards of habitability.");
+
+        y += 4;
+
+        // PAGE 3 – Standard Clauses, Special Terms, Signatures
+        doc.addPage();
+        y = addHeader(true);
+        y += 4;
+
+        sectionHeader('', 'Standard Legal Provisions');
+
+        clauseTitle('16', 'Entry by Landlord');
+        paraText('Landlord shall have the right to enter the Premises at reasonable times, with at least 24 hours advance notice, for the purpose of inspection, making necessary repairs, showing the Premises to prospective tenants or purchasers, or in cases of emergency without notice.');
+
+        clauseTitle('17', 'Condition of Premises');
+        paraText('Tenant has inspected the Premises and accepts them in their current "as-is" condition. A Move-In Inspection Checklist should be completed by both parties within 72 hours of move-in and attached to this Agreement as an exhibit.');
+
+        clauseTitle('18', 'Insurance');
+        paraText("Tenant is strongly advised to obtain renters' insurance covering personal property and liability. Landlord's property insurance does not cover Tenant's personal belongings. Tenant shall indemnify and hold harmless Landlord from any liability arising from Tenant's negligent or intentional acts.");
+
+        clauseTitle('19', 'Abandonment');
+        paraText("If Tenant vacates or abandons the Premises for more than 7 consecutive days without written notice and without paying rent, Landlord may treat such absence as abandonment and may re-enter and re-let the Premises.");
+
+        clauseTitle('20', 'Default & Remedies');
+        paraText("If Tenant fails to pay rent within the grace period, or breaches any material term of this Agreement, Landlord may pursue all remedies available at law or equity, including termination of this Agreement and recovery of possession of the Premises after providing proper legal notice.");
+
+        clauseTitle('21', 'Holding Over');
+        paraText("If Tenant remains in possession of the Premises after the expiration of this Agreement without Landlord's written consent, such holding over shall create a month-to-month tenancy, terminable upon proper notice, at the same rental rate plus a 25% holdover premium.");
+
+        clauseTitle('22', 'Governing Law');
+        paraText(`This Agreement shall be governed by and construed in accordance with the laws of ${v('jurisdiction') || '[applicable jurisdiction]'}. Any disputes arising under this Agreement shall be resolved in the courts of competent jurisdiction in that locale.`);
+
+        clauseTitle('23', 'Entire Agreement');
+        paraText('This Agreement, together with any exhibits attached hereto, constitutes the entire agreement between the parties with respect to the Premises and supersedes all prior negotiations, representations, warranties, and understandings. This Agreement may not be modified except by a written instrument signed by both parties.');
+
+        clauseTitle('24', 'Severability');
+        paraText('If any provision of this Agreement is held to be invalid or unenforceable, such provision shall be struck and the remaining provisions shall remain in full force and effect.');
+
+        if (v('specialTerms')) {
+          y += 2;
+          divider();
+          sectionHeader('', 'Special Terms & Addenda');
+          clauseTitle('25', 'Special Terms and Conditions');
+          paraText(v('specialTerms'));
+        }
+
+        y += 6;
+        divider([184, 149, 42]);
+
+        // ── SIGNATURES ──
+        sectionHeader('', 'Execution & Signatures');
+        y += 2;
+        paraText('IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above. By signing, each party confirms they have read, understood, and agree to all terms of this Agreement.');
+        y += 6;
+
+        // Signature blocks
+        const sigW = (TW - 10) / 2;
+
+        // Landlord sig
+        doc.setFillColor(250, 247, 242);
+        doc.roundedRect(ML, y, sigW, 50, 2, 2, 'F');
+        doc.setFillColor(184, 149, 42);
+        doc.roundedRect(ML, y, sigW, 5, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(255, 255, 255);
+        doc.text('LANDLORD / LESSOR', ML + 4, y + 3.5);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(80, 77, 72);
+        doc.text('Print Name:', ML + 4, y + 14);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(15, 14, 12);
+        doc.text(v('lessorName') || '___________________________', ML + 4, y + 20);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(80, 77, 72);
+        doc.text('Signature:', ML + 4, y + 30);
+        doc.setDrawColor(44, 43, 40); doc.setLineWidth(0.5);
+        doc.line(ML + 4, y + 40, ML + sigW - 4, y + 40);
+        doc.text('Date: ___________________', ML + 4, y + 47);
+
+        // Tenant sig
+        const tsx = ML + sigW + 10;
+        doc.setFillColor(250, 247, 242);
+        doc.roundedRect(tsx, y, sigW, 50, 2, 2, 'F');
+        doc.setFillColor(44, 43, 40);
+        doc.roundedRect(tsx, y, sigW, 5, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(255, 255, 255);
+        doc.text('TENANT / LESSEE', tsx + 4, y + 3.5);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(80, 77, 72);
+        doc.text('Print Name:', tsx + 4, y + 14);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(15, 14, 12);
+        doc.text(v('lesseeName') || '___________________________', tsx + 4, y + 20);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(80, 77, 72);
+        doc.text('Signature:', tsx + 4, y + 30);
+        doc.setDrawColor(44, 43, 40); doc.setLineWidth(0.5);
+        doc.line(tsx + 4, y + 40, tsx + sigW - 4, y + 40);
+        doc.text('Date: ___________________', tsx + 4, y + 47);
+
+        y += 60;
+
+        if (v('lesseeCoName')) {
+          doc.setFillColor(250, 247, 242);
+          doc.roundedRect(ML, y, sigW, 50, 2, 2, 'F');
+          doc.setFillColor(107, 103, 96);
+          doc.roundedRect(ML, y, sigW, 5, 2, 2, 'F');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(255, 255, 255);
+          doc.text('CO-TENANT', ML + 4, y + 3.5);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(80, 77, 72);
+          doc.text('Print Name:', ML + 4, y + 14);
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(15, 14, 12);
+          doc.text(v('lesseeCoName'), ML + 4, y + 20);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(80, 77, 72);
+          doc.text('Signature:', ML + 4, y + 30);
+          doc.setDrawColor(44, 43, 40); doc.setLineWidth(0.5);
+          doc.line(ML + 4, y + 40, ML + sigW - 4, y + 40);
+          doc.text('Date: ___________________', ML + 4, y + 47);
+          y += 60;
+        }
+
+        y += 4;
+        // Witness
+        doc.setFillColor(240, 236, 229);
+        doc.roundedRect(ML, y, TW, 14, 2, 2, 'F');
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(100, 97, 90);
+        doc.text('WITNESS (if required):', ML + 5, y + 5);
+        doc.setDrawColor(160, 155, 148); doc.setLineWidth(0.3);
+        doc.line(ML + 50, y + 8, ML + 130, y + 8);
+        doc.text('Signature ________________________', ML + 140, y + 8);
+        doc.text('Date: ________________', ML + 140, y + 13);
+
+        // Add footers
+        addFooter();
+
+        // Save
+        const filename = `${(v('lesseeName') || 'Agreement').replace(/\s+/g, '_')}_${agreementTitle.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}_${new Date().getFullYear()}.pdf`;
+        doc.save(filename);
+        showToast('✅ PDF generated successfully!');
+
+      } catch (err) {
+        console.error(err);
+        showToast('❌ Error generating PDF. Please try again.');
+      }
+    }, 200);
+  }
+
+  // ─── TOAST ───
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // ─── INIT ───
+  // Set default type
+  selectType('residential', document.getElementById('typeResidential'));
+  
+  // Set today's date as default for lease start
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('leaseStart').value = today;
+  const nextYear = new Date();
+  nextYear.setFullYear(nextYear.getFullYear() + 1);
+  document.getElementById('leaseEnd').value = nextYear.toISOString().split('T')[0];
+</script>
+</body>
+</html>
 
