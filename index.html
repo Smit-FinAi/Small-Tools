@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Small Tools — Browser-based utilities</title>
+  <meta name="description" content="A collection of free browser-based tools. No installs, no sign-ups.">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%236366f1'/><text x='96' y='130' text-anchor='middle' font-size='100'>🛠️</text></svg>">
+  <link rel="manifest" id="pwaManifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #141419;
+      --surface-hover: #1a1a22;
+      --border: rgba(255,255,255,0.06);
+      --border-hover: rgba(255,255,255,0.12);
+      --text: #e4e4e7;
+      --text-muted: #71717a;
+      --accent: #6366f1;
+      --accent-soft: rgba(99,102,241,0.1);
+    }
+
+    html { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+    body { min-height: 100dvh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+
+    header {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(10,10,15,0.8);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-weight: 600; font-size: 15px; letter-spacing: -0.02em; }
+    .logo span { color: var(--text-muted); font-weight: 400; }
+
+    #pwaInstallBtn {
+      display: none; align-items: center; gap: 6px;
+      padding: 7px 14px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface); color: var(--text); font: 500 13px/1 'Inter', sans-serif;
+      cursor: pointer; transition: all .15s;
+    }
+    #pwaInstallBtn:hover { background: var(--surface-hover); border-color: var(--border-hover); }
+
+    main { flex: 1; max-width: 720px; width: 100%; margin: 0 auto; padding: 48px 24px 64px; }
+
+    .hero { margin-bottom: 40px; }
+    .hero h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 8px; }
+    .hero p { color: var(--text-muted); font-size: 15px; line-height: 1.5; }
+
+    .grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+
+    .card {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none; color: inherit;
+      transition: background .15s, border-color .15s, transform .15s;
+      animation: fadeIn .4s ease both;
+    }
+    .card:hover { background: var(--surface-hover); border-color: var(--border-hover); transform: translateY(-1px); }
+    .card:active { transform: scale(0.99); }
+
+    .card-icon {
+      flex-shrink: 0;
+      width: 42px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 10px;
+      font-size: 20px;
+    }
+
+    .card-body { flex: 1; min-width: 0; }
+    .card-name { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+    .card-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .card-arrow { flex-shrink: 0; color: var(--text-muted); font-size: 16px; transition: transform .15s, color .15s; }
+    .card:hover .card-arrow { transform: translateX(2px); color: var(--text); }
+
+    footer { padding: 24px; text-align: center; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 480px) {
+      main { padding: 32px 16px 48px; }
+      .hero h1 { font-size: 24px; }
+      .hero p { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Small Tools <span>/ hub</span></div>
+    <button id="pwaInstallBtn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v9M3 7l4 4 4-4M1 13h12"/></svg>
+      Install
+    </button>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Browser-based utilities</h1>
+      <p>No installs. No sign-ups. Everything runs in your browser.</p>
+    </section>
+
+    <section>
+      <div class="grid" id="toolGrid"></div>
+    </section>
+  </main>
+
+  <footer>Built by Smit Parekh</footer>
+
+  <script>
+    const tools = [
+      { emoji: '🗜️', name: 'GIF Compressor', desc: 'Compress GIF files with adjustable quality', path: './GIF-Compressor/', bg: '#1a1625' },
+      { emoji: '🖼️', name: 'Watermark Remover', desc: 'Remove AI-generated watermarks from images', path: './Gemini-Watermark-Remover/', bg: '#161a25' },
+      { emoji: '📜', name: 'LexDraft', desc: 'Generate professional legal agreements as PDF', path: './Professional-Agreement-Generator/', bg: '#1a1915' },
+      { emoji: '📈', name: 'Stock Calculator', desc: 'Calculate average stock prices with brokerage', path: './avg-stock-calculator/', bg: '#151a20' },
+      { emoji: '📄', name: 'PDF Factory', desc: '40+ PDF tools — merge, split, compress, convert', path: './pdf-factory/', bg: '#15191a' },
+    ];
+
+    const grid = document.getElementById('toolGrid');
+    tools.forEach((t, i) => {
+      const a = document.createElement('a');
+      a.href = t.path;
+      a.className = 'card';
+      a.style.animationDelay = `${i * 60}ms`;
+      a.innerHTML = `
+        <div class="card-icon" style="background:${t.bg}">${t.emoji}</div>
+        <div class="card-body">
+          <div class="card-name">${t.name}</div>
+          <div class="card-desc">${t.desc}</div>
+        </div>
+        <span class="card-arrow">→</span>`;
+      grid.appendChild(a);
+    });
+
+    /* PWA — Inline manifest */
+    (function () {
+      const manifest = {
+        name: 'Small Tools',
+        short_name: 'Small Tools',
+        description: 'A collection of free browser-based tools.',
+        start_url: './',
+        display: 'standalone',
+        background_color: '#0a0a0f',
+        theme_color: '#6366f1',
+        orientation: 'any',
+        categories: ['utilities'],
+        icons: [
+          {
+            src: "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='#6366f1'/><text x='96' y='130' text-anchor='middle' font-size='100'>🛠️</text></svg>"),
+            sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable'
+          },
+          {
+            src: "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='#6366f1'/><text x='256' y='360' text-anchor='middle' font-size='280'>🛠️</text></svg>"),
+            sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable'
+          }
+        ]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+      document.getElementById('pwaManifest').href = URL.createObjectURL(blob);
+    })();
+
+    /* PWA — Inline service worker */
+    (function () {
+      const swCode = `
+const CACHE = 'small-tools-hub-v1';
+const ASSETS = [self.registration.scope];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {})));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))));
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return fetch(e.request).then(resp => {
+        if (resp && resp.status === 200 && resp.type === 'basic') {
+          const clone = resp.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return resp;
+      }).catch(() => cached || new Response('Offline', { status: 503 }));
+    })
+  );
+});`;
+      if ('serviceWorker' in navigator) {
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(blob), { scope: './' })
+          .catch(() => {});
+      }
+    })();
+
+    /* PWA — Install prompt */
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('pwaInstallBtn');
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'flex';
+    });
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') installBtn.style.display = 'none';
+      deferredPrompt = null;
+    });
+    window.addEventListener('appinstalled', () => { installBtn.style.display = 'none'; });
+  </script>
+</body>
+</html>
