@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#C9A84C"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Gold Billing"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Slab:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<title>Al Dhahab Suite — Dubai Gold Billing</title>
+<style>
+:root{--gold:#C9A84C;--gold-deep:#8C6E28;--gp:rgba(201,168,76,0.08);--bg:#0a0a0f;--bg2:#12121a;--sur:#1e1e2e;--sur2:#252538;--bdr:#2e2e44;--bdrg:rgba(201,168,76,0.3);--tx:#e8e8f0;--tx2:#9898b8;--red:#e05555;--grn:#4ade80;--blu:#60a5fa;--orn:#fbbf24;--r:10px;--r2:16px;--sh:0 4px 24px rgba(0,0,0,0.4);--shg:0 0 24px rgba(201,168,76,0.15);--tr:0.2s cubic-bezier(0.4,0,0.2,1);}
+.lm{--bg:#f0f0f5;--bg2:#e8e8f0;--sur:#fff;--sur2:#f5f5fa;--bdr:#d0d0e0;--bdrg:rgba(140,110,40,0.25);--tx:#1a1a2e;--tx2:#505068;--gold:#8C6E28;--gold-deep:#6a5020;--sh:0 4px 24px rgba(0,0,0,0.1);--shg:0 0 24px rgba(140,110,40,0.08);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Roboto',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;line-height:1.6;transition:background var(--tr),color var(--tr);}
+a{color:var(--gold);text-decoration:none;}
+button{cursor:pointer;font-family:'Roboto',sans-serif;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px;}
+#app{display:flex;min-height:100vh;}
+#sb{width:228px;min-width:228px;background:var(--bg2);border-right:1px solid var(--bdr);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:200;transition:width var(--tr),min-width var(--tr);}
+#sb.col{width:56px;min-width:56px;}
+#mn{flex:1;margin-left:228px;display:flex;flex-direction:column;min-height:100vh;transition:margin-left var(--tr);}
+#mn.col{margin-left:56px;}
+#tb{height:56px;background:var(--sur);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;padding:0 16px;position:sticky;top:0;z-index:100;}
+#ct{flex:1;padding:20px;padding-bottom:48px;overflow-x:hidden;}
+@media(max-width:700px){#sb{transform:translateX(-228px);}#sb.mop{transform:translateX(0);}#mn{margin-left:0!important;}}
+.brand{padding:16px 12px 12px;border-bottom:1px solid var(--bdrg);display:flex;align-items:center;gap:9px;}
+.bi{width:34px;height:34px;min-width:34px;background:linear-gradient(135deg,var(--gold),var(--gold-deep));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.bt h1{font-family:'Roboto Slab',serif;font-size:13px;color:var(--gold);font-weight:700;line-height:1.2;white-space:nowrap;}
+.bt p{font-size:10px;color:var(--tx2);white-space:nowrap;}
+.col .bt{display:none;}
+.ns{padding:5px 0;}
+.nl{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--tx2);text-transform:uppercase;padding:7px 12px 3px;}
+.col .nl{display:none;}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 12px;color:var(--tx2);font-size:13px;font-weight:500;cursor:pointer;border-left:3px solid transparent;transition:all var(--tr);overflow:hidden;white-space:nowrap;}
+.ni:hover{background:var(--sur);color:var(--tx);border-left-color:var(--gold-deep);}
+.ni.act{background:var(--sur);color:var(--gold);border-left-color:var(--gold);}
+.ni .ic{font-size:16px;min-width:18px;text-align:center;}
+.ni .lb{overflow:hidden;}
+.col .ni{padding:10px;justify-content:center;border-left:none;}
+.col .ni .lb{display:none;}
+.sbf{margin-top:auto;padding:9px 12px;border-top:1px solid var(--bdr);font-size:11px;color:var(--tx2);text-align:center;}
+.col .sbf{display:none;}
+.tbt{font-family:'Roboto Slab',serif;font-size:15px;font-weight:600;color:var(--tx);flex:1;overflow:hidden;white-space:nowrap;}
+.tbtn{background:var(--sur2);border:1px solid var(--bdr);color:var(--tx2);padding:6px 11px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:5px;transition:all var(--tr);white-space:nowrap;}
+.tbtn:hover{border-color:var(--gold);color:var(--gold);}
+.rp{background:linear-gradient(135deg,var(--gold-deep),var(--gold));color:#000;padding:3px 11px;border-radius:20px;font-family:'Roboto Mono',monospace;font-size:11px;font-weight:600;white-space:nowrap;}
+#cb{background:none;border:none;color:var(--tx2);font-size:19px;cursor:pointer;padding:4px;line-height:1;}
+#cb:hover{color:var(--gold);}
+.pg{display:none;}
+.pg.act{display:block;}
+.ph{margin-bottom:20px;}
+.ph h2{font-family:'Roboto Slab',serif;font-size:20px;font-weight:600;color:var(--tx);}
+.ph p{color:var(--tx2);font-size:13px;margin-top:3px;}
+.card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;box-shadow:var(--sh);margin-bottom:14px;}
+.cg{border-color:var(--bdrg)!important;}
+.ct{font-family:'Roboto Slab',serif;font-size:14px;font-weight:600;color:var(--tx);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:18px;}
+.sc{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r2);padding:14px;transition:all var(--tr);}
+.sc:hover{border-color:var(--bdrg);transform:translateY(-2px);}
+.sl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);margin-bottom:4px;}
+.sv{font-family:'Roboto Mono',monospace;font-size:19px;font-weight:600;color:var(--gold);}
+.ss{font-size:11px;color:var(--tx2);margin-top:2px;}
+.sic{font-size:20px;float:right;opacity:.5;}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:11px;}
+.fp{display:flex;flex-direction:column;gap:4px;}
+.fp.full{grid-column:1/-1;}
+label{font-size:11px;font-weight:700;color:var(--tx2);letter-spacing:.04em;text-transform:uppercase;}
+input,select,textarea{background:var(--bg2);border:1px solid var(--bdr);color:var(--tx);padding:8px 10px;border-radius:var(--r);font-family:'Roboto',sans-serif;font-size:13px;transition:border-color var(--tr);width:100%;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.1);}
+select option{background:var(--sur);}
+textarea{resize:vertical;min-height:68px;}
+.iu{position:relative;}
+.iu input{padding-right:44px;}
+.ul{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:var(--tx2);pointer-events:none;}
+.btn{padding:8px 15px;border-radius:var(--r);font-size:13px;font-weight:600;border:none;transition:all var(--tr);display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;}
+.bg{background:linear-gradient(135deg,var(--gold),var(--gold-deep));color:#000;box-shadow:0 2px 10px rgba(201,168,76,0.3);}
+.bg:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(201,168,76,0.5);}
+.bo{background:transparent;border:1px solid var(--bdr);color:var(--tx2);}
+.bo:hover{border-color:var(--gold);color:var(--gold);}
+.bdr{background:var(--red);color:#fff;}
+.bdr:hover{opacity:.85;}
+.bsm{padding:4px 10px;font-size:12px;}
+.blg{padding:11px 20px;font-size:14px;}
+.w100{width:100%;}
+.tw{overflow-x:auto;border-radius:var(--r);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--bg2);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);border-bottom:2px solid var(--bdr);white-space:nowrap;}
+td{padding:8px 10px;border-bottom:1px solid var(--bdr);color:var(--tx);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--sur2);}
+.mn{font-family:'Roboto Mono',monospace;}
+.bdg{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.dg{background:rgba(201,168,76,.15);color:var(--gold);}
+.dgn{background:rgba(74,222,128,.15);color:var(--grn);}
+.db{background:rgba(96,165,250,.15);color:var(--blu);}
+.drd{background:rgba(224,85,85,.15);color:var(--red);}
+.dgr{background:var(--bg2);color:var(--tx2);}
+.iit{width:100%;border-collapse:collapse;}
+.iit th{background:var(--bg2);padding:6px 7px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx2);}
+.iit td{padding:4px 3px;border-bottom:1px solid var(--bdr);vertical-align:middle;}
+.iit td input,.iit td select{padding:5px 6px;font-size:12px;}
+.itot{font-family:'Roboto Mono',monospace;font-weight:600;color:var(--gold);font-size:13px;padding:0 5px;white-space:nowrap;}
+.rr{background:none;border:none;color:var(--red);font-size:14px;cursor:pointer;padding:3px 6px;}
+.rr:hover{opacity:.7;}
+.tp{background:var(--bg2);border:1px solid var(--bdrg);border-radius:var(--r2);padding:14px;}
+.tr{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px;}
+.trf{border-top:2px solid var(--gold);margin-top:7px;padding-top:10px;font-family:'Roboto Slab',serif;font-size:15px;font-weight:700;color:var(--gold);}
+.vn{background:var(--gp);border:1px solid var(--bdrg);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--tx2);line-height:1.5;margin-top:9px;}
+.vn strong{color:var(--gold);}
+.al{display:flex;align-items:flex-start;gap:8px;padding:10px 13px;border-radius:var(--r);font-size:13px;margin-bottom:12px;}
+.ali{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);color:var(--blu);}
+.alw{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:var(--orn);}
+.als{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:var(--grn);}
+#tc{position:fixed;bottom:48px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:6px;}
+.toast{background:var(--sur);border:1px solid var(--bdr);padding:10px 15px;border-radius:var(--r);font-size:13px;color:var(--tx);box-shadow:var(--sh);animation:sli .3s ease;min-width:210px;}
+.tok{border-left:4px solid var(--grn);}
+.ter{border-left:4px solid var(--red);}
+.tin{border-left:4px solid var(--blu);}
+@keyframes sli{from{opacity:0;transform:translateX(28px);}to{opacity:1;transform:translateX(0);}}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;align-items:center;justify-content:center;padding:14px;}
+.mo.open{display:flex;}
+.md{background:var(--sur);border:1px solid var(--bdrg);border-radius:var(--r2);padding:22px;max-width:860px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shg),var(--sh);}
+.mdt{font-family:'Roboto Slab',serif;font-size:16px;font-weight:600;color:var(--tx);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--bdr);}
+.mdf{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--bdr);}
+.rg{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin-bottom:14px;}
+.rc{background:var(--bg2);border:1px solid var(--bdrg);border-radius:var(--r);padding:12px;text-align:center;}
+.rk{font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.rv{font-family:'Roboto Mono',monospace;font-size:16px;font-weight:600;color:var(--gold);}
+.rpp{font-size:10px;color:var(--tx2);margin-top:2px;}
+.es{text-align:center;padding:36px 16px;color:var(--tx2);}
+.es .ei{font-size:34px;margin-bottom:9px;opacity:.5;}
+.sbr{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 11px;display:flex;align-items:center;gap:7px;color:var(--tx2);}
+.sbr input{background:none;border:none;color:var(--tx);font-size:13px;flex:1;outline:none;}
+.dv{height:1px;background:var(--bdr);margin:14px 0;}
+.fl{display:flex;}.g8{gap:8px;}.g12{gap:12px;}.g16{gap:16px;}
+.f1{flex:1;}.ac{align-items:center;}.jb{justify-content:space-between;}.wr{flex-wrap:wrap;}
+.mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}.mb16{margin-bottom:16px;}
+.mt8{margin-top:8px;}.mt12{margin-top:12px;}
+.tg{color:var(--gold);}.t2{color:var(--tx2);}.trd{color:var(--red);}.tgn{color:var(--grn);}
+.fm{font-family:'Roboto Mono',monospace;}.bold{font-weight:700;}
+.tsm{font-size:12px;}.txs{font-size:11px;}
+.dn{display:none!important;}
+.rcmt{display:inline-flex;align-items:center;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);color:var(--blu);padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.stp{position:sticky;top:68px;}
+#fbar{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--bdrg);padding:3px 16px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tx2);z-index:300;}
+#fbar strong{color:var(--gold);}
+#fbar a{color:var(--gold);font-weight:600;}
+@media print{#sb,#tb,#fbar,#tc,.mo,#iab{display:none!important;}#mn{margin-left:0!important;}body{background:#fff;}.pg{display:none!important;}.pg.act{display:block!important;}}
+</style>
+</head>
+<body>
+<div id="app">
+<nav id="sb">
+  <div class="brand"><div class="bi">🪙</div><div class="bt"><h1>Al Dhahab Suite</h1><p>Dubai Gold Billing</p></div></div>
+  <div class="ns"><div class="nl">Main</div>
+    <div class="ni act" id="n-dashboard" onclick="nav('dashboard')"><span class="ic">📊</span><span class="lb">Dashboard</span></div>
+    <div class="ni" id="n-invoice"   onclick="nav('invoice')"  ><span class="ic">🧾</span><span class="lb">New Invoice</span></div>
+    <div class="ni" id="n-invoices"  onclick="nav('invoices')" ><span class="ic">📂</span><span class="lb">Invoices</span></div>
+  </div>
+  <div class="ns"><div class="nl">Management</div>
+    <div class="ni" id="n-customers" onclick="nav('customers')"><span class="ic">👥</span><span class="lb">Customers</span></div>
+    <div class="ni" id="n-inventory" onclick="nav('inventory')"><span class="ic">⚖️</span><span class="lb">Inventory</span></div>
+    <div class="ni" id="n-rates"     onclick="nav('rates')"    ><span class="ic">📈</span><span class="lb">Gold Rates</span></div>
+  </div>
+  <div class="ns"><div class="nl">Reports & Tax</div>
+    <div class="ni" id="n-vat"     onclick="nav('vat')"    ><span class="ic">🏛️</span><span class="lb">VAT Report</span></div>
+    <div class="ni" id="n-reports" onclick="nav('reports')" ><span class="ic">📋</span><span class="lb">Sales Reports</span></div>
+  </div>
+  <div class="ns"><div class="nl">System</div>
+    <div class="ni" id="n-settings" onclick="nav('settings')"><span class="ic">⚙️</span><span class="lb">Settings</span></div>
+    <div class="ni" id="n-guide"    onclick="nav('guide')"   ><span class="ic">📖</span><span class="lb">UAE VAT Guide</span></div>
+  </div>
+  <div class="sbf">Created by <strong>Smit Parekh</strong><br/><a href="https://www.youtube.com/@TheParekhShow" target="_blank">▶ @TheParekhShow</a></div>
+</nav>
+<div id="mn">
+  <div id="tb">
+    <button id="cb" onclick="toggleSB()">☰</button>
+    <div class="tbt" id="tbtitle">Dashboard</div>
+    <div class="rp" id="ratepill">24K: AED —</div>
+    <button class="tbtn" onclick="nav('rates')">🔄 Rates</button>
+    <button class="tbtn" id="thbtn" onclick="toggleTheme()">☀️ Day</button>
+    <button class="tbtn bg" onclick="nav('invoice')">＋ New Invoice</button>
+  </div>
+  <div id="ct">
+<!-- DASHBOARD -->
+<div id="pg-dashboard" class="pg act">
+  <div class="ph"><h2>Dashboard — Dubai Gold Souk</h2><p id="ddate"></p></div>
+  <div class="al alw">⚠️ <span><strong>UAE VAT:</strong> Jewellery B2C → <strong>5% VAT</strong> | Investment Gold ≥99% → <strong>0% Zero-rated</strong> | B2B VAT-registered → <strong>Reverse Charge (RCM)</strong> — Cabinet Decision 127/2024 eff. 25 Feb 2025.</span></div>
+  <div class="sg">
+    <div class="sc"><div class="sic">🧾</div><div class="sl">Today's Invoices</div><div class="sv" id="ds0">0</div><div class="ss">Issued today</div></div>
+    <div class="sc"><div class="sic">💰</div><div class="sl">Today's Revenue</div><div class="sv" id="ds1">AED 0</div><div class="ss">Gross sales</div></div>
+    <div class="sc"><div class="sic">🏛️</div><div class="sl">VAT Collected</div><div class="sv" id="ds2">AED 0</div><div class="ss">5% → FTA</div></div>
+    <div class="sc"><div class="sic">⚖️</div><div class="sl">Gold Sold Today</div><div class="sv" id="ds3">0 g</div><div class="ss">All karats</div></div>
+    <div class="sc"><div class="sic">👥</div><div class="sl">Customers</div><div class="sv" id="ds4">0</div><div class="ss">Registered</div></div>
+    <div class="sc"><div class="sic">📦</div><div class="sl">Inventory Items</div><div class="sv" id="ds5">0</div><div class="ss">Active stock</div></div>
+  </div>
+  <div class="card cg mb12">
+    <div class="ct">📈 Live Gold Reference Rates (AED/gram)</div>
+    <div class="rg">
+      <div class="rc"><div class="rk">24K (999) Investment</div><div class="rv" id="r24">—</div><div class="rpp">per gram · Zero-rated</div></div>
+      <div class="rc"><div class="rk">22K (916)</div><div class="rv" id="r22">—</div><div class="rpp">per gram · 5% VAT</div></div>
+      <div class="rc"><div class="rk">21K (875)</div><div class="rv" id="r21">—</div><div class="rpp">per gram · 5% VAT</div></div>
+      <div class="rc"><div class="rk">18K (750)</div><div class="rv" id="r18">—</div><div class="rpp">per gram · 5% VAT</div></div>
+    </div>
+    <div class="txs t2">Last updated: <span id="rupd">Not set — go to Gold Rates</span></div>
+  </div>
+  <div class="card">
+    <div class="ct fl jb ac"><span>🧾 Recent Invoices</span><button class="btn bo bsm" onclick="nav('invoices')">View All →</button></div>
+    <div class="tw"><table><thead><tr><th>Invoice #</th><th>Customer</th><th>Type</th><th>Total</th><th>VAT</th><th>Status</th><th>Date</th></tr></thead><tbody id="dinv"><tr><td colspan="7"><div class="es"><div class="ei">🧾</div><p>No invoices yet.</p></div></td></tr></tbody></table></div>
+  </div>
+</div>
+
+<!-- NEW INVOICE -->
+<div id="pg-invoice" class="pg">
+  <div class="ph"><h2>New Tax Invoice</h2><p>UAE FTA-compliant · Auto VAT calculation</p></div>
+  <div class="card cg mb12">
+    <div class="ct">🏛️ Transaction & VAT Type</div>
+    <div class="fg" style="grid-template-columns:repeat(auto-fit,minmax(195px,1fr))">
+      <div class="fp"><label>Transaction Category</label>
+        <select id="ivt" onchange="onVTC()">
+          <option value="jb2c">🔶 Jewellery — B2C (5% VAT)</option>
+          <option value="jb2b">🔷 Jewellery — B2B Reverse Charge (RCM)</option>
+          <option value="iz">🟢 Investment Gold ≥99% — Zero-Rated (0%)</option>
+          <option value="nb2c">🟠 Non-Investment Gold — B2C (5% VAT)</option>
+          <option value="nb2b">🔵 Non-Investment Gold — B2B RCM</option>
+        </select>
+      </div>
+      <div class="fp"><label>Currency</label>
+        <select id="icur"><option>AED</option><option>USD</option><option>EUR</option><option>GBP</option><option>INR</option></select>
+      </div>
+    </div>
+    <div id="vtinfo" class="vn mt8"><strong>5% VAT:</strong> Jewellery to end consumers. Seller collects &amp; remits to FTA.</div>
+  </div>
+  <div class="fl g16 wr">
+    <div style="flex:2;min-width:280px;">
+      <div class="card">
+        <div class="ct">🏪 Seller Information</div>
+        <div class="fg">
+          <div class="fp"><label>Business Name</label><input id="isn" type="text" placeholder="Your Shop — Gold Souk"/></div>
+          <div class="fp"><label>TRN</label><input id="ist" type="text" placeholder="100-XXXXXXXX-XXXXXX"/></div>
+          <div class="fp"><label>Address</label><input id="isa" type="text" placeholder="Shop No., Deira Gold Souk"/></div>
+          <div class="fp"><label>Phone / Email</label><input id="isc" type="text" placeholder="+971 4 XXX XXXX"/></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">👤 Customer Information</div>
+        <div class="fp mb12"><label>Quick Select</label><select id="ics" onchange="fillC()"><option value="">— Saved Customer —</option></select></div>
+        <div class="fg">
+          <div class="fp"><label>Name</label><input id="icn" type="text" placeholder="Full name or company"/></div>
+          <div class="fp"><label>Customer TRN (B2B)</label><input id="ict" type="text" placeholder="Required for RCM"/></div>
+          <div class="fp"><label>Nationality</label><input id="icna" type="text" placeholder="UAE / India / UK…"/></div>
+          <div class="fp"><label>Phone</label><input id="icp" type="text" placeholder="+971…"/></div>
+          <div class="fp"><label>Passport / Emirates ID</label><input id="icid" type="text" placeholder="For tourist VAT refund"/></div>
+          <div class="fp"><label>Email</label><input id="ice" type="text" placeholder="customer@email.com"/></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">📋 Invoice Details</div>
+        <div class="fg">
+          <div class="fp"><label>Invoice Number</label><input id="inum" type="text" placeholder="INV-2025-0001"/></div>
+          <div class="fp"><label>Invoice Date</label><input id="idate" type="date"/></div>
+          <div class="fp"><label>Due Date</label><input id="idue" type="date"/></div>
+          <div class="fp"><label>Payment Method</label>
+            <select id="ipay"><option>Cash (AED)</option><option>Bank Transfer</option><option>Credit Card</option><option>Cheque</option><option>Gold-in-Lieu</option><option>Crypto (USDT)</option></select>
+          </div>
+          <div class="fp"><label>Payment Status</label>
+            <select id="ista"><option value="paid">Paid</option><option value="pending">Pending</option><option value="partial">Partial</option><option value="cancelled">Cancelled</option></select>
+          </div>
+          <div class="fp"><label>Reference / PO No.</label><input id="iref" type="text" placeholder="Optional"/></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">📦 Gold Items</div>
+        <div class="tw mb12">
+          <table class="iit">
+            <thead><tr><th style="min-width:110px">Description</th><th>Karat</th><th>Purity</th><th>Wt(g)</th><th>Rate/g</th><th>Making/g</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead>
+            <tbody id="ibody"></tbody>
+          </table>
+        </div>
+        <button class="btn bo bsm" onclick="addItem()">＋ Add Item</button>
+      </div>
+      <div class="card">
+        <div class="ct">📝 Notes & Terms</div>
+        <div class="fg">
+          <div class="fp full"><label>Invoice Notes</label><textarea id="inotes" placeholder="Hallmark verified. UAE gold purity standards. Tourist VAT refund eligible at Dubai Airport (Planet Tax Free)."></textarea></div>
+          <div class="fp full"><label>Terms & Conditions</label><textarea id="iterms" rows="2" placeholder="All sales final. Certified by Dubai Central Laboratory."></textarea></div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:260px;">
+      <div class="stp">
+        <div class="card cg">
+          <div class="ct">🧮 Invoice Totals</div>
+          <div class="tr"><span class="t2">Gold Value</span><span class="fm" id="tgold">AED 0.00</span></div>
+          <div class="tr"><span class="t2">Making Charges</span><span class="fm" id="tmak">AED 0.00</span></div>
+          <div class="tr"><span class="t2 bold">Subtotal</span><span class="fm bold" id="tsub">AED 0.00</span></div>
+          <div class="tr"><span class="t2">Discount (AED)</span><input type="number" id="idisc" value="0" min="0" step="0.01" oninput="calcTotals()" style="width:95px;padding:5px 7px;font-size:12px;text-align:right;"/></div>
+          <div class="tr"><span class="t2" id="vtlbl">VAT (5%)</span><span class="fm tg" id="tvat">AED 0.00</span></div>
+          <div class="tr trf"><span>TOTAL DUE</span><span id="tfin">AED 0.00</span></div>
+          <div class="tr txs t2 mt8"><span>Total Weight</span><span class="fm" id="twt">0.000 g</span></div>
+          <div class="vn" id="vnp"><strong>VAT 5%:</strong> Seller collects &amp; remits to FTA.</div>
+          <div class="dv"></div>
+          <div class="fl g8 wr">
+            <button class="btn bg blg w100" onclick="genInvoice()">🧾 Preview Invoice</button>
+            <button class="btn bo w100" onclick="saveDraft()">💾 Save Draft</button>
+            <button class="btn bo w100" onclick="clearForm()">🗑️ Clear Form</button>
+          </div>
+        </div>
+        <div class="card mt8">
+          <div class="ct">🔢 Quick Calculator</div>
+          <div class="fp mb8"><label>Karat</label><select id="qck" onchange="qCalc()"><option value="24">24K (999)</option><option value="22" selected>22K (916)</option><option value="21">21K (875)</option><option value="18">18K (750)</option></select></div>
+          <div class="fp mb8"><label>Weight (g)</label><div class="iu"><input type="number" id="qcw" placeholder="0.000" step="0.001" oninput="qCalc()" style="padding-right:26px"/><span class="ul">g</span></div></div>
+          <div class="fp mb12"><label>Making (AED/g)</label><div class="iu"><input type="number" id="qcm" placeholder="0.00" step="0.01" oninput="qCalc()" style="padding-right:36px"/><span class="ul">AED</span></div></div>
+          <div style="background:var(--bg2);border:1px solid var(--bdrg);border-radius:8px;padding:10px;font-size:12px;">
+            <div class="fl jb mb8"><span class="t2">Gold Value</span><span class="fm" id="qcgv">AED 0.00</span></div>
+            <div class="fl jb mb8"><span class="t2">Making</span><span class="fm" id="qcmv">AED 0.00</span></div>
+            <div class="fl jb mb8"><span class="t2">Subtotal</span><span class="fm" id="qcst">AED 0.00</span></div>
+            <div class="fl jb mb8"><span class="t2">VAT (5%)</span><span class="fm" id="qcvt">AED 0.00</span></div>
+            <div class="fl jb bold tg"><span>Total</span><span class="fm" id="qctot">AED 0.00</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICES LIST -->
+<div id="pg-invoices" class="pg">
+  <div class="ph"><h2>Invoice Registry</h2><p>All issued invoices with UAE VAT classification</p></div>
+  <div class="card">
+    <div class="fl g8 ac wr mb12">
+      <div class="sbr f1" style="min-width:170px"><span>🔍</span><input type="text" id="isrch" placeholder="Search invoices…" oninput="renderInvList()"/></div>
+      <select id="ifs" onchange="renderInvList()" style="background:var(--bg2);border:1px solid var(--bdr);color:var(--tx);padding:7px 10px;border-radius:var(--r);font-size:13px;">
+        <option value="">All Statuses</option><option value="paid">Paid</option><option value="pending">Pending</option><option value="partial">Partial</option><option value="cancelled">Cancelled</option>
+      </select>
+      <select id="ift" onchange="renderInvList()" style="background:var(--bg2);border:1px solid var(--bdr);color:var(--tx);padding:7px 10px;border-radius:var(--r);font-size:13px;">
+        <option value="">All Types</option><option value="jb2c">Jewellery B2C</option><option value="jb2b">Jewellery RCM</option><option value="iz">Investment 0%</option><option value="nb2c">Non-Inv B2C</option><option value="nb2b">Non-Inv RCM</option>
+      </select>
+      <button class="btn bg" onclick="nav('invoice')">＋ New Invoice</button>
+    </div>
+    <div class="tw"><table><thead><tr><th>Invoice #</th><th>Date</th><th>Customer</th><th>Type</th><th>Taxable</th><th>VAT</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead><tbody id="invlist"><tr><td colspan="9"><div class="es"><div class="ei">📂</div><p>No invoices.</p></div></td></tr></tbody></table></div>
+  </div>
+</div>
+
+<!-- CUSTOMERS -->
+<div id="pg-customers" class="pg">
+  <div class="ph"><h2>Customer Registry</h2><p>Manage B2C, B2B VAT-registered and tourist buyers</p></div>
+  <div class="fl g16 wr">
+    <div style="flex:1;min-width:260px;">
+      <div class="card">
+        <div class="ct" id="cft">➕ Add Customer</div>
+        <div class="fg">
+          <div class="fp"><label>Full Name / Company</label><input id="cfn" type="text" placeholder="Ahmed Al Rashid"/></div>
+          <div class="fp"><label>Customer Type</label><select id="cfty"><option value="individual">Individual (B2C)</option><option value="business">Business (B2B)</option><option value="tourist">Tourist</option><option value="vip">VIP Client</option></select></div>
+          <div class="fp"><label>Phone</label><input id="cfph" type="text" placeholder="+971…"/></div>
+          <div class="fp"><label>Email</label><input id="cfem" type="text" placeholder="email@example.com"/></div>
+          <div class="fp"><label>TRN (VAT-registered)</label><input id="cftr" type="text" placeholder="For B2B RCM invoices"/></div>
+          <div class="fp"><label>Nationality</label><input id="cfna" type="text" placeholder="UAE / India / UK…"/></div>
+          <div class="fp"><label>Passport / Emirates ID</label><input id="cfid" type="text" placeholder="For tourist refund"/></div>
+          <div class="fp"><label>Address</label><input id="cfad" type="text" placeholder="City, Country"/></div>
+          <div class="fp full"><label>Notes</label><textarea id="cfno" rows="2" placeholder="VIP preferences, credit terms…"></textarea></div>
+        </div>
+        <input type="hidden" id="cfeid"/>
+        <div class="fl g8 mt8">
+          <button class="btn bg" onclick="saveCust()">💾 Save Customer</button>
+          <button class="btn bo" onclick="clearCF()">Clear</button>
+        </div>
+      </div>
+    </div>
+    <div style="flex:2;min-width:280px;">
+      <div class="card">
+        <div class="ct">👥 Customer List</div>
+        <div class="sbr mb12"><span>🔍</span><input type="text" id="csrch" placeholder="Search customers…" oninput="renderCList()"/></div>
+        <div class="tw"><table><thead><tr><th>Name</th><th>Type</th><th>Phone</th><th>TRN</th><th>Nationality</th><th>Actions</th></tr></thead><tbody id="clist"><tr><td colspan="6"><div class="es"><div class="ei">👥</div><p>No customers.</p></div></td></tr></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTORY -->
+<div id="pg-inventory" class="pg">
+  <div class="ph"><h2>Gold Inventory</h2><p>Track stock by karat, weight and hallmark</p></div>
+  <div class="fl g16 wr">
+    <div style="flex:1;min-width:260px;">
+      <div class="card">
+        <div class="ct" id="ift2">➕ Add Stock Item</div>
+        <div class="fg">
+          <div class="fp"><label>Item Name</label><input id="ifn" type="text" placeholder="Gold Necklace 22K"/></div>
+          <div class="fp"><label>Category</label><select id="ifcat"><option>Necklace</option><option>Bracelet</option><option>Ring</option><option>Earrings</option><option>Pendant</option><option>Bangle</option><option>Coin</option><option>Bar / Ingot</option><option>Chain</option><option>Other</option></select></div>
+          <div class="fp"><label>Karat</label><select id="ifk"><option value="24">24K (999)</option><option value="22" selected>22K (916)</option><option value="21">21K (875)</option><option value="18">18K (750)</option></select></div>
+          <div class="fp"><label>Weight (g)</label><div class="iu"><input id="ifw" type="number" placeholder="0.000" step="0.001" style="padding-right:26px"/><span class="ul">g</span></div></div>
+          <div class="fp"><label>Hallmark / Cert #</label><input id="ifh" type="text" placeholder="DCL-XXXXXX"/></div>
+          <div class="fp"><label>Purchase Price (AED)</label><input id="ifb" type="number" placeholder="0.00"/></div>
+          <div class="fp"><label>Selling Price (AED)</label><input id="ifs2" type="number" placeholder="0.00"/></div>
+          <div class="fp"><label>Making Charge (AED/g)</label><input id="ifm" type="number" placeholder="0.00"/></div>
+          <div class="fp"><label>Qty in Stock</label><input id="ifq" type="number" placeholder="1" value="1"/></div>
+          <div class="fp"><label>VAT Category</label><select id="ifv"><option value="5">Standard 5% (Jewellery)</option><option value="0">Zero-Rated (Investment)</option><option value="rcm">RCM — Reverse Charge</option></select></div>
+          <div class="fp full"><label>Notes</label><textarea id="ifno" rows="2" placeholder="Design, origin, gemstones…"></textarea></div>
+        </div>
+        <input type="hidden" id="ifeid"/>
+        <div class="fl g8 mt8">
+          <button class="btn bg" onclick="saveStk()">💾 Save Item</button>
+          <button class="btn bo" onclick="clearIF()">Clear</button>
+        </div>
+      </div>
+    </div>
+    <div style="flex:2;min-width:280px;">
+      <div class="card">
+        <div class="ct">📦 Stock List</div>
+        <div class="fl g8 mb12 wr">
+          <div class="sbr f1"><span>🔍</span><input type="text" id="ssrch" placeholder="Search inventory…" oninput="renderStk()"/></div>
+          <select id="skf" onchange="renderStk()" style="background:var(--bg2);border:1px solid var(--bdr);color:var(--tx);padding:7px 10px;border-radius:var(--r);font-size:13px;">
+            <option value="">All Karats</option><option value="24">24K</option><option value="22">22K</option><option value="21">21K</option><option value="18">18K</option>
+          </select>
+        </div>
+        <div class="tw"><table><thead><tr><th>Item</th><th>Karat</th><th>Weight</th><th>Qty</th><th>Sell Price</th><th>VAT</th><th>Actions</th></tr></thead><tbody id="slist"><tr><td colspan="7"><div class="es"><div class="ei">⚖️</div><p>No items.</p></div></td></tr></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GOLD RATES -->
+<div id="pg-rates" class="pg">
+  <div class="ph"><h2>Gold Rate Manager</h2><p>Set today's AED rates — DGCX / Deira Gold Souk reference</p></div>
+  <div class="fl g16 wr">
+    <div style="flex:1;min-width:240px;">
+      <div class="card cg">
+        <div class="ct">✏️ Set Today's Rates (AED/gram)</div>
+        <div class="fp mb12"><label>24K (999) — Investment Grade</label><div class="iu"><input id="rf24" type="number" placeholder="362.50" step="0.01" style="padding-right:40px"/><span class="ul">AED</span></div></div>
+        <div class="fp mb12"><label>22K (916)</label><div class="iu"><input id="rf22" type="number" placeholder="332.00" step="0.01" style="padding-right:40px"/><span class="ul">AED</span></div></div>
+        <div class="fp mb12"><label>21K (875)</label><div class="iu"><input id="rf21" type="number" placeholder="316.90" step="0.01" style="padding-right:40px"/><span class="ul">AED</span></div></div>
+        <div class="fp mb12"><label>18K (750)</label><div class="iu"><input id="rf18" type="number" placeholder="271.60" step="0.01" style="padding-right:40px"/><span class="ul">AED</span></div></div>
+        <button class="btn bg w100" onclick="saveRates()">💾 Save &amp; Apply Rates</button>
+      </div>
+      <div class="card mt8">
+        <div class="ct">📊 Purity Reference</div>
+        <div class="tw"><table><thead><tr><th>Karat</th><th>Fineness</th><th>Purity</th><th>VAT</th></tr></thead><tbody>
+          <tr><td><strong>24K</strong></td><td class="mn">999</td><td class="mn">99.9%</td><td><span class="bdg dgn">Zero-Rated</span></td></tr>
+          <tr><td><strong>22K</strong></td><td class="mn">916</td><td class="mn">91.6%</td><td><span class="bdg dg">5% VAT</span></td></tr>
+          <tr><td><strong>21K</strong></td><td class="mn">875</td><td class="mn">87.5%</td><td><span class="bdg dg">5% VAT</span></td></tr>
+          <tr><td><strong>18K</strong></td><td class="mn">750</td><td class="mn">75.0%</td><td><span class="bdg dg">5% VAT</span></td></tr>
+        </tbody></table></div>
+      </div>
+    </div>
+    <div style="flex:2;min-width:270px;">
+      <div class="card"><div class="ct">📅 Rate History</div>
+        <div class="tw"><table><thead><tr><th>Date</th><th>24K</th><th>22K</th><th>21K</th><th>18K</th></tr></thead><tbody id="rhist"><tr><td colspan="5"><div class="es" style="padding:22px"><div class="ei">📈</div><p>No history.</p></div></td></tr></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VAT REPORT -->
+<div id="pg-vat" class="pg">
+  <div class="ph"><h2>VAT Report — FTA Compliance</h2><p>UAE Federal Tax Authority quarterly/monthly VAT summary</p></div>
+  <div class="al ali">ℹ️ <span>VAT returns filed quarterly (large traders: monthly) with FTA. Deadline: 28th of month following tax period. Mandatory if turnover &gt; AED 375,000/yr.</span></div>
+  <div class="card">
+    <div class="fl g12 ac wr mb12">
+      <div class="fp" style="flex:1;min-width:145px;"><label>From Date</label><input id="vrfr" type="date"/></div>
+      <div class="fp" style="flex:1;min-width:145px;"><label>To Date</label><input id="vrto" type="date"/></div>
+      <button class="btn bg mt8" onclick="genVAT()">📊 Generate Report</button>
+      <button class="btn bo mt8" onclick="window.print()">🖨️ Print</button>
+    </div>
+    <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(135px,1fr));margin-bottom:14px;">
+      <div class="sc"><div class="sl">Standard 5%</div><div class="sv" id="vrs">AED 0</div><div class="ss">Jewellery / B2C</div></div>
+      <div class="sc"><div class="sl">Zero-Rated 0%</div><div class="sv tgn" id="vrz">AED 0</div><div class="ss">Investment Gold</div></div>
+      <div class="sc"><div class="sl">RCM Transactions</div><div class="sv" style="color:var(--blu)" id="vrr">AED 0</div><div class="ss">B2B Reverse Charge</div></div>
+      <div class="sc"><div class="sl">VAT Collected</div><div class="sv trd" id="vrv">AED 0</div><div class="ss">Output VAT → FTA</div></div>
+    </div>
+    <div class="tw"><table><thead><tr><th>Invoice #</th><th>Date</th><th>Customer</th><th>Taxable Amt</th><th>VAT Type</th><th>VAT Amount</th><th>Total</th></tr></thead><tbody id="vrbody"><tr><td colspan="7"><div class="es"><div class="ei">🏛️</div><p>Select dates and generate.</p></div></td></tr></tbody></table></div>
+  </div>
+</div>
+
+<!-- SALES REPORTS -->
+<div id="pg-reports" class="pg">
+  <div class="ph"><h2>Sales Reports</h2><p>Revenue, weight and karat analytics</p></div>
+  <div class="card">
+    <div class="fl g12 ac wr mb12">
+      <div class="fp" style="flex:1;min-width:145px;"><label>From</label><input id="rpfr" type="date"/></div>
+      <div class="fp" style="flex:1;min-width:145px;"><label>To</label><input id="rpto" type="date"/></div>
+      <button class="btn bg mt8" onclick="genSales()">📊 Generate</button>
+      <button class="btn bo mt8" onclick="window.print()">🖨️ Print</button>
+    </div>
+    <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(135px,1fr));margin-bottom:14px;">
+      <div class="sc"><div class="sl">Total Revenue</div><div class="sv" id="rprev">AED 0</div></div>
+      <div class="sc"><div class="sl">Invoices</div><div class="sv" id="rpcnt">0</div></div>
+      <div class="sc"><div class="sl">Gold Sold</div><div class="sv" id="rpwt">0 g</div></div>
+      <div class="sc"><div class="sl">Avg Invoice</div><div class="sv" id="rpavg">AED 0</div></div>
+    </div>
+    <div class="ct">Sales by Karat</div>
+    <div class="tw"><table><thead><tr><th>Karat</th><th>Invoices</th><th>Weight (g)</th><th>Revenue</th><th>VAT</th></tr></thead><tbody id="rpbody"><tr><td colspan="5"><div class="es"><div class="ei">📊</div><p>Generate report to see data.</p></div></td></tr></tbody></table></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="pg-settings" class="pg">
+  <div class="ph"><h2>Business Settings</h2><p>Shop profile, billing defaults and data management</p></div>
+  <div class="fl g16 wr">
+    <div style="flex:1;min-width:260px;">
+      <div class="card">
+        <div class="ct">🏪 Shop Profile</div>
+        <div class="fg">
+          <div class="fp full"><label>Business Name</label><input id="sn" type="text" placeholder="Your Gold Shop"/></div>
+          <div class="fp full"><label>TRN (Tax Registration Number)</label><input id="st" type="text" placeholder="100-XXXXXXXX-XXXXXX"/></div>
+          <div class="fp full"><label>Trade License Number</label><input id="sl" type="text" placeholder="DED / DMCC License No."/></div>
+          <div class="fp full"><label>Address</label><textarea id="sa" rows="2" placeholder="Shop No., Gold Souk, Deira, Dubai, UAE"></textarea></div>
+          <div class="fp"><label>Phone</label><input id="sph" type="text" placeholder="+971 4 XXX XXXX"/></div>
+          <div class="fp"><label>Email</label><input id="sem" type="text" placeholder="info@yourshop.ae"/></div>
+          <div class="fp"><label>Website</label><input id="swb" type="text" placeholder="www.yourshop.ae"/></div>
+          <div class="fp"><label>WhatsApp</label><input id="swa" type="text" placeholder="+971 XX XXX XXXX"/></div>
+          <div class="fp"><label>Invoice Prefix</label><input id="spfx" type="text" placeholder="INV-2025-" value="INV-2025-"/></div>
+          <div class="fp full"><label>Invoice Footer</label><textarea id="sft" rows="2" placeholder="Thank you for your business."></textarea></div>
+        </div>
+        <button class="btn bg mt8" onclick="saveCfg()">💾 Save Settings</button>
+      </div>
+    </div>
+    <div style="flex:1;min-width:260px;">
+      <div class="card mb12">
+        <div class="ct">🔢 Billing Defaults</div>
+        <div class="fg">
+          <div class="fp"><label>Default VAT Type</label><select id="sdv"><option value="jb2c">Jewellery B2C (5%)</option><option value="iz">Investment (0%)</option><option value="jb2b">Jewellery RCM</option></select></div>
+          <div class="fp"><label>Default Karat</label><select id="sdk"><option value="22">22K</option><option value="21">21K</option><option value="24">24K</option><option value="18">18K</option></select></div>
+          <div class="fp"><label>Default Making (AED/g)</label><input id="sdm" type="number" placeholder="10.00" value="10"/></div>
+          <div class="fp"><label>Default Currency</label><select id="sdc"><option>AED</option><option>USD</option><option>EUR</option></select></div>
+          <div class="fp"><label>Payment Terms (days)</label><input id="sdt" type="number" placeholder="0" value="0"/></div>
+        </div>
+      </div>
+      <div class="card mb12">
+        <div class="ct">🗄️ Data Management</div>
+        <div class="fl g8 wr">
+          <button class="btn bo" onclick="exportD()">📥 Export JSON</button>
+          <button class="btn bo" onclick="document.getElementById('impf').click()">📤 Import JSON</button>
+          <input type="file" id="impf" accept=".json" class="dn" onchange="importD(event)"/>
+          <button class="btn bdr bsm" onclick="clearAll()">🗑️ Clear All Data</button>
+        </div>
+        <div class="txs t2 mt8">Data stored in browser. Export regularly. Connect to Google Sheets via Google Apps Script for cloud sync.</div>
+      </div>
+      <div class="card">
+        <div class="ct">📱 PWA Install</div>
+        <p class="t2 tsm mb8">Install for offline access:</p>
+        <button class="btn bg dn" id="pwabtn" onclick="installPWA()">📲 Install App</button>
+        <div class="txs t2 mt8"><strong>Windows:</strong> Click install icon in address bar<br/><strong>Android:</strong> Tap ⋮ → Add to Home Screen<br/><strong>iOS:</strong> Tap Share → Add to Home Screen</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UAE VAT GUIDE -->
+<div id="pg-guide" class="pg">
+  <div class="ph"><h2>UAE Gold VAT Guide</h2><p>Complete reference for Dubai Gold Souk traders — 2025/2026</p></div>
+  <div class="al als">✅ <span>Reflects <strong>Cabinet Decision No. 127 of 2024</strong>, effective 25 February 2025. Consult a UAE tax consultant for your specific situation.</span></div>
+  <div class="card mb12">
+    <div class="ct">📋 Three VAT Scenarios for Gold</div>
+    <div class="tw"><table><thead><tr><th>Scenario</th><th>Gold Type</th><th>Transaction</th><th>VAT Rate</th><th>Who Pays</th><th>Invoice Note</th></tr></thead><tbody>
+      <tr><td><strong>1. Retail Jewellery</strong></td><td>22K/21K/18K jewellery</td><td>B2C (any buyer)</td><td><span class="bdg dg">5%</span></td><td>Seller → FTA</td><td>Standard Tax Invoice with TRN</td></tr>
+      <tr><td><strong>2. Investment Gold</strong></td><td>≥99% purity (24K bars/coins)</td><td>B2B (both VAT-reg.)</td><td><span class="bdg dgn">0%</span></td><td>Zero-rated</td><td>"Zero-rated — Investment Precious Metal"</td></tr>
+      <tr><td><strong>3. Reverse Charge</strong></td><td>Any gold/jewellery</td><td>B2B (both UAE VAT-reg.)</td><td><span class="bdg db">RCM</span></td><td>Buyer self-accounts</td><td>"VAT to be accounted by recipient under RCM"</td></tr>
+    </tbody></table></div>
+  </div>
+  <div class="g2" style="margin-bottom:14px;">
+    <div class="card"><div class="ct">📌 Key VAT Rules</div>
+      <ul style="font-size:13px;color:var(--tx2);line-height:2;list-style:none;padding:0;">
+        <li>🟡 Standard VAT: <strong style="color:var(--tx)">5%</strong> on jewellery</li>
+        <li>🟢 Investment gold ≥99%: <strong class="tgn">Zero-rated (0%)</strong></li>
+        <li>🔵 B2B VAT-registered: <strong style="color:var(--blu)">RCM applies</strong></li>
+        <li>📋 Mandatory TRN: turnover &gt; <strong style="color:var(--tx)">AED 375,000</strong></li>
+        <li>📋 Voluntary TRN: above <strong style="color:var(--tx)">AED 187,500</strong></li>
+        <li>🏛️ Filing: Quarterly / monthly with FTA</li>
+        <li>📅 Deadline: 28th of following month</li>
+        <li>🏢 Corporate Tax: 9% on profits &gt; AED 375,000</li>
+        <li>🛂 Tourist VAT refund via Planet Tax Free</li>
+        <li>💱 Min. tourist purchase: AED 250 per invoice</li>
+        <li>📄 Records: min <strong style="color:var(--tx)">5 years</strong></li>
+      </ul>
+    </div>
+    <div class="card"><div class="ct">🧾 Invoice Must Include (FTA)</div>
+      <ul style="font-size:13px;color:var(--tx2);line-height:2;list-style:none;padding:0;">
+        <li>📝 Title: "Tax Invoice / فاتورة ضريبية"</li>
+        <li>🔢 Sequential invoice number</li>
+        <li>📅 Invoice date</li>
+        <li>🏪 Seller name, address, <strong class="tg">TRN</strong></li>
+        <li>👤 Buyer name (B2B: buyer TRN too)</li>
+        <li>⚖️ Item description, weight (g), karat</li>
+        <li>💰 Rate per gram (AED)</li>
+        <li>🔧 Making charges (separate line)</li>
+        <li>💵 Taxable amount (ex-VAT)</li>
+        <li>% VAT rate applied</li>
+        <li>💰 VAT amount in AED</li>
+        <li>🧮 Total including VAT</li>
+        <li>📋 RCM: "Reverse Charge applies"</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card"><div class="ct">🔗 UAE Resources</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:9px;font-size:13px;">
+      <a href="https://tax.gov.ae" target="_blank" style="padding:11px;background:var(--bg2);border-radius:8px;display:block;">🏛️ FTA — Federal Tax Authority<br/><span class="txs t2">tax.gov.ae</span></a>
+      <a href="https://www.dmcc.ae" target="_blank" style="padding:11px;background:var(--bg2);border-radius:8px;display:block;">🏢 DMCC Dubai Multi Commodities<br/><span class="txs t2">dmcc.ae</span></a>
+      <a href="https://dcl.gov.ae" target="_blank" style="padding:11px;background:var(--bg2);border-radius:8px;display:block;">🔬 Dubai Central Laboratory<br/><span class="txs t2">dcl.gov.ae</span></a>
+      <a href="https://planetpayment.com/tax-free" target="_blank" style="padding:11px;background:var(--bg2);border-radius:8px;display:block;">✈️ Planet Tax Free (Tourist Refund)<br/><span class="txs t2">planetpayment.com</span></a>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /ct -->
+</div><!-- /mn -->
+</div><!-- /app -->
+<div id="tc"></div>
+<!-- INVOICE MODAL -->
+<div class="mo" id="invmo">
+  <div class="md">
+    <div class="mdt">🧾 Tax Invoice Preview</div>
+    <div id="invprev"></div>
+    <div class="mdf">
+      <button class="btn bo" onclick="closeM('invmo')">✕ Close</button>
+      <button class="btn bo" onclick="saveInv()">💾 Save Invoice</button>
+      <button class="btn bg" onclick="printInv()">🖨️ Print Invoice</button>
+    </div>
+  </div>
+</div>
+<!-- CONFIRM MODAL -->
+<div class="mo" id="confmo">
+  <div class="md" style="max-width:370px;">
+    <div class="mdt" id="conft">Confirm</div>
+    <p id="confm" style="font-size:14px;color:var(--tx2);margin-bottom:14px;"></p>
+    <div class="mdf">
+      <button class="btn bo" onclick="closeM('confmo')">Cancel</button>
+      <button class="btn bdr" id="confok">Confirm</button>
+    </div>
+  </div>
+</div>
+<div id="fbar">
+  <span>Created by <strong>Smit Parekh</strong></span>
+  <a href="https://www.youtube.com/@TheParekhShow" target="_blank">▶ @TheParekhShow</a>
+  <span>Al Dhahab Suite v2.0 — UAE VAT Compliant 2025/2026</span>
+</div>
+<script>
+// ── STORE ──
+const DB={
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{toast('Storage full','ter');}},
+  del(k){localStorage.removeItem(k);}
+};
+let invs   = DB.get('gd2_inv',[]);
+let custs  = DB.get('gd2_cust',[]);
+let stk    = DB.get('gd2_stk',[]);
+let rh     = DB.get('gd2_rh',[]);
+let rates  = DB.get('gd2_rates',{k24:0,k22:0,k21:0,k18:0,ts:''});
+let cfg    = DB.get('gd2_cfg',{n:'',t:'',l:'',a:'',ph:'',em:'',wb:'',wa:'',pfx:'INV-2025-',ft:'Thank you.',dv:'jb2c',dk:'22',dm:'10',dc:'AED',dterm:'0'});
+let ctr    = DB.get('gd2_ctr',1);
+let dark   = DB.get('gd2_dark',true);
+let curInv = null;
+let pwaP   = null;
+let scoll  = false;
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!dark) document.body.classList.add('lm');
+  updTheme();
+  loadCfg();
+  initDates();
+  updRates();
+  updCDD();
+  renderDash();
+  genNum();
+  addItem();
+  document.getElementById('ddate').textContent=new Date().toLocaleDateString('en-AE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();pwaP=e;document.getElementById('pwabtn').classList.remove('dn');});
+function installPWA(){if(pwaP)pwaP.prompt();}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+// ── NAV ──
+const PNAMES={dashboard:'Dashboard',invoice:'New Invoice',invoices:'Invoice Registry',customers:'Customers',inventory:'Inventory',rates:'Gold Rates',vat:'VAT Report',reports:'Sales Reports',settings:'Settings',guide:'UAE VAT Guide'};
+function nav(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  const pg=document.getElementById('pg-'+id); if(pg) pg.classList.add('act');
+  const ni=document.getElementById('n-'+id);  if(ni) ni.classList.add('act');
+  document.getElementById('tbtitle').textContent=PNAMES[id]||id;
+  if(id==='dashboard') renderDash();
+  if(id==='invoices')  renderInvList();
+  if(id==='customers'){renderCList();}
+  if(id==='inventory') renderStk();
+  if(id==='rates')     renderRH();
+  window.scrollTo(0,0);
+}
+function toggleSB(){
+  const sb=document.getElementById('sb'),mn=document.getElementById('mn');
+  if(window.innerWidth<=700){sb.classList.toggle('mop');}
+  else{scoll=!scoll;sb.classList.toggle('col',scoll);mn.classList.toggle('col',scoll);}
+}
+
+// ── THEME ──
+function toggleTheme(){dark=!dark;DB.set('gd2_dark',dark);document.body.classList.toggle('lm',!dark);updTheme();}
+function updTheme(){document.getElementById('thbtn').textContent=dark?'☀️ Day':'🌙 Night';}
+
+// ── UTILS ──
+function fmt(n){return'AED '+parseFloat(n||0).toLocaleString('en-AE',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtN(n,d=3){return parseFloat(n||0).toLocaleString('en-AE',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function today(){return new Date().toISOString().split('T')[0];}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function gv(id){const e=document.getElementById(id);return e?e.value:'';}
+function sv(id,v){const e=document.getElementById(id);if(e)e.value=v;}
+function toast(msg,type='tin',dur=3000){
+  const c=document.getElementById('tc'),t=document.createElement('div');
+  t.className='toast '+type;t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(()=>t.remove(),400);},dur);
+}
+function confirm2(title,msg,cb){
+  document.getElementById('conft').textContent=title;
+  document.getElementById('confm').textContent=msg;
+  document.getElementById('confok').onclick=()=>{cb();closeM('confmo');};
+  document.getElementById('confmo').classList.add('open');
+}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+function initDates(){
+  const t=today(),m=t.slice(0,7);
+  if(!gv('idate')) sv('idate',t);
+  if(!gv('idue')){const d=new Date();d.setDate(d.getDate()+parseInt(cfg.dterm||0));sv('idue',d.toISOString().split('T')[0]);}
+  if(!gv('vrfr')) sv('vrfr',m+'-01');if(!gv('vrto')) sv('vrto',t);
+  if(!gv('rpfr')) sv('rpfr',m+'-01');if(!gv('rpto')) sv('rpto',t);
+}
+
+// ── RATES ──
+function getRate(k){return({24:rates.k24,22:rates.k22,21:rates.k21,18:rates.k18})[+k]||0;}
+function updRates(){
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v?'AED '+parseFloat(v).toFixed(2):'—';};
+  set('r24',rates.k24);set('r22',rates.k22);set('r21',rates.k21);set('r18',rates.k18);
+  const pill=document.getElementById('ratepill');
+  if(pill) pill.textContent=rates.k24?'AED '+parseFloat(rates.k24).toFixed(2)+'/g':'Set Rates ↗';
+  const ru=document.getElementById('rupd');if(ru) ru.textContent=rates.ts||'Not set — go to Gold Rates';
+  ['24','22','21','18'].forEach(k=>{const e=document.getElementById('rf'+k);if(e&&rates['k'+k])e.value=rates['k'+k];});
+}
+function saveRates(){
+  const v24=parseFloat(gv('rf24'))||0,v22=parseFloat(gv('rf22'))||0,v21=parseFloat(gv('rf21'))||0,v18=parseFloat(gv('rf18'))||0;
+  if(!v24||!v22){toast('Enter at least 24K and 22K rates','ter');return;}
+  const ts=new Date().toLocaleString('en-AE');
+  rates={k24:v24,k22:v22,k21:v21,k18:v18,ts};
+  DB.set('gd2_rates',rates);
+  rh.unshift({date:today(),k24:v24,k22:v22,k21:v21,k18:v18,ts});
+  DB.set('gd2_rh',rh);
+  updRates();renderRH();
+  toast('Gold rates saved & applied ✓','tok');
+}
+function renderRH(){
+  const b=document.getElementById('rhist');if(!b)return;
+  if(!rh.length){b.innerHTML='<tr><td colspan="5"><div class="es" style="padding:18px"><div class="ei">📈</div><p>No history.</p></div></td></tr>';return;}
+  b.innerHTML=rh.slice(0,30).map(r=>`<tr><td>${r.date}</td><td class="mn">${r.k24?r.k24.toFixed(2):'—'}</td><td class="mn">${r.k22?r.k22.toFixed(2):'—'}</td><td class="mn">${r.k21?r.k21.toFixed(2):'—'}</td><td class="mn">${r.k18?r.k18.toFixed(2):'—'}</td></tr>`).join('');
+}
+
+// ── QUICK CALC ──
+function qCalc(){
+  const k=gv('qck'),w=parseFloat(gv('qcw'))||0,m=parseFloat(gv('qcm'))||0,r=getRate(k);
+  const gvl=w*r,mv=w*m,st=gvl+mv,vat=k==='24'?0:st*0.05,tot=st+vat;
+  sv('qcgv','AED '+gvl.toFixed(2));sv('qcmv','AED '+mv.toFixed(2));
+  sv('qcst','AED '+st.toFixed(2));sv('qcvt','AED '+vat.toFixed(2));sv('qctot','AED '+tot.toFixed(2));
+}
+
+// ── INVOICE ITEMS ──
+const PUR={24:'999',22:'916',21:'875',18:'750'};
+function addItem(){
+  const body=document.getElementById('ibody');
+  const id='r'+uid();
+  const dk=cfg.dk||'22',dm=cfg.dm||'10',r=getRate(dk);
+  const tr=document.createElement('tr');tr.id=id;
+  tr.innerHTML=`
+    <td><input type="text" placeholder="Gold item…" style="min-width:105px;" oninput="calcRow('${id}')"/></td>
+    <td><select onchange="onKar('${id}')" style="min-width:80px;">
+      <option value="24" ${dk==='24'?'selected':''}>24K</option>
+      <option value="22" ${dk==='22'?'selected':''}>22K</option>
+      <option value="21" ${dk==='21'?'selected':''}>21K</option>
+      <option value="18" ${dk==='18'?'selected':''}>18K</option>
+    </select></td>
+    <td><input type="text" id="${id}p" readonly value="${PUR[dk]||''}" style="width:42px;background:var(--bg);font-size:11px;text-align:center;"/></td>
+    <td><input type="number" placeholder="0.000" step="0.001" min="0" style="width:68px" oninput="calcRow('${id}')"/></td>
+    <td><input type="number" id="${id}r" placeholder="${r||0}" step="0.01" min="0" style="width:72px" oninput="calcRow('${id}')"/></td>
+    <td><input type="number" placeholder="${dm}" value="${dm}" step="0.01" min="0" style="width:65px" oninput="calcRow('${id}')"/></td>
+    <td><input type="number" value="1" min="1" step="1" style="width:46px" oninput="calcRow('${id}')"/></td>
+    <td class="itot" id="${id}t">AED 0.00</td>
+    <td><button class="rr" onclick="rmItem('${id}')">✕</button></td>`;
+  body.appendChild(tr);calcTotals();
+}
+function onKar(rid){
+  const row=document.getElementById(rid);if(!row)return;
+  const k=row.querySelector('select').value;
+  const pe=document.getElementById(rid+'p');if(pe) pe.value=PUR[k]||'';
+  const re=document.getElementById(rid+'r');if(re) re.placeholder=getRate(k)||'';
+  calcRow(rid);
+}
+function getRowD(rid){
+  const row=document.getElementById(rid);if(!row)return null;
+  const ins=row.querySelectorAll('input[type="number"]');
+  const k=row.querySelector('select').value;
+  const desc=row.querySelector('input[type="text"]').value||'Gold Item';
+  const wt=parseFloat(ins[0].value)||0;
+  const rate=parseFloat(ins[1].value)||getRate(k)||0;
+  const mak=parseFloat(ins[2].value)||0;
+  const qty=parseFloat(ins[3].value)||1;
+  const sub=(wt*rate+wt*mak)*qty;
+  return{desc,k,purity:PUR[k]||'',wt,rate,mak,qty,sub,gv:wt*rate*qty,mv:wt*mak*qty};
+}
+function calcRow(rid){
+  const d=getRowD(rid);if(!d)return;
+  const e=document.getElementById(rid+'t');if(e)e.textContent=fmt(d.sub);
+  calcTotals();
+}
+function rmItem(rid){
+  const r=document.getElementById(rid);if(r)r.remove();calcTotals();
+}
+function getVM(){
+  const t=gv('ivt');return(t==='jb2c'||t==='nb2c')?0.05:0;
+}
+function calcTotals(){
+  const rows=Array.from(document.getElementById('ibody').querySelectorAll('tr'));
+  let tg=0,tm=0,tw=0;
+  rows.forEach(row=>{const d=getRowD(row.id);if(d){tg+=d.gv;tm+=d.mv;tw+=d.wt*d.qty;}});
+  const sub=tg+tm,disc=parseFloat(gv('idisc'))||0,after=Math.max(0,sub-disc);
+  const vat=after*getVM(),total=after+vat;
+  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  s('tgold',fmt(tg));s('tmak',fmt(tm));s('tsub',fmt(sub));s('tvat',fmt(vat));s('tfin',fmt(total));s('twt',fmtN(tw)+' g');
+}
+function onVTC(){
+  const t=gv('ivt');
+  const notes={
+    jb2c:'<strong>5% VAT:</strong> Jewellery to end consumers. Seller collects &amp; remits to FTA.',
+    jb2b:'<strong class="rcmt">🔵 RCM</strong> Both parties must be UAE VAT-registered. Seller does NOT charge VAT. Buyer self-accounts — Cabinet Decision No. 127/2024.',
+    iz:'<strong>Zero-Rated (0%):</strong> Investment gold ≥99% purity. No VAT charged. Invoice must state "Zero-rated — Investment Precious Metal".',
+    nb2c:'<strong>5% VAT:</strong> Non-investment gold to end consumers. Seller collects &amp; remits.',
+    nb2b:'<strong class="rcmt">🔵 RCM</strong> Non-investment B2B between VAT-registered businesses. Buyer self-accounts — Cabinet Decision 127/2024.'
+  };
+  const lbls={jb2c:'VAT (5%)',jb2b:'VAT — RCM (Buyer accounts)',iz:'VAT (Zero-Rated 0%)',nb2c:'VAT (5%)',nb2b:'VAT — RCM'};
+  const vnp={jb2c:'<strong>VAT 5%:</strong> Seller collects &amp; remits to FTA.',jb2b:'<strong>RCM:</strong> No VAT on invoice. Buyer self-accounts.',iz:'<strong>Zero-Rated:</strong> No VAT charged.',nb2c:'<strong>VAT 5%:</strong> Seller collects &amp; remits.',nb2b:'<strong>RCM:</strong> Buyer self-accounts.'};
+  const e1=document.getElementById('vtinfo');if(e1)e1.innerHTML=notes[t]||'';
+  const e2=document.getElementById('vtlbl');if(e2)e2.textContent=lbls[t]||'VAT';
+  const e3=document.getElementById('vnp');if(e3)e3.innerHTML=vnp[t]||'';
+  calcTotals();
+}
+
+// ── BUILD INVOICE DATA ──
+function collectD(){
+  const rows=Array.from(document.getElementById('ibody').querySelectorAll('tr'));
+  const items=[];
+  rows.forEach(row=>{const d=getRowD(row.id);if(d&&d.wt>0)items.push(d);});
+  const sub=items.reduce((s,i)=>s+i.sub,0),disc=parseFloat(gv('idisc'))||0;
+  const after=Math.max(0,sub-disc),vm=getVM(),vat=after*vm,total=after+vat;
+  const type=gv('ivt');
+  const TN={jb2c:'Jewellery B2C (5% VAT)',jb2b:'Jewellery B2B (RCM)',iz:'Investment Gold (Zero-Rated 0%)',nb2c:'Non-Investment B2C (5%)',nb2b:'Non-Investment B2B (RCM)'};
+  const VL={jb2c:'Standard 5%',jb2b:'RCM',iz:'Zero-Rated 0%',nb2c:'Standard 5%',nb2b:'RCM'};
+  return{
+    id:uid(),number:gv('inum')||genNum(),date:gv('idate')||today(),due:gv('idue')||today(),
+    vatType:type,typeName:TN[type]||type,vatLbl:VL[type]||'',cur:gv('icur')||'AED',
+    pay:gv('ipay'),status:gv('ista'),ref:gv('iref'),
+    seller:{name:gv('isn')||cfg.n||'Your Gold Shop',trn:gv('ist')||cfg.t||'',addr:gv('isa')||cfg.a||'Dubai Gold Souk',contact:gv('isc')||cfg.ph||''},
+    cust:{name:gv('icn')||'Cash Customer',trn:gv('ict')||'',nation:gv('icna')||'',phone:gv('icp')||'',id_no:gv('icid')||'',email:gv('ice')||''},
+    items,sub,disc,after,vat,vatRate:vm*100,total,
+    totalWt:items.reduce((s,i)=>s+i.wt*i.qty,0),
+    notes:gv('inotes'),terms:gv('iterms'),createdAt:new Date().toISOString()
+  };
+}
+
+// ── GENERATE & PREVIEW ──
+function genInvoice(){
+  const rows=Array.from(document.getElementById('ibody').querySelectorAll('tr'));
+  if(!rows.length){toast('Add at least one item','ter');return;}
+  const hasWt=rows.some(r=>{const d=getRowD(r.id);return d&&d.wt>0;});
+  if(!hasWt){toast('Enter weight for at least one item','ter');return;}
+  curInv=collectD();
+  document.getElementById('invprev').innerHTML=buildHTML(curInv);
+  document.getElementById('invmo').classList.add('open');
+}
+
+function buildHTML(d){
+  const isRCM=d.vatType==='jb2b'||d.vatType==='nb2b';
+  const isZ=d.vatType==='iz';
+  const vatNote=isRCM?'VAT to be accounted for by the customer (recipient) under the Reverse Charge Mechanism per Cabinet Decision No. 127 of 2024 (effective 25 Feb 2025).':isZ?'Zero-rated supply of Investment Precious Metal (≥99% purity). VAT rate: 0%. UAE VAT Law applies.':'VAT charged at standard rate of 5% as per UAE Federal Tax Authority (FTA) regulations.';
+  const rows=d.items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it.desc)}<br/><span style="font-size:10px;color:#888;">Karat: ${it.k}K (${it.purity}) | Hallmark Verified | DCL Certified</span></td><td style="font-family:'Roboto Mono',monospace;white-space:nowrap">${fmtN(it.wt)} g</td><td style="font-family:'Roboto Mono',monospace;white-space:nowrap">AED ${parseFloat(it.rate).toFixed(2)}</td><td style="font-family:'Roboto Mono',monospace;white-space:nowrap">AED ${parseFloat(it.mak).toFixed(2)}</td><td style="text-align:center">${it.qty}</td><td style="font-family:'Roboto Mono',monospace;font-weight:600;white-space:nowrap">AED ${parseFloat(it.sub).toFixed(2)}</td></tr>`).join('');
+  return`<div style="background:#fff;color:#1a1a1a;font-family:'Roboto',sans-serif;padding:28px;max-width:740px;margin:0 auto;font-size:13px;">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;padding-bottom:16px;border-bottom:3px solid #C9A84C;">
+  <div>
+    <div style="font-size:9px;font-weight:700;letter-spacing:.12em;color:#8C6E28;text-transform:uppercase;margin-bottom:3px;">Tax Invoice — فاتورة ضريبية</div>
+    <h1 style="font-family:'Roboto Slab',serif;font-size:18px;color:#1a1a1a;font-weight:700;margin-bottom:2px;">${esc(d.seller.name)}</h1>
+    <div style="font-size:11px;color:#555;line-height:1.7;">${esc(d.seller.addr)}<br/>${esc(d.seller.contact)}</div>
+    ${d.seller.trn?`<div style="font-size:11px;color:#8C6E28;font-weight:700;margin-top:3px;">TRN: ${esc(d.seller.trn)}</div>`:'<div style="font-size:11px;color:#e05555;font-weight:700;margin-top:3px;">⚠️ TRN not set — update in Settings</div>'}
+  </div>
+  <div style="text-align:right;">
+    <div style="background:linear-gradient(135deg,#C9A84C,#8C6E28);color:#fff;padding:8px 18px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.1em;margin-bottom:9px;">TAX INVOICE</div>
+    <div style="font-size:11px;color:#333;line-height:1.9;">
+      <div style="display:flex;justify-content:flex-end;gap:14px;"><span style="color:#666;font-weight:600;">Invoice #</span><span style="font-family:'Roboto Mono',monospace;font-weight:600;">${esc(d.number)}</span></div>
+      <div style="display:flex;justify-content:flex-end;gap:14px;"><span style="color:#666;font-weight:600;">Date</span><span style="font-family:'Roboto Mono',monospace;">${d.date}</span></div>
+      <div style="display:flex;justify-content:flex-end;gap:14px;"><span style="color:#666;font-weight:600;">Due Date</span><span style="font-family:'Roboto Mono',monospace;">${d.due}</span></div>
+      ${d.ref?`<div style="display:flex;justify-content:flex-end;gap:14px;"><span style="color:#666;font-weight:600;">Ref</span><span style="font-family:'Roboto Mono',monospace;">${esc(d.ref)}</span></div>`:''}
+      <div style="display:flex;justify-content:flex-end;gap:14px;"><span style="color:#666;font-weight:600;">Currency</span><span style="font-family:'Roboto Mono',monospace;">${esc(d.cur)}</span></div>
+    </div>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+  <div style="background:#f8f0d8;border-radius:8px;padding:12px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8C6E28;margin-bottom:6px;">Billed To / صادرة إلى</div>
+    <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:3px;">${esc(d.cust.name)}</div>
+    ${d.cust.nation?`<div style="font-size:11px;color:#555;">Nationality: ${esc(d.cust.nation)}</div>`:''}
+    ${d.cust.phone?`<div style="font-size:11px;color:#555;">📞 ${esc(d.cust.phone)}</div>`:''}
+    ${d.cust.email?`<div style="font-size:11px;color:#555;">✉️ ${esc(d.cust.email)}</div>`:''}
+    ${d.cust.id_no?`<div style="font-size:11px;color:#555;">ID: ${esc(d.cust.id_no)}</div>`:''}
+    ${d.cust.trn?`<div style="font-size:11px;color:#8C6E28;font-weight:700;margin-top:3px;">Customer TRN: ${esc(d.cust.trn)}</div>`:''}
+  </div>
+  <div style="background:#f8f8f8;border-radius:8px;padding:12px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8C6E28;margin-bottom:6px;">Transaction Details</div>
+    <div style="font-size:11px;color:#444;line-height:1.9;">
+      <div><strong>Type:</strong> ${esc(d.typeName)}</div>
+      <div><strong>Payment:</strong> ${esc(d.pay)}</div>
+      <div><strong>Status:</strong> <span style="font-weight:700;color:${d.status==='paid'?'#22c55e':d.status==='pending'?'#f59e0b':'#666'}">${d.status.toUpperCase()}</span></div>
+      <div><strong>Total Weight:</strong> ${fmtN(d.totalWt)} grams</div>
+    </div>
+  </div>
+</div>
+${isRCM?'<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#1e40af;"><strong>🔵 REVERSE CHARGE MECHANISM (RCM):</strong> VAT to be accounted for by the customer. Supplier is NOT charging VAT — Cabinet Decision No. 127 of 2024.</div>':''}
+${isZ?'<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#166534;"><strong>🟢 ZERO-RATED SUPPLY:</strong> Investment Precious Metal ≥99% purity. VAT rate: 0%.</div>':''}
+<table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px;">
+  <thead><tr style="background:#f8f0d8;">
+    <th style="padding:8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8C6E28;border-bottom:2px solid #C9A84C;">#</th>
+    <th style="padding:8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8C6E28;border-bottom:2px solid #C9A84C;">Description</th>
+    <th style="padding:8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8C6E28;border-bottom:2px solid #C9A84C;">Weight</th>
+    <th style="padding:8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8C6E28;border-bottom:2px solid #C9A84C;">Rate/g</th>
+    <th style="padding:8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8C6E28;border-bottom:2px solid #C9A84C;">Making/g</th>
+    <th style="padding:8px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8C6E28;border-bottom:2px solid #C9A84C;">Qty</th>
+    <th style="padding:8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8C6E28;border-bottom:2px solid #C9A84C;">Amount</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+  <div style="width:265px;font-size:12px;">
+    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;"><span style="color:#666;">Gold Value</span><span style="font-family:'Roboto Mono',monospace;">AED ${d.sub.toFixed(2)}</span></div>
+    ${d.disc>0?`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;"><span style="color:#666;">Discount</span><span style="font-family:'Roboto Mono',monospace;color:#e05555;">− AED ${d.disc.toFixed(2)}</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;"><span style="color:#666;">Taxable Amount</span><span style="font-family:'Roboto Mono',monospace;">AED ${d.after.toFixed(2)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;"><span style="color:#666;">VAT (${d.vatRate}%) — ${esc(d.vatLbl)}</span><span style="font-family:'Roboto Mono',monospace;color:#8C6E28;">${isRCM?'Buyer accounts':'AED '+d.vat.toFixed(2)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:9px 0;border-top:2px solid #C9A84C;margin-top:5px;font-family:'Roboto Slab',serif;font-size:14px;font-weight:700;color:#8C6E28;"><span>TOTAL DUE</span><span style="font-family:'Roboto Mono',monospace;">AED ${d.total.toFixed(2)}</span></div>
+    ${isRCM?'<div style="font-size:10px;color:#888;margin-top:2px;text-align:right;">* Customer to account for VAT under RCM</div>':''}
+  </div>
+</div>
+<div style="background:#fff8e0;border:1px solid #C9A84C;border-radius:6px;padding:8px 12px;margin-bottom:16px;font-size:11px;color:#555;"><strong style="color:#8C6E28;">VAT Note:</strong> ${vatNote}</div>
+${d.notes?`<div style="margin-bottom:9px;font-size:11px;color:#555;"><strong style="color:#333;">Notes:</strong> ${esc(d.notes)}</div>`:''}
+${d.terms?`<div style="margin-bottom:9px;font-size:11px;color:#555;"><strong style="color:#333;">Terms:</strong> ${esc(d.terms)}</div>`:''}
+<div style="border-top:2px solid #C9A84C;padding-top:11px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+  <div style="font-size:10px;color:#888;line-height:1.7;"><strong style="color:#8C6E28;">Dubai Gold Souk</strong><br/>All items hallmarked per UAE standards.<br/>Certified by Dubai Central Laboratory (DCL).</div>
+  <div style="width:60px;height:60px;border-radius:50%;border:2px solid #C9A84C;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#8C6E28;text-transform:uppercase;letter-spacing:.04em;line-height:1.3;opacity:.7;text-align:center;">✓ UAE<br/>VAT<br/>Compliant</div>
+  <div style="font-size:10px;color:#888;text-align:right;line-height:1.7;">Generated: ${new Date().toLocaleString('en-AE')}<br/><span style="color:#C9A84C;font-weight:600;">Al Dhahab Suite v2.0</span><br/>Created by Smit Parekh</div>
+</div>
+</div>`;
+}
+
+function printInv(){
+  const html=document.getElementById('invprev').innerHTML;
+  const w=window.open('','_blank','width=900,height=700');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Invoice</title><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Slab:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/><style>body{margin:0;padding:20px;background:#fff;}@media print{body{padding:0;}}</style></head><body>${html}</body></html>`);
+  w.document.close();setTimeout(()=>w.print(),700);
+}
+
+function saveInv(){
+  if(!curInv){toast('Preview invoice first','ter');return;}
+  const idx=invs.findIndex(i=>i.id===curInv.id);
+  if(idx>=0) invs[idx]=curInv; else invs.unshift(curInv);
+  DB.set('gd2_inv',invs);ctr++;DB.set('gd2_ctr',ctr);
+  closeM('invmo');renderDash();renderInvList();
+  toast('Invoice saved: '+curInv.number,'tok');
+}
+
+function saveDraft(){curInv=collectD();saveInv();}
+
+function clearForm(){
+  document.getElementById('ibody').innerHTML='';
+  ['icn','ict','icna','icp','icid','ice','iref','inotes','iterms'].forEach(id=>sv(id,''));
+  sv('idisc','0');sv('ics','');genNum();addItem();calcTotals();toast('Form cleared','tin');
+}
+
+function genNum(){const num=(cfg.pfx||'INV-')+String(ctr).padStart(4,'0');sv('inum',num);return num;}
+function genInvNum(){return genNum();}
+
+// ── INVOICE LIST ──
+const TSH={jb2c:'Jewellery 5%',jb2b:'Jewellery RCM',iz:'Investment 0%',nb2c:'Non-Inv 5%',nb2b:'Non-Inv RCM'};
+const STC={paid:'dgn',pending:'dg',partial:'db',cancelled:'drd'};
+
+function renderInvList(){
+  const b=document.getElementById('invlist');if(!b)return;
+  const srch=(gv('isrch')||'').toLowerCase(),stF=gv('ifs')||'',tpF=gv('ift')||'';
+  const list=invs.filter(i=>{
+    const ms=!srch||i.number.toLowerCase().includes(srch)||(i.cust?.name||'').toLowerCase().includes(srch);
+    return ms&&(!stF||i.status===stF)&&(!tpF||i.vatType===tpF);
+  });
+  if(!list.length){b.innerHTML='<tr><td colspan="9"><div class="es"><div class="ei">📂</div><p>No invoices found.</p></div></td></tr>';return;}
+  b.innerHTML=list.map(i=>`<tr>
+    <td class="mn">${esc(i.number)}</td><td>${i.date}</td><td>${esc(i.cust?.name||'—')}</td>
+    <td><span class="bdg db" style="font-size:10px">${TSH[i.vatType]||i.vatType}</span></td>
+    <td class="mn">${fmt(i.after)}</td>
+    <td class="mn">${(i.vatType==='jb2b'||i.vatType==='nb2b')?'<span class="rcmt">RCM</span>':fmt(i.vat)}</td>
+    <td class="mn bold">${fmt(i.total)}</td>
+    <td><span class="bdg ${STC[i.status]||'dgr'}">${i.status}</span></td>
+    <td style="white-space:nowrap">
+      <button class="btn bo bsm" onclick="viewInv('${i.id}')">👁 View</button>
+      <button class="btn bdr bsm" onclick="delInv('${i.id}')">🗑</button>
+    </td>
+  </tr>`).join('');
+}
+
+function viewInv(id){
+  const inv=invs.find(i=>i.id===id);if(!inv)return;
+  curInv=inv;
+  document.getElementById('invprev').innerHTML=buildHTML(inv);
+  document.getElementById('invmo').classList.add('open');
+}
+
+function delInv(id){
+  confirm2('Delete Invoice','This invoice will be permanently deleted.',()=>{
+    invs=invs.filter(i=>i.id!==id);DB.set('gd2_inv',invs);renderInvList();renderDash();toast('Invoice deleted','tin');
+  });
+}
+
+// ── DASHBOARD ──
+function renderDash(){
+  const t=today(),ti=invs.filter(i=>i.date===t&&i.status!=='cancelled');
+  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  s('ds0',ti.length);s('ds1',fmt(ti.reduce((a,i)=>a+i.total,0)));
+  s('ds2',fmt(ti.reduce((a,i)=>a+(i.vat||0),0)));
+  s('ds3',fmtN(ti.reduce((a,i)=>a+(i.totalWt||0),0))+' g');
+  s('ds4',custs.length);s('ds5',stk.length);
+  updRates();
+  const b=document.getElementById('dinv');if(!b)return;
+  const rec=invs.slice(0,8);
+  if(!rec.length){b.innerHTML='<tr><td colspan="7"><div class="es"><div class="ei">🧾</div><p>No invoices yet.</p></div></td></tr>';return;}
+  b.innerHTML=rec.map(i=>`<tr>
+    <td class="mn">${esc(i.number)}</td><td>${esc(i.cust?.name||'—')}</td>
+    <td><span class="bdg db" style="font-size:10px">${TSH[i.vatType]||'—'}</span></td>
+    <td class="mn">${fmt(i.total)}</td>
+    <td class="mn">${(i.vatType==='jb2b'||i.vatType==='nb2b')?'<span class="rcmt">RCM</span>':fmt(i.vat)}</td>
+    <td><span class="bdg ${STC[i.status]||'dgr'}">${i.status}</span></td>
+    <td>${i.date}</td>
+  </tr>`).join('');
+}
+
+// ── CUSTOMERS ──
+function saveCust(){
+  const name=gv('cfn').trim();if(!name){toast('Customer name required','ter');return;}
+  const eid=gv('cfeid');
+  const c={id:eid||uid(),name,type:gv('cfty'),phone:gv('cfph'),email:gv('cfem'),trn:gv('cftr'),nation:gv('cfna'),id_no:gv('cfid'),addr:gv('cfad'),notes:gv('cfno'),createdAt:new Date().toISOString()};
+  if(eid){const i=custs.findIndex(x=>x.id===eid);if(i>=0)custs[i]=c;else custs.unshift(c);}else custs.unshift(c);
+  DB.set('gd2_cust',custs);clearCF();renderCList();updCDD();renderDash();toast('Customer saved ✓','tok');
+}
+function clearCF(){
+  ['cfn','cfph','cfem','cftr','cfna','cfid','cfad','cfno','cfeid'].forEach(id=>sv(id,''));
+  sv('cfty','individual');document.getElementById('cft').textContent='➕ Add Customer';
+}
+function editCust(id){
+  const c=custs.find(x=>x.id===id);if(!c)return;
+  sv('cfn',c.name||'');sv('cfty',c.type||'individual');sv('cfph',c.phone||'');sv('cfem',c.email||'');
+  sv('cftr',c.trn||'');sv('cfna',c.nation||'');sv('cfid',c.id_no||'');sv('cfad',c.addr||'');sv('cfno',c.notes||'');sv('cfeid',c.id);
+  document.getElementById('cft').textContent='✏️ Edit Customer';
+}
+function delCust(id){
+  confirm2('Delete Customer','Remove this customer?',()=>{
+    custs=custs.filter(c=>c.id!==id);DB.set('gd2_cust',custs);renderCList();updCDD();renderDash();toast('Customer deleted','tin');
+  });
+}
+const CCL={individual:'dgr',business:'db',tourist:'dgn',vip:'dg'};
+function renderCList(){
+  const b=document.getElementById('clist');if(!b)return;
+  const srch=(gv('csrch')||'').toLowerCase();
+  const list=custs.filter(c=>!srch||c.name.toLowerCase().includes(srch)||(c.phone||'').includes(srch));
+  if(!list.length){b.innerHTML='<tr><td colspan="6"><div class="es"><div class="ei">👥</div><p>No customers.</p></div></td></tr>';return;}
+  b.innerHTML=list.map(c=>`<tr>
+    <td><strong>${esc(c.name)}</strong></td>
+    <td><span class="bdg ${CCL[c.type]||'dgr'}">${c.type}</span></td>
+    <td>${esc(c.phone||'—')}</td><td class="mn txs">${esc(c.trn||'—')}</td><td>${esc(c.nation||'—')}</td>
+    <td style="white-space:nowrap">
+      <button class="btn bo bsm" onclick="editCust('${c.id}')">✏️</button>
+      <button class="btn bdr bsm" onclick="delCust('${c.id}')">🗑</button>
+    </td>
+  </tr>`).join('');
+}
+function updCDD(){
+  const sel=document.getElementById('ics');if(!sel)return;
+  sel.innerHTML='<option value="">— Saved Customer —</option>'+custs.map(c=>`<option value="${c.id}">${esc(c.name)}${c.trn?' (TRN)':''}</option>`).join('');
+}
+function fillC(){
+  const id=gv('ics'),c=custs.find(x=>x.id===id);if(!c)return;
+  sv('icn',c.name||'');sv('ict',c.trn||'');sv('icna',c.nation||'');sv('icp',c.phone||'');sv('icid',c.id_no||'');sv('ice',c.email||'');
+}
+
+// ── INVENTORY ──
+function saveStk(){
+  const name=gv('ifn').trim();if(!name){toast('Item name required','ter');return;}
+  const eid=gv('ifeid');
+  const item={id:eid||uid(),name,cat:gv('ifcat'),karat:gv('ifk'),wt:parseFloat(gv('ifw'))||0,hall:gv('ifh'),buy:parseFloat(gv('ifb'))||0,sell:parseFloat(gv('ifs2'))||0,mak:parseFloat(gv('ifm'))||0,qty:parseInt(gv('ifq'))||1,vat:gv('ifv'),notes:gv('ifno'),createdAt:new Date().toISOString()};
+  if(eid){const i=stk.findIndex(x=>x.id===eid);if(i>=0)stk[i]=item;else stk.unshift(item);}else stk.unshift(item);
+  DB.set('gd2_stk',stk);clearIF();renderStk();renderDash();toast('Item saved ✓','tok');
+}
+function clearIF(){
+  ['ifn','ifw','ifh','ifb','ifs2','ifm','ifno','ifeid'].forEach(id=>sv(id,''));
+  sv('ifq','1');sv('ifk','22');document.getElementById('ift2').textContent='➕ Add Stock Item';
+}
+function editStk(id){
+  const item=stk.find(x=>x.id===id);if(!item)return;
+  sv('ifn',item.name||'');sv('ifcat',item.cat||'Necklace');sv('ifk',item.karat||'22');sv('ifw',item.wt||'');
+  sv('ifh',item.hall||'');sv('ifb',item.buy||'');sv('ifs2',item.sell||'');sv('ifm',item.mak||'');
+  sv('ifq',item.qty||1);sv('ifv',item.vat||'5');sv('ifno',item.notes||'');sv('ifeid',item.id);
+  document.getElementById('ift2').textContent='✏️ Edit Item';
+}
+function delStk(id){
+  confirm2('Delete Item','Remove this item from inventory?',()=>{
+    stk=stk.filter(x=>x.id!==id);DB.set('gd2_stk',stk);renderStk();renderDash();toast('Item deleted','tin');
+  });
+}
+const VCL={'5':'dg','0':'dgn','rcm':'db'};
+const VLB={'5':'5% VAT','0':'Zero-Rated','rcm':'RCM'};
+function renderStk(){
+  const b=document.getElementById('slist');if(!b)return;
+  const srch=(gv('ssrch')||'').toLowerCase(),kf=gv('skf')||'';
+  const list=stk.filter(i=>(!srch||i.name.toLowerCase().includes(srch)||i.cat.toLowerCase().includes(srch))&&(!kf||i.karat===kf));
+  if(!list.length){b.innerHTML='<tr><td colspan="7"><div class="es"><div class="ei">⚖️</div><p>No items.</p></div></td></tr>';return;}
+  b.innerHTML=list.map(i=>`<tr>
+    <td><strong>${esc(i.name)}</strong><br/><span class="txs t2">${esc(i.cat)}${i.hall?' · '+esc(i.hall):''}</span></td>
+    <td><span class="bdg dg">${i.karat}K</span></td>
+    <td class="mn">${fmtN(i.wt)} g</td><td class="mn">${i.qty}</td>
+    <td class="mn">${fmt(i.sell)}</td>
+    <td><span class="bdg ${VCL[i.vat]||'dgr'}">${VLB[i.vat]||'—'}</span></td>
+    <td style="white-space:nowrap">
+      <button class="btn bo bsm" onclick="editStk('${i.id}')">✏️</button>
+      <button class="btn bdr bsm" onclick="delStk('${i.id}')">🗑</button>
+    </td>
+  </tr>`).join('');
+}
+
+// ── VAT REPORT ──
+function genVAT(){
+  const fr=gv('vrfr'),to=gv('vrto');if(!fr||!to){toast('Select date range','ter');return;}
+  const list=invs.filter(i=>i.date>=fr&&i.date<=to&&i.status!=='cancelled');
+  const std=list.filter(i=>i.vatType==='jb2c'||i.vatType==='nb2c');
+  const zero=list.filter(i=>i.vatType==='iz');
+  const rcm=list.filter(i=>i.vatType==='jb2b'||i.vatType==='nb2b');
+  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  s('vrs',fmt(std.reduce((a,i)=>a+i.after,0)));s('vrz',fmt(zero.reduce((a,i)=>a+i.total,0)));
+  s('vrr',fmt(rcm.reduce((a,i)=>a+i.after,0)));s('vrv',fmt(std.reduce((a,i)=>a+(i.vat||0),0)));
+  const b=document.getElementById('vrbody');
+  if(!list.length){b.innerHTML='<tr><td colspan="7"><div class="es"><div class="ei">🏛️</div><p>No invoices in this period.</p></div></td></tr>';return;}
+  b.innerHTML=list.map(i=>`<tr>
+    <td class="mn">${esc(i.number)}</td><td>${i.date}</td><td>${esc(i.cust?.name||'—')}</td>
+    <td class="mn">${fmt(i.after)}</td><td><span class="bdg db">${TSH[i.vatType]||i.vatType}</span></td>
+    <td class="mn">${(i.vatType==='jb2b'||i.vatType==='nb2b')?'<span class="rcmt">RCM</span>':fmt(i.vat)}</td>
+    <td class="mn bold">${fmt(i.total)}</td>
+  </tr>`).join('');
+  toast('VAT report generated ✓','tok');
+}
+
+// ── SALES REPORT ──
+function genSales(){
+  const fr=gv('rpfr'),to=gv('rpto');if(!fr||!to){toast('Select date range','ter');return;}
+  const list=invs.filter(i=>i.date>=fr&&i.date<=to&&i.status!=='cancelled');
+  const rev=list.reduce((a,i)=>a+i.total,0),wt=list.reduce((a,i)=>a+(i.totalWt||0),0);
+  const avg=list.length?rev/list.length:0;
+  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  s('rprev',fmt(rev));s('rpcnt',list.length);s('rpwt',fmtN(wt)+' g');s('rpavg',fmt(avg));
+  const km={};let tvat=0;
+  list.forEach(inv=>{
+    tvat+=(inv.vat||0);
+    (inv.items||[]).forEach(item=>{
+      const k=item.k+'K';if(!km[k])km[k]={cnt:0,wt:0,rev:0};
+      km[k].cnt++;km[k].wt+=item.wt*(item.qty||1);km[k].rev+=item.sub;
+    });
+  });
+  const b=document.getElementById('rpbody'),rows=Object.entries(km);
+  if(!rows.length){b.innerHTML='<tr><td colspan="5"><div class="es"><div class="ei">📊</div><p>No data.</p></div></td></tr>';return;}
+  b.innerHTML=rows.map(([k,d])=>`<tr><td><span class="bdg dg">${k}</span></td><td>${d.cnt}</td><td class="mn">${fmtN(d.wt)} g</td><td class="mn">${fmt(d.rev)}</td><td class="mn tg">${fmt(tvat)}</td></tr>`).join('');
+  toast('Sales report generated ✓','tok');
+}
+
+// ── SETTINGS ──
+function loadCfg(){
+  const m={'sn':'n','st':'t','sl':'l','sa':'a','sph':'ph','sem':'em','swb':'wb','swa':'wa','spfx':'pfx','sft':'ft','sdv':'dv','sdk':'dk','sdm':'dm','sdc':'dc','sdt':'dterm'};
+  Object.entries(m).forEach(([elId,key])=>{const e=document.getElementById(elId);if(e&&cfg[key]!==undefined)e.value=cfg[key];});
+}
+function saveCfg(){
+  cfg={n:gv('sn'),t:gv('st'),l:gv('sl'),a:gv('sa'),ph:gv('sph'),em:gv('sem'),wb:gv('swb'),wa:gv('swa'),pfx:gv('spfx')||'INV-',ft:gv('sft'),dv:gv('sdv'),dk:gv('sdk'),dm:gv('sdm')||'10',dc:gv('sdc'),dterm:gv('sdt')||'0'};
+  DB.set('gd2_cfg',cfg);toast('Settings saved ✓','tok');
+}
+
+// ── DATA MGMT ──
+function exportD(){
+  const data={invs,custs,stk,rh,rates,cfg,ctr,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='gold-billing-'+today()+'.json';a.click();URL.revokeObjectURL(url);
+  toast('Data exported ✓','tok');
+}
+function importD(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.invs){invs=d.invs;DB.set('gd2_inv',invs);}
+      if(d.custs){custs=d.custs;DB.set('gd2_cust',custs);}
+      if(d.stk){stk=d.stk;DB.set('gd2_stk',stk);}
+      if(d.rh){rh=d.rh;DB.set('gd2_rh',rh);}
+      if(d.rates){rates=d.rates;DB.set('gd2_rates',rates);}
+      if(d.cfg){cfg=d.cfg;DB.set('gd2_cfg',cfg);}
+      if(d.ctr){ctr=d.ctr;DB.set('gd2_ctr',ctr);}
+      loadCfg();updRates();renderDash();renderCList();renderStk();renderInvList();renderRH();updCDD();
+      toast('Data imported ✓','tok');
+    }catch{toast('Invalid JSON file','ter');}
+  };
+  reader.readAsText(file);e.target.value='';
+}
+function clearAll(){
+  confirm2('⚠️ Clear ALL Data','Permanently deletes ALL invoices, customers, inventory and settings. Cannot be undone!',()=>{
+    ['gd2_inv','gd2_cust','gd2_stk','gd2_rh','gd2_rates','gd2_cfg','gd2_ctr'].forEach(k=>DB.del(k));
+    invs=[];custs=[];stk=[];rh=[];rates={k24:0,k22:0,k21:0,k18:0,ts:''};
+    cfg={n:'',t:'',l:'',a:'',ph:'',em:'',wb:'',wa:'',pfx:'INV-2025-',ft:'',dv:'jb2c',dk:'22',dm:'10',dc:'AED',dterm:'0'};
+    ctr=1;renderDash();renderCList();renderStk();renderInvList();loadCfg();updRates();
+    toast('All data cleared','tin');
+  });
+}
+</script>
+</body>
+</html>
