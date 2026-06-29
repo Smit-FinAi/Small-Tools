@@ -1,1 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CertForge — Bulk Certificate Generator</title>
+<meta name="description" content="Design once, generate thousands. Bulk certificate generator with CSV merge, drag-place fields, and offline PWA support.">
+
+<!-- PWA -->
+<meta name="theme-color" content="#8a6d3b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CertForge">
+<link rel="manifest" id="manifestLink">
+<link rel="apple-touch-icon" id="appleTouchIcon">
+<link rel="icon" id="favicon">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Roboto+Mono:wght@400;500&family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ============================= TOKENS ============================= */
+:root{
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'Roboto Mono',ui-monospace,monospace;
+
+  --radius-sm:6px;--radius-md:10px;--radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.12);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.18);
+  --header-h:64px;
+  --trans:200ms cubic-bezier(.4,0,.2,1);
+}
+
+/* Light = "Parchment Studio" */
+:root,[data-theme="light"]{
+  --bg:#F4F0E6;
+  --bg-elev:#FDFBF6;
+  --bg-sunken:#EAE3D2;
+  --ink:#241F18;
+  --ink-soft:#5B5346;
+  --ink-faint:#928A78;
+  --line:#DDD3BA;
+  --line-strong:#C7B998;
+  --brass:#8A6D3B;
+  --brass-bright:#B68A3E;
+  --brass-ink:#FFFFFF;
+  --seal:#7C2D2D;
+  --good:#3F6B4A;
+  --bad:#A5402D;
+  --canvas-bg:#DCD3BC;
+  --overlay:rgba(36,31,24,.55);
+  --focus:#B68A3E;
+}
+[data-theme="dark"]{
+  --bg:#16140F;
+  --bg-elev:#1F1C15;
+  --bg-sunken:#0F0E0A;
+  --ink:#F2ECDC;
+  --ink-soft:#C2B89E;
+  --ink-faint:#7C7460;
+  --line:#332E22;
+  --line-strong:#48412E;
+  --brass:#D2A34F;
+  --brass-bright:#E8BD6B;
+  --brass-ink:#16140F;
+  --seal:#D2685E;
+  --good:#74B286;
+  --bad:#E08469;
+  --canvas-bg:#0B0A07;
+  --overlay:rgba(0,0,0,.65);
+  --focus:#E8BD6B;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+  min-height:100dvh;
+  transition:background var(--trans),color var(--trans);
+  overflow-x:hidden;
+}
+::selection{background:var(--brass);color:var(--brass-ink);}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:10px;}
+a{color:var(--brass);}
+button{font-family:inherit;}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+/* ============================= LAYOUT ============================= */
+.app{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
+
+.topbar{
+  height:var(--header-h);
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;
+  background:var(--bg-elev);
+  border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:100;
+}
+.brand{display:flex;align-items:center;gap:11px;}
+.brand-mark{
+  width:36px;height:36px;border-radius:50%;
+  background:radial-gradient(circle at 32% 28%, var(--brass-bright), var(--brass) 70%);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-sm), inset 0 0 0 1px rgba(255,255,255,.18);
+  flex-shrink:0;
+}
+.brand-mark svg{width:18px;height:18px;}
+.brand-text h1{font-family:var(--serif);font-weight:700;font-size:19px;letter-spacing:.2px;line-height:1;}
+.brand-text span{font-size:11px;color:var(--ink-faint);letter-spacing:.5px;text-transform:uppercase;}
+
+.topbar-actions{display:flex;align-items:center;gap:8px;}
+.icon-btn{
+  width:38px;height:38px;border-radius:50%;
+  border:1px solid var(--line);
+  background:var(--bg);
+  color:var(--ink-soft);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all var(--trans);
+}
+.icon-btn:hover{border-color:var(--brass);color:var(--brass);transform:translateY(-1px);}
+.icon-btn svg{width:18px;height:18px;}
+
+.steps-nav{
+  display:flex;gap:2px;
+  background:var(--bg-elev);
+  border-bottom:1px solid var(--line);
+  padding:0 16px;
+  overflow-x:auto;
+  flex-shrink:0;
+  scrollbar-width:none;
+}
+.steps-nav::-webkit-scrollbar{display:none;}
+.step-tab{
+  display:flex;align-items:center;gap:8px;
+  padding:13px 16px;
+  border:none;background:none;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;
+  color:var(--ink-faint);
+  cursor:pointer;white-space:nowrap;
+  border-bottom:2.5px solid transparent;
+  transition:all var(--trans);
+}
+.step-tab .num{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--bg-sunken);color:var(--ink-faint);
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);
+  transition:all var(--trans);
+}
+.step-tab.active{color:var(--ink);border-bottom-color:var(--brass);}
+.step-tab.active .num{background:var(--brass);color:var(--brass-ink);}
+.step-tab.done .num{background:var(--good);color:#fff;}
+.step-tab.done .num::after{content:'✓';}
+.step-tab:hover:not(.active){color:var(--ink-soft);}
+
+.main{flex:1;display:flex;flex-direction:column;min-height:0;}
+.panel{display:none;flex:1;min-height:0;}
+.panel.active{display:flex;flex-direction:column;}
+
+.container{max-width:1180px;margin:0 auto;width:100%;padding:28px 20px 60px;}
+
+/* ============================= GENERIC UI ============================= */
+.card{
+  background:var(--bg-elev);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:24px;
+  box-shadow:var(--shadow-sm);
+}
+.card + .card{margin-top:18px;}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;}
+.card-head h2{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:4px;}
+.card-head p{font-size:13px;color:var(--ink-faint);line-height:1.5;max-width:60ch;}
+.eyebrow{
+  font-family:var(--mono);font-size:10.5px;font-weight:500;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--brass);
+  margin-bottom:6px;display:block;
+}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;
+  padding:11px 20px;border-radius:var(--radius-md);
+  border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  cursor:pointer;transition:all var(--trans);white-space:nowrap;
+}
+.btn svg{width:16px;height:16px;flex-shrink:0;}
+.btn:hover{border-color:var(--line-strong);transform:translateY(-1px);box-shadow:var(--shadow-sm);}
+.btn:active{transform:translateY(0);}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-primary{background:var(--brass);border-color:var(--brass);color:var(--brass-ink);font-weight:700;}
+.btn-primary:hover{background:var(--brass-bright);border-color:var(--brass-bright);}
+.btn-ghost{background:transparent;border-color:transparent;}
+.btn-ghost:hover{background:var(--bg-sunken);border-color:transparent;}
+.btn-danger{color:var(--bad);}
+.btn-danger:hover{border-color:var(--bad);}
+.btn-sm{padding:7px 13px;font-size:12.5px;}
+.btn-block{width:100%;}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12.5px;font-weight:500;color:var(--ink-soft);margin-bottom:6px;}
+.field input[type=text],.field input[type=number],.field select,.field textarea{
+  width:100%;padding:10px 12px;border-radius:var(--radius-sm);
+  border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-size:13.5px;transition:border-color var(--trans);
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brass);}
+.field-row{display:flex;gap:10px;}
+.field-row .field{flex:1;}
+.hint{font-size:11.5px;color:var(--ink-faint);margin-top:5px;line-height:1.5;}
+
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;
+  font-family:var(--mono);
+}
+.badge-good{background:color-mix(in srgb, var(--good) 16%, transparent);color:var(--good);}
+.badge-bad{background:color-mix(in srgb, var(--bad) 16%, transparent);color:var(--bad);}
+.badge-neutral{background:var(--bg-sunken);color:var(--ink-soft);}
+
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:50px 20px;color:var(--ink-faint);
+}
+.empty-state svg{width:40px;height:40px;margin-bottom:14px;opacity:.5;}
+.empty-state p{font-size:13.5px;max-width:34ch;line-height:1.5;}
+
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+.toast{
+  background:var(--ink);color:var(--bg);
+  padding:11px 16px;border-radius:var(--radius-sm);
+  font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);
+  display:flex;align-items:center;gap:9px;
+  animation:toastIn .25s cubic-bezier(.4,0,.2,1);
+  max-width:340px;
+}
+[data-theme="dark"] .toast{background:var(--brass);color:var(--brass-ink);}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.97);}to{opacity:1;transform:none;}}
+.toast.error{background:var(--bad);color:#fff;}
+
+.modal-backdrop{
+  position:fixed;inset:0;background:var(--overlay);z-index:900;
+  display:none;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(3px);
+}
+.modal-backdrop.open{display:flex;}
+.modal{
+  background:var(--bg-elev);border-radius:var(--radius-lg);
+  max-width:480px;width:100%;max-height:85vh;overflow:auto;
+  box-shadow:var(--shadow-lg);border:1px solid var(--line);
+  animation:modalIn .2s cubic-bezier(.4,0,.2,1);
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.98);}to{opacity:1;transform:none;}}
+.modal-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+.modal-head h3{font-family:var(--serif);font-size:18px;font-weight:700;}
+.modal-body{padding:22px;}
+.modal-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;}
+
+/* ============================= DROP ZONE ============================= */
+.drop-zone{
+  border:2px dashed var(--line-strong);
+  border-radius:var(--radius-md);
+  padding:46px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:all var(--trans);
+  color:var(--ink-soft);
+}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 6%, transparent);}
+.drop-zone svg{width:30px;height:30px;margin-bottom:12px;color:var(--brass);}
+.dz-title{font-size:14.5px;font-weight:600;color:var(--ink);margin-bottom:4px;}
+.dz-sub{font-size:12.5px;color:var(--ink-faint);}
+
+.tpl-preview-bar{display:flex;align-items:center;justify-content:space-between;margin:16px 0 12px;flex-wrap:wrap;gap:8px;}
+.tpl-meta strong{font-size:13.5px;display:block;}
+.tpl-preview-frame{
+  border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--line);
+  background:
+    linear-gradient(45deg, var(--bg-sunken) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--bg-sunken) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--bg-sunken) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--bg-sunken) 75%);
+  background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0;
+  max-height:420px;display:flex;align-items:center;justify-content:center;
+}
+.tpl-preview-frame img{max-width:100%;max-height:420px;display:block;}
+
+.step-actions{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:10px;}
+
+/* ============================= EDITOR (STEP 2) ============================= */
+.editor-layout{display:flex;flex:1;min-height:0;border-bottom:1px solid var(--line);}
+.editor-canvas-wrap{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--canvas-bg);}
+.editor-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 16px;background:var(--bg-elev);border-bottom:1px solid var(--line);flex-shrink:0;flex-wrap:wrap;
+}
+.zoom-controls{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);}
+.icon-btn-sm{
+  width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:var(--bg);
+  color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;
+  transition:all var(--trans);
+}
+.icon-btn-sm:hover{border-color:var(--brass);color:var(--brass);}
+.switch-label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);cursor:pointer;}
+.switch-label input{width:auto;}
+
+.canvas-scroll{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:30px;}
+.canvas-stage{position:relative;flex-shrink:0;box-shadow:var(--shadow-lg);line-height:0;}
+.canvas-stage img{display:block;max-width:none;}
+#overlayLayer{position:absolute;inset:0;}
+
+.field-pin{
+  position:absolute;transform:translate(-50%,-50%);
+  cursor:move;
+  border:1.5px dashed color-mix(in srgb, var(--brass) 70%, transparent);
+  border-radius:4px;
+  padding:2px 6px;
+  white-space:nowrap;
+  user-select:none;
+  background:color-mix(in srgb, var(--brass) 10%, transparent);
+  display:flex;align-items:center;gap:0;
+  touch-action:none;
+}
+.field-pin.selected{border-style:solid;border-color:var(--brass);box-shadow:0 0 0 3px color-mix(in srgb, var(--brass) 25%, transparent);}
+.field-pin .pin-text{pointer-events:none;}
+.field-pin .pin-tag{
+  position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+  background:var(--ink);color:var(--bg);
+  font-family:var(--sans);font-size:9.5px;font-weight:700;
+  padding:2px 6px;border-radius:4px;white-space:nowrap;opacity:0;
+  transition:opacity var(--trans);pointer-events:none;letter-spacing:.3px;text-transform:uppercase;
+}
+[data-theme="dark"] .field-pin .pin-tag{background:var(--brass);color:var(--brass-ink);}
+.field-pin:hover .pin-tag,.field-pin.selected .pin-tag{opacity:1;}
+
+.editor-sidebar{
+  width:320px;flex-shrink:0;background:var(--bg-elev);border-left:1px solid var(--line);
+  overflow-y:auto;
+}
+@media (max-width:900px){
+  .editor-layout{flex-direction:column;}
+  .editor-sidebar{width:100%;border-left:none;border-top:1px solid var(--line);max-height:50vh;}
+  .canvas-scroll{padding:16px;}
+}
+.sidebar-section{padding:18px 18px 20px;border-bottom:1px solid var(--line);}
+.sidebar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sidebar-head h3{font-family:var(--serif);font-size:15px;font-weight:700;}
+
+.fields-list{display:flex;flex-direction:column;gap:6px;}
+.field-chip{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:9px 11px;border-radius:var(--radius-sm);border:1px solid var(--line);
+  background:var(--bg);cursor:pointer;transition:all var(--trans);font-size:13px;
+}
+.field-chip:hover{border-color:var(--line-strong);}
+.field-chip.active{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 8%, transparent);}
+.field-chip .fc-name{font-weight:500;display:flex;align-items:center;gap:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.field-chip .fc-dot{width:7px;height:7px;border-radius:50%;background:var(--brass);flex-shrink:0;}
+.field-chip .fc-del{
+  background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:15px;
+  width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:4px;flex-shrink:0;
+}
+.field-chip .fc-del:hover{color:var(--bad);background:color-mix(in srgb, var(--bad) 12%, transparent);}
+
+/* ============================= STEP 3 ============================= */
+.csv-summary-bar{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.mapping-row{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--line);
+}
+.mapping-row:last-child{border-bottom:none;}
+.mapping-row .mr-field{font-size:13.5px;font-weight:500;display:flex;align-items:center;gap:8px;}
+.mapping-row .mr-field .fc-dot{width:7px;height:7px;border-radius:50%;background:var(--brass);}
+.mapping-row .mr-arrow{color:var(--ink-faint);}
+.mapping-row select{padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:13px;width:100%;}
+
+.csv-row-nav{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-sm);margin-top:14px;}
+table{border-collapse:collapse;width:100%;font-size:12.5px;}
+table th,table td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;}
+table th{background:var(--bg-sunken);font-weight:600;color:var(--ink-soft);font-size:11px;text-transform:uppercase;letter-spacing:.4px;}
+table tr:last-child td{border-bottom:none;}
+
+/* ============================= STEP 4 ============================= */
+.gen-preview-frame{
+  border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--line);
+  background:
+    linear-gradient(45deg, var(--bg-sunken) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--bg-sunken) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--bg-sunken) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--bg-sunken) 75%);
+  background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0;
+  display:flex;align-items:center;justify-content:center;padding:14px;
+}
+#previewCanvas{max-width:100%;max-height:520px;box-shadow:var(--shadow-md);display:block;}
+
+#filenamePattern{
+  width:100%;padding:11px 13px;border-radius:var(--radius-sm);border:1px solid var(--line);
+  background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:13px;
+}
+code{font-family:var(--mono);background:var(--bg-sunken);padding:1px 5px;border-radius:4px;font-size:12px;}
+
+.export-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;}
+.export-option{
+  display:flex;align-items:flex-start;gap:10px;padding:13px;border-radius:var(--radius-sm);
+  border:1px solid var(--line);cursor:pointer;transition:all var(--trans);
+}
+.export-option:hover{border-color:var(--line-strong);}
+.export-option input{margin-top:2px;width:auto;}
+.export-option strong{display:block;font-size:13px;margin-bottom:2px;}
+.export-option span{display:block;font-size:11.5px;color:var(--ink-faint);}
+.export-option:has(input:checked){border-color:var(--brass);background:color-mix(in srgb, var(--brass) 7%, transparent);}
+
+.progress-bar{height:8px;border-radius:20px;background:var(--bg-sunken);overflow:hidden;margin-top:16px;}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--brass),var(--brass-bright));transition:width .2s ease;border-radius:20px;}
+#progressLabel{margin-top:8px;text-align:center;}
+
+/* ============================= FOOTER ============================= */
+.app-footer{
+  flex-shrink:0;padding:18px 20px;border-top:1px solid var(--line);background:var(--bg-elev);
+}
+.footer-inner{
+  max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-faint);
+}
+.footer-inner a{color:var(--brass);text-decoration:none;font-weight:500;}
+.footer-inner a:hover{text-decoration:underline;}
+
+/* ============================= MODAL EXTRAS ============================= */
+.prompt-box{
+  background:var(--bg-sunken);border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:14px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--ink-soft);
+  max-height:280px;overflow-y:auto;white-space:pre-wrap;
+}
+.color-swatch-input{position:relative;}
+.color-swatch-input input[type=color]{
+  position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  width:22px;height:22px;border:none;border-radius:5px;padding:0;cursor:pointer;background:none;
+}
+
+@media (max-width:760px){
+  .container{padding:18px 14px 50px;}
+  .brand-text span{display:none;}
+  .footer-inner{justify-content:center;text-align:center;}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 6.6L21 9l-5 4.6L17.4 21 12 17.3 6.6 21 8 13.6 3 9l6.6-.4z"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>CertForge</h1>
+        <span>Bulk Certificate Studio</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="installBtn" title="Install app" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" title="Toggle theme">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </button>
+      <button class="icon-btn" id="helpBtn" title="AI image prompt helper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== STEP NAV ===================== -->
+  <nav class="steps-nav" id="stepsNav">
+    <button class="step-tab active" data-step="template"><span class="num">1</span>Template</button>
+    <button class="step-tab" data-step="fields"><span class="num">2</span>Place Fields</button>
+    <button class="step-tab" data-step="data"><span class="num">3</span>Import Data</button>
+    <button class="step-tab" data-step="generate"><span class="num">4</span>Generate</button>
+  </nav>
+
+  <main class="main" id="mainArea">
+
+    <!-- ============ STEP 1: TEMPLATE ============ -->
+    <section class="panel active" id="panel-template">
+      <div class="container">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">Step 1 of 4</span>
+              <h2>Upload your certificate background</h2>
+              <p>Use a finished design — a PNG/JPG with no names on it. Need one? Tap the <strong>help icon</strong> top‑right for a ready‑to‑use AI image prompt.</p>
+            </div>
+          </div>
+
+          <div id="dropZone" class="drop-zone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p class="dz-title">Drop your certificate image here</p>
+            <p class="dz-sub">or click to browse · PNG / JPG, any resolution (high‑res recommended)</p>
+            <input type="file" id="fileInput" accept="image/png,image/jpeg" hidden>
+          </div>
+
+          <div id="templatePreviewWrap" style="display:none;">
+            <div class="tpl-preview-bar">
+              <div class="tpl-meta">
+                <strong id="tplName">—</strong>
+                <span id="tplDims" class="hint"></span>
+              </div>
+              <button class="btn btn-sm btn-ghost" id="replaceTplBtn">Replace image</button>
+            </div>
+            <div class="tpl-preview-frame">
+              <img id="tplImg" alt="Certificate template preview">
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="orientationCard" style="display:none;">
+          <div class="card-head">
+            <div>
+              <h2 style="font-size:16px;">Output settings</h2>
+              <p>Used when exporting to PDF.</p>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Orientation</label>
+              <select id="orientationSel">
+                <option value="landscape">Landscape</option>
+                <option value="portrait">Portrait</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>PDF page size</label>
+              <select id="pageSizeSel">
+                <option value="a4">A4</option>
+                <option value="letter">US Letter</option>
+                <option value="fit">Match image aspect ratio</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <span></span>
+          <button class="btn btn-primary" id="toStep2Btn" disabled>Next: Place Fields →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STEP 2: FIELDS / CANVAS EDITOR ============ -->
+    <section class="panel" id="panel-fields">
+      <div class="editor-layout">
+        <div class="editor-canvas-wrap">
+          <div class="editor-toolbar">
+            <div class="zoom-controls">
+              <button class="icon-btn-sm" id="zoomOutBtn">−</button>
+              <span id="zoomLabel">100%</span>
+              <button class="icon-btn-sm" id="zoomInBtn">+</button>
+              <button class="icon-btn-sm" id="zoomResetBtn" title="Fit to screen">⤢</button>
+            </div>
+            <div class="hint" id="canvasHint">Drag a field on the certificate to position it</div>
+            <div class="grid-toggle">
+              <label class="switch-label"><input type="checkbox" id="gridToggle" checked> Snap grid</label>
+            </div>
+          </div>
+          <div class="canvas-scroll" id="canvasScroll">
+            <div class="canvas-stage" id="canvasStage">
+              <img id="stageImg" alt="">
+              <div id="overlayLayer"></div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="editor-sidebar">
+          <div class="sidebar-section">
+            <div class="sidebar-head">
+              <h3>Fields</h3>
+              <button class="btn btn-sm btn-primary" id="addFieldBtn">+ Add field</button>
+            </div>
+            <div id="fieldsList" class="fields-list"></div>
+            <p class="hint" id="noFieldsHint">No fields yet. Add a field for each CSV column you want printed — e.g. Name, Course, Date, Certificate ID.</p>
+          </div>
+
+          <div class="sidebar-section" id="fieldEditCard" style="display:none;">
+            <div class="sidebar-head"><h3>Field settings</h3></div>
+            <div class="field">
+              <label>Label</label>
+              <input type="text" id="fProp_label" placeholder="e.g. Full Name">
+            </div>
+            <div class="field">
+              <label>Sample / placeholder text</label>
+              <input type="text" id="fProp_sample" placeholder="e.g. Jordan Avery">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>X position (%)</label>
+                <input type="number" id="fProp_x" min="0" max="100" step="0.1">
+              </div>
+              <div class="field">
+                <label>Y position (%)</label>
+                <input type="number" id="fProp_y" min="0" max="100" step="0.1">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Font size (px)</label>
+                <input type="number" id="fProp_size" min="6" max="400" step="1">
+              </div>
+              <div class="field">
+                <label>Max width (%)</label>
+                <input type="number" id="fProp_maxw" min="5" max="100" step="1">
+              </div>
+            </div>
+            <div class="field">
+              <label>Font family</label>
+              <select id="fProp_font">
+                <option value="'Playfair Display',serif">Playfair Display (Serif)</option>
+                <option value="'Roboto',sans-serif">Roboto (Sans)</option>
+                <option value="'Roboto Mono',monospace">Roboto Mono</option>
+                <option value="Georgia,serif">Georgia</option>
+                <option value="'Times New Roman',serif">Times New Roman</option>
+                <option value="Arial,sans-serif">Arial</option>
+                <option value="'Brush Script MT',cursive">Brush Script (Cursive)</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Weight</label>
+                <select id="fProp_weight">
+                  <option value="400">Regular</option>
+                  <option value="500">Medium</option>
+                  <option value="700">Bold</option>
+                  <option value="900">Black</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Align</label>
+                <select id="fProp_align">
+                  <option value="center">Center</option>
+                  <option value="left">Left</option>
+                  <option value="right">Right</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Color</label>
+                <input type="text" id="fProp_color" value="#241F18" style="padding-left:36px;">
+              </div>
+              <div class="field">
+                <label>Letter spacing (px)</label>
+                <input type="number" id="fProp_ls" value="0" step="0.5">
+              </div>
+            </div>
+            <div class="field" style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="fProp_uppercase" style="width:auto;">
+              <label style="margin:0;" for="fProp_uppercase">UPPERCASE text</label>
+            </div>
+            <div class="field" style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="fProp_shrink" style="width:auto;" checked>
+              <label style="margin:0;" for="fProp_shrink">Auto-shrink font to fit max width</label>
+            </div>
+            <button class="btn btn-danger btn-block btn-sm" id="deleteFieldBtn">Delete field</button>
+          </div>
+        </aside>
+      </div>
+
+      <div class="container" style="padding-top:0;">
+        <div class="step-actions">
+          <button class="btn" id="back1Btn">← Back</button>
+          <button class="btn btn-primary" id="toStep3Btn">Next: Import Data →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STEP 3: CSV DATA ============ -->
+    <section class="panel" id="panel-data">
+      <div class="container">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">Step 3 of 4</span>
+              <h2>Import your recipient list</h2>
+              <p>Upload a CSV. The first row must be column headers. Each row becomes one certificate.</p>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-sm" id="downloadCsvTemplateBtn">Download CSV template</button>
+            </div>
+          </div>
+
+          <div id="csvDropZone" class="drop-zone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+            <p class="dz-title">Drop your CSV file here</p>
+            <p class="dz-sub">or click to browse</p>
+            <input type="file" id="csvInput" accept=".csv,text/csv" hidden>
+          </div>
+
+          <div id="csvSummary" style="display:none;">
+            <div class="csv-summary-bar">
+              <span id="csvRowCount" class="badge badge-good"></span>
+              <span id="csvColCount" class="badge badge-neutral"></span>
+              <button class="btn btn-sm btn-ghost" id="replaceCsvBtn">Replace CSV</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="mappingCard" style="display:none;">
+          <div class="card-head">
+            <div>
+              <h2 style="font-size:16px;">Map fields to CSV columns</h2>
+              <p>Tell CertForge which CSV column fills each certificate field.</p>
+            </div>
+          </div>
+          <div id="mappingList"></div>
+        </div>
+
+        <div class="card" id="previewCard" style="display:none;">
+          <div class="card-head">
+            <div>
+              <h2 style="font-size:16px;">Row preview</h2>
+              <p>Spot‑check parsed data before generating.</p>
+            </div>
+            <div class="csv-row-nav">
+              <button class="icon-btn-sm" id="csvPrevBtn">←</button>
+              <span id="csvRowLabel">Row 1</span>
+              <button class="icon-btn-sm" id="csvNextBtn">→</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table id="csvPreviewTable"></table></div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn" id="back2Btn">← Back</button>
+          <button class="btn btn-primary" id="toStep4Btn" disabled>Next: Generate →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STEP 4: GENERATE ============ -->
+    <section class="panel" id="panel-generate">
+      <div class="container">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">Step 4 of 4</span>
+              <h2>Live preview &amp; generate</h2>
+              <p>Check a few certificates, then generate the full batch.</p>
+            </div>
+            <div class="csv-row-nav">
+              <button class="icon-btn-sm" id="genPrevBtn">←</button>
+              <span id="genRowLabel">1 / 1</span>
+              <button class="icon-btn-sm" id="genNextBtn">→</button>
+            </div>
+          </div>
+          <div class="gen-preview-frame">
+            <canvas id="previewCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h2 style="font-size:16px;">Filename pattern</h2>
+              <p>Use <code>{column}</code> tokens from your CSV. Example: <code>{Name}_{Course}</code></p>
+            </div>
+          </div>
+          <input type="text" id="filenamePattern" placeholder="{Name}_Certificate">
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h2 style="font-size:16px;">Export</h2>
+              <p>Choose what to generate for all <span id="genTotalCount">0</span> rows.</p>
+            </div>
+          </div>
+          <div class="export-grid">
+            <label class="export-option">
+              <input type="checkbox" id="exportPng" checked>
+              <div><strong>Individual PNGs</strong><span>One image per recipient, zipped</span></div>
+            </label>
+            <label class="export-option">
+              <input type="checkbox" id="exportPdf" checked>
+              <div><strong>Individual PDFs</strong><span>One PDF per recipient, zipped</span></div>
+            </label>
+            <label class="export-option">
+              <input type="checkbox" id="exportCombined">
+              <div><strong>Combined PDF</strong><span>All certificates in one multi‑page PDF</span></div>
+            </label>
+          </div>
+          <button class="btn btn-primary btn-block" id="generateAllBtn" style="margin-top:18px;padding:14px;font-size:14.5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Generate All Certificates
+          </button>
+          <div id="genProgressWrap" style="display:none;">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <p class="hint" id="progressLabel">Generating 0 / 0…</p>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn" id="back3Btn">← Back</button>
+          <button class="btn btn-ghost" id="startOverBtn">Start a new batch</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <span>CertForge — Bulk Certificate Studio · Created by <strong>Smit Parekh</strong></span>
+      <a href="https://www.youtube.com/@TheParekhShow" target="_blank" rel="noopener">youtube.com/@TheParekhShow</a>
+    </div>
+  </footer>
+
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+<div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
+
+<canvas id="hiddenCanvas" style="display:none;"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+'use strict';
+
+/* ======================================================================
+   STATE
+   ====================================================================== */
+const State = {
+  step: 'template',
+  template: { dataUrl:null, img:null, name:'', width:0, height:0 },
+  fields: [],          // {id,label,sample,x,y,size,maxw,font,weight,align,color,ls,uppercase,shrink}
+  selectedFieldId: null,
+  csv: { headers:[], rows:[] },
+  mapping: {},         // fieldId -> csv header
+  previewRowIndex: 0,
+  zoom: 1
+};
+
+let fieldSeq = 1;
+function uid(){ return 'f' + (fieldSeq++); }
+
+/* ======================================================================
+   TOAST
+   ====================================================================== */
+function toast(msg, type=''){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type==='error' ? ' error' : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(8px)'; el.style.transition='all .25s'; setTimeout(()=>el.remove(),250); }, 3200);
+}
+
+/* ======================================================================
+   THEME
+   ====================================================================== */
+const sunIcon = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
+const moonIcon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeIcon').innerHTML = theme === 'dark' ? sunIcon : moonIcon;
+  localStorage.setItem('certforge-theme', theme);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', theme==='dark' ? '#16140F' : '#8a6d3b');
+}
+function initTheme(){
+  let saved = localStorage.getItem('certforge-theme');
+  if(!saved){
+    saved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  applyTheme(saved);
+}
+document.getElementById('themeBtn').addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+});
+initTheme();
+
+/* ======================================================================
+   STEP NAVIGATION
+   ====================================================================== */
+const stepOrder = ['template','fields','data','generate'];
+function goToStep(step){
+  if(step === 'fields' && !State.template.img){ toast('Upload a certificate image first', 'error'); return; }
+  if(step === 'data' && State.fields.length === 0){ toast('Add at least one field first', 'error'); return; }
+  if(step === 'generate' && State.csv.rows.length === 0){ toast('Import a CSV first', 'error'); return; }
+
+  State.step = step;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + step).classList.add('active');
+
+  document.querySelectorAll('.step-tab').forEach(t=>{
+    const s = t.dataset.step;
+    t.classList.toggle('active', s === step);
+    const idx = stepOrder.indexOf(s);
+    const curIdx = stepOrder.indexOf(step);
+    t.classList.toggle('done', idx < curIdx);
+  });
+
+  if(step === 'fields') requestAnimationFrame(renderFieldEditor);
+  if(step === 'data') renderCsvPreview();
+  if(step === 'generate') { syncMappingDefaults(); renderGenPreview(); }
+}
+document.querySelectorAll('.step-tab').forEach(t=>{
+  t.addEventListener('click', ()=> goToStep(t.dataset.step));
+});
+document.getElementById('toStep2Btn').addEventListener('click', ()=>goToStep('fields'));
+document.getElementById('back1Btn').addEventListener('click', ()=>goToStep('template'));
+document.getElementById('toStep3Btn').addEventListener('click', ()=>goToStep('data'));
+document.getElementById('back2Btn').addEventListener('click', ()=>goToStep('fields'));
+document.getElementById('toStep4Btn').addEventListener('click', ()=>goToStep('generate'));
+document.getElementById('back3Btn').addEventListener('click', ()=>goToStep('data'));
+document.getElementById('startOverBtn').addEventListener('click', ()=>{
+  if(confirm('Start a new batch? This clears the template, fields and CSV data.')) location.reload();
+});
+
+/* ======================================================================
+   MODAL (AI prompt helper)
+   ====================================================================== */
+const CERT_PROMPT = `Design a professional, elegant certificate of achievement background, blank and ready for customization (no names, dates, or specific text — leave the center area empty for later text overlay).
+
+Style: formal and prestigious, suitable for corporate training, courses, or award ceremonies.
+Orientation: landscape, 3300x2550px (300 DPI, US Letter landscape) — or 3508x2480px for A4 landscape.
+
+Layout:
+- Ornamental border frame (thin double-line or filigree corner flourishes), not overly busy
+- Top center: empty space reserved for a heading/title (e.g. "CERTIFICATE OF ACHIEVEMENT")
+- Middle: large clear empty space for a recipient's name
+- Below that: empty space for one to two lines of descriptive text
+- Bottom: empty space for a date on the left and two signature lines with small underscores on the right, plus room for a circular seal/medal emblem
+
+Color palette: ivory / cream background (#F4F0E6) with deep navy or burgundy accents and metallic gold (#B68A3E) foil-style linework. Subtle paper or linen texture in the background, very low contrast so text stays readable.
+
+Decorative elements: a tasteful laurel wreath or geometric medallion as a watermark-style graphic off to one side, gold corner ornaments, a thin gold rule line separating sections. No clipart, no stock-photo people, no readable placeholder text/lorem ipsum — keep all reserved text areas completely blank.
+
+Mood: trustworthy, timeless, premium — the kind of certificate a recipient would want to frame.`;
+
+function openModal(title, bodyHtml, footHtml=''){
+  const backdrop = document.getElementById('modalBackdrop');
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-head"><h3>${title}</h3><button class="icon-btn" id="modalCloseBtn">&times;</button></div>
+    <div class="modal-body">${bodyHtml}</div>
+    ${footHtml ? `<div class="modal-foot">${footHtml}</div>` : ''}
+  `;
+  backdrop.classList.add('open');
+  document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+}
+function closeModal(){ document.getElementById('modalBackdrop').classList.remove('open'); }
+document.getElementById('modalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='modalBackdrop') closeModal(); });
+
+document.getElementById('helpBtn').addEventListener('click', ()=>{
+  openModal('AI image prompt — generate your certificate', `
+    <p class="hint" style="margin-bottom:12px;">Paste this into any AI image generator (Midjourney, DALL·E, Gemini, etc.) to create a blank certificate background. Then upload the result in Step 1.</p>
+    <div class="prompt-box" id="promptBoxText">${CERT_PROMPT.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+  `, `<button class="btn btn-primary btn-sm" id="copyPromptBtn">Copy prompt</button>`);
+  document.getElementById('copyPromptBtn').addEventListener('click', ()=>{
+    navigator.clipboard.writeText(CERT_PROMPT).then(()=>toast('Prompt copied to clipboard'));
+  });
+});
+
+/* ======================================================================
+   STEP 1: TEMPLATE UPLOAD
+   ====================================================================== */
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+function handleTemplateFile(file){
+  if(!file || !/^image\/(png|jpe?g)$/.test(file.type)){
+    toast('Please upload a PNG or JPG image', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      State.template = { dataUrl:e.target.result, img, name:file.name, width:img.naturalWidth, height:img.naturalHeight };
+      document.getElementById('tplImg').src = e.target.result;
+      document.getElementById('tplName').textContent = file.name;
+      document.getElementById('tplDims').textContent = `${img.naturalWidth} × ${img.naturalHeight}px`;
+      document.getElementById('templatePreviewWrap').style.display = 'block';
+      document.getElementById('orientationCard').style.display = 'block';
+      document.getElementById('orientationSel').value = img.naturalWidth >= img.naturalHeight ? 'landscape' : 'portrait';
+      document.getElementById('toStep2Btn').disabled = false;
+      dropZone.style.display = 'none';
+      toast('Certificate template loaded');
+    };
+    img.onerror = ()=> toast('Could not read that image', 'error');
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+dropZone.addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', (e)=> handleTemplateFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev=> dropZone.addEventListener(ev, (e)=>{ e.preventDefault(); dropZone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev=> dropZone.addEventListener(ev, (e)=>{ e.preventDefault(); dropZone.classList.remove('dragover'); }));
+dropZone.addEventListener('drop', (e)=>{ const f = e.dataTransfer.files[0]; if(f) handleTemplateFile(f); });
+
+document.getElementById('replaceTplBtn').addEventListener('click', ()=>{
+  dropZone.style.display = 'block';
+  document.getElementById('templatePreviewWrap').style.display = 'none';
+  fileInput.value = '';
+});
+
+/* ======================================================================
+   STEP 2: FIELD EDITOR
+   ====================================================================== */
+const stageImg = document.getElementById('stageImg');
+const canvasStage = document.getElementById('canvasStage');
+const overlayLayer = document.getElementById('overlayLayer');
+
+function defaultFieldProps(){
+  return {
+    id: uid(), label:'New Field', sample:'Sample Text',
+    x:50, y:50, size:48, maxw:70,
+    font:"'Playfair Display',serif", weight:'700', align:'center',
+    color:'#241F18', ls:0, uppercase:false, shrink:true
+  };
+}
+
+function renderFieldEditor(){
+  if(!State.template.img) return;
+  stageImg.src = State.template.dataUrl;
+  const natW = State.template.width, natH = State.template.height;
+
+  // Fit-to-screen base sizing
+  const scrollEl = document.getElementById('canvasScroll');
+  const maxW = scrollEl.clientWidth - 60;
+  const maxH = Math.max(360, window.innerHeight - 260);
+  let baseScale = Math.min(maxW / natW, maxH / natH, 1);
+  if(!isFinite(baseScale) || baseScale <= 0) baseScale = 1;
+  canvasStage.dataset.baseScale = baseScale;
+  applyZoom(State.zoom);
+
+  renderFieldsList();
+  renderPins();
+}
+
+function applyZoom(z){
+  State.zoom = Math.max(0.25, Math.min(3, z));
+  const base = parseFloat(canvasStage.dataset.baseScale || 1);
+  const w = State.template.width * base * State.zoom;
+  const h = State.template.height * base * State.zoom;
+  canvasStage.style.width = w + 'px';
+  canvasStage.style.height = h + 'px';
+  stageImg.style.width = w + 'px';
+  stageImg.style.height = h + 'px';
+  document.getElementById('zoomLabel').textContent = Math.round(State.zoom * 100) + '%';
+}
+document.getElementById('zoomInBtn').addEventListener('click', ()=> applyZoom(State.zoom + 0.1));
+document.getElementById('zoomOutBtn').addEventListener('click', ()=> applyZoom(State.zoom - 0.1));
+document.getElementById('zoomResetBtn').addEventListener('click', ()=> applyZoom(1));
+
+function renderFieldsList(){
+  const list = document.getElementById('fieldsList');
+  const noHint = document.getElementById('noFieldsHint');
+  list.innerHTML = '';
+  noHint.style.display = State.fields.length ? 'none' : 'block';
+  State.fields.forEach(f=>{
+    const chip = document.createElement('div');
+    chip.className = 'field-chip' + (f.id === State.selectedFieldId ? ' active' : '');
+    chip.innerHTML = `<span class="fc-name"><span class="fc-dot"></span>${escapeHtml(f.label)}</span><button class="fc-del" data-id="${f.id}" title="Delete">&times;</button>`;
+    chip.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('fc-del')) return;
+      selectField(f.id);
+    });
+    chip.querySelector('.fc-del').addEventListener('click', (e)=>{ e.stopPropagation(); deleteField(f.id); });
+    list.appendChild(chip);
+  });
+}
+
+function renderPins(){
+  overlayLayer.innerHTML = '';
+  State.fields.forEach(f=>{
+    const pin = document.createElement('div');
+    pin.className = 'field-pin' + (f.id === State.selectedFieldId ? ' selected' : '');
+    pin.style.left = f.x + '%';
+    pin.style.top = f.y + '%';
+    pin.dataset.id = f.id;
+    const fsPreview = Math.max(9, Math.min(26, f.size * parseFloat(canvasStage.dataset.baseScale||1) * State.zoom * 0.6));
+    pin.innerHTML = `<span class="pin-tag">${escapeHtml(f.label)}</span><span class="pin-text" style="font-family:${f.font};font-weight:${f.weight};color:${f.color};font-size:${fsPreview}px;${f.uppercase?'text-transform:uppercase;':''}letter-spacing:${f.ls}px;">${escapeHtml(f.uppercase ? f.sample.toUpperCase() : f.sample)}</span>`;
+    pin.addEventListener('pointerdown', (e)=> startDrag(e, f.id));
+    pin.addEventListener('click', ()=> selectField(f.id));
+    overlayLayer.appendChild(pin);
+  });
+}
+
+function startDrag(e, id){
+  e.preventDefault();
+  selectField(id);
+  const pin = overlayLayer.querySelector(`.field-pin[data-id="${id}"]`);
+  const stageRect = canvasStage.getBoundingClientRect();
+  pin.setPointerCapture(e.pointerId);
+
+  function onMove(ev){
+    let xPct = ((ev.clientX - stageRect.left) / stageRect.width) * 100;
+    let yPct = ((ev.clientY - stageRect.top) / stageRect.height) * 100;
+    if(document.getElementById('gridToggle').checked){
+      xPct = Math.round(xPct * 4) / 4;
+      yPct = Math.round(yPct * 4) / 4;
+    }
+    xPct = Math.max(0, Math.min(100, xPct));
+    yPct = Math.max(0, Math.min(100, yPct));
+    const f = State.fields.find(f=>f.id===id);
+    f.x = Math.round(xPct*10)/10; f.y = Math.round(yPct*10)/10;
+    pin.style.left = f.x + '%'; pin.style.top = f.y + '%';
+    if(State.selectedFieldId === id) syncPropPanel(f);
+  }
+  function onUp(ev){
+    pin.releasePointerCapture(ev.pointerId);
+    pin.removeEventListener('pointermove', onMove);
+    pin.removeEventListener('pointerup', onUp);
+  }
+  pin.addEventListener('pointermove', onMove);
+  pin.addEventListener('pointerup', onUp);
+}
+
+function selectField(id){
+  State.selectedFieldId = id;
+  renderFieldsList();
+  renderPins();
+  const f = State.fields.find(f=>f.id===id);
+  document.getElementById('fieldEditCard').style.display = f ? 'block' : 'none';
+  if(f) syncPropPanel(f);
+}
+
+function deleteField(id){
+  State.fields = State.fields.filter(f=>f.id!==id);
+  if(State.selectedFieldId === id) State.selectedFieldId = null;
+  document.getElementById('fieldEditCard').style.display = 'none';
+  renderFieldsList();
+  renderPins();
+}
+
+document.getElementById('addFieldBtn').addEventListener('click', ()=>{
+  const f = defaultFieldProps();
+  f.label = 'Field ' + State.fields.length + 1;
+  if(State.fields.length === 0){ f.label = 'Full Name'; f.sample='Jordan Avery'; f.size=64; f.y=48; }
+  State.fields.push(f);
+  selectField(f.id);
+  renderFieldsList();
+  renderPins();
+});
+
+document.getElementById('deleteFieldBtn').addEventListener('click', ()=>{
+  if(State.selectedFieldId) deleteField(State.selectedFieldId);
+});
+
+const propIds = ['label','sample','x','y','size','maxw','font','weight','align','color','ls','uppercase','shrink'];
+function syncPropPanel(f){
+  document.getElementById('fProp_label').value = f.label;
+  document.getElementById('fProp_sample').value = f.sample;
+  document.getElementById('fProp_x').value = f.x;
+  document.getElementById('fProp_y').value = f.y;
+  document.getElementById('fProp_size').value = f.size;
+  document.getElementById('fProp_maxw').value = f.maxw;
+  document.getElementById('fProp_font').value = f.font;
+  document.getElementById('fProp_weight').value = f.weight;
+  document.getElementById('fProp_align').value = f.align;
+  document.getElementById('fProp_color').value = f.color;
+  document.getElementById('fProp_ls').value = f.ls;
+  document.getElementById('fProp_uppercase').checked = f.uppercase;
+  document.getElementById('fProp_shrink').checked = f.shrink;
+}
+propIds.forEach(p=>{
+  const el = document.getElementById('fProp_' + p);
+  const evt = (el.type === 'checkbox' || el.tagName === 'SELECT') ? 'change' : 'input';
+  el.addEventListener(evt, ()=>{
+    const f = State.fields.find(f=>f.id===State.selectedFieldId);
+    if(!f) return;
+    if(el.type === 'checkbox') f[p] = el.checked;
+    else if(['x','y','size','maxw','ls'].includes(p)) f[p] = parseFloat(el.value) || 0;
+    else f[p] = el.value;
+    renderFieldsList();
+    renderPins();
+  });
+});
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+window.addEventListener('resize', ()=>{
+  if(State.step === 'fields') renderFieldEditor();
+});
+
+/* ======================================================================
+   CSV PARSER (handles quoted fields, commas in quotes, \r\n)
+   ====================================================================== */
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/, ''); // strip BOM
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0; i<text.length; i++){
+    const c = text[i], next = text[i+1];
+    if(inQuotes){
+      if(c === '"' && next === '"'){ field += '"'; i++; }
+      else if(c === '"'){ inQuotes = false; }
+      else field += c;
+    } else {
+      if(c === '"') inQuotes = true;
+      else if(c === ','){ row.push(field); field=''; }
+      else if(c === '\r'){ /* skip */ }
+      else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else field += c;
+    }
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  // drop fully-empty trailing rows
+  while(rows.length && rows[rows.length-1].every(c=>c.trim()==='')) rows.pop();
+  if(!rows.length) return { headers:[], rows:[] };
+  const headers = rows[0].map(h=>h.trim());
+  const dataRows = rows.slice(1).map(r=>{
+    const obj = {};
+    headers.forEach((h,i)=> obj[h] = (r[i] ?? '').trim());
+    return obj;
+  });
+  return { headers, rows: dataRows };
+}
+
+/* ======================================================================
+   STEP 3: CSV UPLOAD + MAPPING
+   ====================================================================== */
+const csvDropZone = document.getElementById('csvDropZone');
+const csvInput = document.getElementById('csvInput');
+
+function handleCsvFile(file){
+  if(!file || !/\.csv$/i.test(file.name)){
+    toast('Please upload a .csv file', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const parsed = parseCSV(e.target.result);
+    if(!parsed.headers.length || !parsed.rows.length){
+      toast('That CSV looks empty or invalid', 'error');
+      return;
+    }
+    State.csv = parsed;
+    State.previewRowIndex = 0;
+    document.getElementById('csvRowCount').textContent = parsed.rows.length + ' rows';
+    document.getElementById('csvColCount').textContent = parsed.headers.length + ' columns';
+    document.getElementById('csvSummary').style.display = 'block';
+    csvDropZone.style.display = 'none';
+    renderMapping();
+    renderCsvPreview();
+    document.getElementById('toStep4Btn').disabled = false;
+    toast(`Loaded ${parsed.rows.length} rows`);
+  };
+  reader.readAsText(file);
+}
+csvDropZone.addEventListener('click', ()=> csvInput.click());
+csvInput.addEventListener('change', (e)=> handleCsvFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev=> csvDropZone.addEventListener(ev, (e)=>{ e.preventDefault(); csvDropZone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev=> csvDropZone.addEventListener(ev, (e)=>{ e.preventDefault(); csvDropZone.classList.remove('dragover'); }));
+csvDropZone.addEventListener('drop', (e)=>{ const f = e.dataTransfer.files[0]; if(f) handleCsvFile(f); });
+document.getElementById('replaceCsvBtn').addEventListener('click', ()=>{
+  csvDropZone.style.display = 'block';
+  document.getElementById('csvSummary').style.display = 'none';
+  document.getElementById('mappingCard').style.display = 'none';
+  document.getElementById('previewCard').style.display = 'none';
+  document.getElementById('toStep4Btn').disabled = true;
+  csvInput.value = '';
+});
+
+document.getElementById('downloadCsvTemplateBtn').addEventListener('click', ()=>{
+  const headers = State.fields.length ? State.fields.map(f=>f.label) : ['Name','Course','Date'];
+  const sampleRow = State.fields.length ? State.fields.map(f=>f.sample) : ['Jordan Avery','Web Development','June 20, 2026'];
+  const csv = headers.join(',') + '\n' + sampleRow.map(v=>`"${v.replace(/"/g,'""')}"`).join(',') + '\n';
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'certforge_template.csv';
+  a.click();
+});
+
+function guessColumn(label, headers){
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g,'');
+  const target = norm(label);
+  let match = headers.find(h => norm(h) === target);
+  if(match) return match;
+  match = headers.find(h => norm(h).includes(target) || target.includes(norm(h)));
+  return match || '';
+}
+
+function renderMapping(){
+  if(!State.fields.length){
+    document.getElementById('mappingCard').style.display = 'none';
+    return;
+  }
+  document.getElementById('mappingCard').style.display = 'block';
+  const list = document.getElementById('mappingList');
+  list.innerHTML = '';
+  State.fields.forEach(f=>{
+    if(!State.mapping[f.id]) State.mapping[f.id] = guessColumn(f.label, State.csv.headers);
+    const row = document.createElement('div');
+    row.className = 'mapping-row';
+    row.innerHTML = `
+      <div class="mr-field"><span class="fc-dot"></span>${escapeHtml(f.label)}</div>
+      <div class="mr-arrow">→</div>
+      <select data-field="${f.id}">
+        <option value="">— Not mapped —</option>
+        ${State.csv.headers.map(h=>`<option value="${escapeHtml(h)}" ${State.mapping[f.id]===h?'selected':''}>${escapeHtml(h)}</option>`).join('')}
+      </select>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('select').forEach(sel=>{
+    sel.addEventListener('change', ()=>{
+      State.mapping[sel.dataset.field] = sel.value;
+      renderCsvPreview();
+    });
+  });
+}
+function syncMappingDefaults(){ renderMapping(); }
+
+function renderCsvPreview(){
+  if(!State.csv.rows.length) return;
+  document.getElementById('previewCard').style.display = 'block';
+  const total = State.csv.rows.length;
+  State.previewRowIndex = Math.max(0, Math.min(total-1, State.previewRowIndex));
+  document.getElementById('csvRowLabel').textContent = `Row ${State.previewRowIndex+1} / ${total}`;
+  const row = State.csv.rows[State.previewRowIndex];
+  const table = document.getElementById('csvPreviewTable');
+  table.innerHTML = `
+    <thead><tr>${State.csv.headers.map(h=>`<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
+    <tbody><tr>${State.csv.headers.map(h=>`<td>${escapeHtml(row[h])}</td>`).join('')}</tr></tbody>
+  `;
+}
+document.getElementById('csvPrevBtn').addEventListener('click', ()=>{ State.previewRowIndex--; renderCsvPreview(); });
+document.getElementById('csvNextBtn').addEventListener('click', ()=>{ State.previewRowIndex++; renderCsvPreview(); });
+
+/* ======================================================================
+   RENDER ENGINE — draws one certificate (template + fields) onto a canvas
+   ====================================================================== */
+function valueForField(f, row){
+  const col = State.mapping[f.id];
+  let val = col ? (row[col] ?? '') : '';
+  if(val === '') val = f.sample;
+  return f.uppercase ? String(val).toUpperCase() : String(val);
+}
+
+function drawCertificate(canvas, row){
+  const W = State.template.width, H = State.template.height;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(State.template.img, 0, 0, W, H);
+
+  State.fields.forEach(f=>{
+    const text = valueForField(f, row || {});
+    const px = (f.x/100) * W;
+    const py = (f.y/100) * H;
+    const maxWidthPx = (f.maxw/100) * W;
+    let fontSize = f.size;
+
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = f.align;
+    ctx.fillStyle = f.color;
+
+    if(f.shrink){
+      ctx.font = `${f.weight} ${fontSize}px ${f.font}`;
+      let w = measureWithSpacing(ctx, text, f.ls);
+      while(w > maxWidthPx && fontSize > 6){
+        fontSize -= 1;
+        ctx.font = `${f.weight} ${fontSize}px ${f.font}`;
+        w = measureWithSpacing(ctx, text, f.ls);
+      }
+    } else {
+      ctx.font = `${f.weight} ${fontSize}px ${f.font}`;
+    }
+
+    drawTextWithSpacing(ctx, text, px, py, f.ls, f.align);
+  });
+}
+
+function measureWithSpacing(ctx, text, ls){
+  if(!ls) return ctx.measureText(text).width;
+  let w = 0;
+  for(const ch of text) w += ctx.measureText(ch).width + ls;
+  return w - ls;
+}
+function drawTextWithSpacing(ctx, text, x, y, ls, align){
+  if(!ls){ ctx.fillText(text, x, y); return; }
+  const total = measureWithSpacing(ctx, text, ls);
+  let startX = x;
+  if(align === 'center') startX = x - total/2;
+  else if(align === 'right') startX = x - total;
+  const prevAlign = ctx.textAlign;
+  ctx.textAlign = 'left';
+  let cx = startX;
+  for(const ch of text){
+    ctx.fillText(ch, cx, y);
+    cx += ctx.measureText(ch).width + ls;
+  }
+  ctx.textAlign = prevAlign;
+}
+
+/* ======================================================================
+   STEP 4: LIVE PREVIEW
+   ====================================================================== */
+let genRowIndex = 0;
+function renderGenPreview(){
+  if(!State.csv.rows.length || !State.template.img) return;
+  const total = State.csv.rows.length;
+  genRowIndex = Math.max(0, Math.min(total-1, genRowIndex));
+  document.getElementById('genRowLabel').textContent = `${genRowIndex+1} / ${total}`;
+  document.getElementById('genTotalCount').textContent = total;
+  const canvas = document.getElementById('previewCanvas');
+  drawCertificate(canvas, State.csv.rows[genRowIndex]);
+
+  if(!document.getElementById('filenamePattern').value){
+    const firstField = State.fields[0];
+    document.getElementById('filenamePattern').value = firstField ? `{${State.mapping[firstField.id] || State.csv.headers[0]}}_Certificate` : 'Certificate_{row}';
+  }
+}
+document.getElementById('genPrevBtn').addEventListener('click', ()=>{ genRowIndex--; renderGenPreview(); });
+document.getElementById('genNextBtn').addEventListener('click', ()=>{ genRowIndex++; renderGenPreview(); });
+
+function resolveFilename(pattern, row, idx){
+  let name = pattern.replace(/\{([^}]+)\}/g, (m, key)=>{
+    if(key === 'row') return String(idx+1);
+    return (row[key] ?? '').toString();
+  });
+  name = name.replace(/[\\/:*?"<>|]/g, '-').trim();
+  return name || `certificate_${idx+1}`;
+}
+
+function canvasToBlob(canvas){
+  return new Promise(resolve => canvas.toBlob(b=>resolve(b), 'image/png', 1));
+}
+
+async function buildPdfBlobFromCanvas(canvas){
+  const { jsPDF } = window.jspdf;
+  const orientation = document.getElementById('orientationSel').value === 'portrait' ? 'p' : 'l';
+  const pageSizeOpt = document.getElementById('pageSizeSel').value;
+  let format = 'a4';
+  if(pageSizeOpt === 'letter') format = 'letter';
+
+  let pdf;
+  if(pageSizeOpt === 'fit'){
+    pdf = new jsPDF({ orientation, unit:'px', format:[canvas.width, canvas.height] });
+    pdf.addImage(canvas.toDataURL('image/png',1), 'PNG', 0, 0, canvas.width, canvas.height);
+  } else {
+    pdf = new jsPDF({ orientation, unit:'mm', format });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgRatio = canvas.width / canvas.height;
+    let drawW = pageW, drawH = pageW / imgRatio;
+    if(drawH > pageH){ drawH = pageH; drawW = pageH * imgRatio; }
+    const offX = (pageW - drawW) / 2, offY = (pageH - drawH) / 2;
+    pdf.addImage(canvas.toDataURL('image/png',1), 'PNG', offX, offY, drawW, drawH);
+  }
+  return pdf;
+}
+
+document.getElementById('generateAllBtn').addEventListener('click', async ()=>{
+  const wantPng = document.getElementById('exportPng').checked;
+  const wantPdf = document.getElementById('exportPdf').checked;
+  const wantCombined = document.getElementById('exportCombined').checked;
+  if(!wantPng && !wantPdf && !wantCombined){ toast('Choose at least one export option', 'error'); return; }
+
+  const rows = State.csv.rows;
+  const pattern = document.getElementById('filenamePattern').value || 'Certificate_{row}';
+  const progressWrap = document.getElementById('genProgressWrap');
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  progressWrap.style.display = 'block';
+  document.getElementById('generateAllBtn').disabled = true;
+
+  const workCanvas = document.createElement('canvas');
+  const pngZip = wantPng ? new JSZip() : null;
+  const pdfZip = wantPdf ? new JSZip() : null;
+  let combinedPdf = null;
+
+  const usedNames = new Set();
+  function dedupe(name){
+    let n = name, i = 2;
+    while(usedNames.has(n)){ n = `${name}_${i++}`; }
+    usedNames.add(n);
+    return n;
+  }
+
+  for(let i=0; i<rows.length; i++){
+    drawCertificate(workCanvas, rows[i]);
+    const filename = dedupe(resolveFilename(pattern, rows[i], i));
+
+    if(wantPng){
+      const blob = await canvasToBlob(workCanvas);
+      pngZip.file(`${filename}.png`, blob);
+    }
+    if(wantPdf || wantCombined){
+      const pdf = await buildPdfBlobFromCanvas(workCanvas);
+      if(wantPdf) pdfZip.file(`${filename}.pdf`, pdf.output('arraybuffer'));
+      if(wantCombined){
+        if(!combinedPdf){ combinedPdf = pdf; }
+        else {
+          const orientation = document.getElementById('orientationSel').value === 'portrait' ? 'p' : 'l';
+          const pageSizeOpt = document.getElementById('pageSizeSel').value;
+          let format = pageSizeOpt === 'letter' ? 'letter' : 'a4';
+          if(pageSizeOpt === 'fit') combinedPdf.addPage([workCanvas.width, workCanvas.height], orientation);
+          else combinedPdf.addPage(format, orientation);
+          const pageW = combinedPdf.internal.pageSize.getWidth();
+          const pageH = combinedPdf.internal.pageSize.getHeight();
+          const imgRatio = workCanvas.width / workCanvas.height;
+          let drawW = pageW, drawH = pageW / imgRatio;
+          if(drawH > pageH){ drawH = pageH; drawW = pageH * imgRatio; }
+          const offX = (pageW - drawW)/2, offY = (pageH - drawH)/2;
+          combinedPdf.addImage(workCanvas.toDataURL('image/png',1), 'PNG', offX, offY, drawW, drawH);
+        }
+      }
+    }
+
+    const pct = Math.round(((i+1)/rows.length)*100);
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = `Generating ${i+1} / ${rows.length}…`;
+    if(i % 5 === 0) await new Promise(r=>setTimeout(r,0)); // keep UI responsive
+  }
+
+  progressLabel.textContent = 'Packaging files…';
+  await new Promise(r=>setTimeout(r,30));
+
+  if(wantPng){
+    const blob = await pngZip.generateAsync({type:'blob'});
+    downloadBlob(blob, 'certificates_png.zip');
+  }
+  if(wantPdf){
+    const blob = await pdfZip.generateAsync({type:'blob'});
+    downloadBlob(blob, 'certificates_pdf.zip');
+  }
+  if(wantCombined && combinedPdf){
+    downloadBlob(combinedPdf.output('blob'), 'certificates_combined.pdf');
+  }
+
+  progressLabel.textContent = `Done — generated ${rows.length} certificates.`;
+  document.getElementById('generateAllBtn').disabled = false;
+  toast(`Generated ${rows.length} certificates`);
+});
+
+function downloadBlob(blob, filename){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/* ======================================================================
+   PWA SETUP — manifest, service worker, install prompt
+   (All generated client-side so the whole app stays one HTML file)
+   ====================================================================== */
+(function setupPWA(){
+  // ---- 1. Generate app icons (canvas-drawn, no external files) ----
+  function makeIcon(size){
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    const ctx = c.getContext('2d');
+    const grad = ctx.createRadialGradient(size*0.32,size*0.28,size*0.05,size*0.5,size*0.5,size*0.7);
+    grad.addColorStop(0,'#E8BD6B');
+    grad.addColorStop(1,'#8A6D3B');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(0,0,size,size,size*0.22);
+    ctx.fill();
+    // simple ribbon-star glyph
+    ctx.strokeStyle = '#1A1610';
+    ctx.lineWidth = size*0.045;
+    ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath();
+    const cx=size/2, cy=size*0.44, r=size*0.22;
+    for(let i=0;i<5;i++){
+      const a1 = -Math.PI/2 + i*(2*Math.PI/5);
+      const a2 = -Math.PI/2 + (i+2)*(2*Math.PI/5);
+      const x1 = cx+r*Math.cos(a1), y1 = cy+r*Math.sin(a1);
+      const x2 = cx+r*Math.cos(a2), y2 = cy+r*Math.sin(a2);
+      if(i===0) ctx.moveTo(x1,y1);
+      ctx.lineTo(x2,y2);
+    }
+    ctx.closePath(); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(size*0.40,size*0.62); ctx.lineTo(size*0.34,size*0.86); ctx.lineTo(size*0.5,size*0.76); ctx.lineTo(size*0.66,size*0.86); ctx.lineTo(size*0.60,size*0.62);
+    ctx.stroke();
+    return c.toDataURL('image/png');
+  }
+  const icon192 = makeIcon(192);
+  const icon512 = makeIcon(512);
+  document.getElementById('favicon').setAttribute('href', icon192);
+  document.getElementById('appleTouchIcon').setAttribute('href', icon192);
+
+  // ---- 2. Build manifest.json dynamically as a Blob URL ----
+  const manifest = {
+    name: 'CertForge — Bulk Certificate Studio',
+    short_name: 'CertForge',
+    description: 'Design once, generate thousands of certificates from a CSV.',
+    start_url: '.',
+    scope: '.',
+    display: 'standalone',
+    orientation: 'any',
+    background_color: '#F4F0E6',
+    theme_color: '#8A6D3B',
+    icons: [
+      { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  document.getElementById('manifestLink').setAttribute('href', URL.createObjectURL(manifestBlob));
+
+  // ---- 3. Register an inline service worker (offline shell caching) ----
+  if('serviceWorker' in navigator){
+    const swSource = `
+      const CACHE = 'certforge-v1';
+      self.addEventListener('install', e => { self.skipWaiting(); });
+      self.addEventListener('activate', e => { self.clients.claim(); });
+      self.addEventListener('fetch', e => {
+        if(e.request.method !== 'GET') return;
+        e.respondWith(
+          caches.open(CACHE).then(async cache => {
+            const cached = await cache.match(e.request);
+            if(cached) return cached;
+            try{
+              const res = await fetch(e.request);
+              if(res && res.status === 200 && e.request.url.startsWith(self.location.origin)){
+                cache.put(e.request, res.clone());
+              }
+              return res;
+            }catch(err){
+              return cached || new Response('Offline', {status:503});
+            }
+          })
+        );
+      });
+    `;
+    const swBlob = new Blob([swSource], {type:'application/javascript'});
+    const swUrl = URL.createObjectURL(swBlob);
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register(swUrl).catch(()=>{ /* offline caching unavailable, app still works */ });
+    });
+  }
+
+  // ---- 4. Install prompt ----
+  let deferredPrompt = null;
+  const installBtn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'flex';
+  });
+  installBtn.addEventListener('click', async ()=>{
+    if(!deferredPrompt){
+      toast('Use your browser menu → "Install app" / "Add to Home Screen"');
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if(outcome === 'accepted') toast('CertForge installed');
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+  window.addEventListener('appinstalled', ()=>{ installBtn.style.display = 'none'; toast('CertForge installed'); });
+})();
+</script>
+</html>
 
