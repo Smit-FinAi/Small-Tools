@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Oracle Fusion P2P &amp; O2C Simulator | Smit Parekh</title>
+<meta name="description" content="Interactive classroom simulation of Oracle Fusion Cloud Applications — Procure to Pay and Order to Cash cycles. Built for CA Final Advanced ITT." />
+<meta name="theme-color" content="#C74634" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Fusion Sim" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Condensed:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#C74634;
+    --accent-dark:#A6392A;
+    --accent-tint:#FBEAE7;
+    --dr-blue:#0B5FA5;
+    --dr-blue-tint:#E7F1FA;
+    --cr-green:#1F7A54;
+    --cr-green-tint:#E7F5EE;
+    --amber:#B45309;
+    --amber-tint:#FDF1E2;
+    --bg:#F1F2F5;
+    --surface:#FFFFFF;
+    --surface-2:#F7F8FA;
+    --border:#DCE0E5;
+    --text:#1B1D21;
+    --text-muted:#5B616B;
+    --text-faint:#8A8F98;
+    --header-bg:#8C2E22;
+    --header-bg-2:#C74634;
+    --navrail-bg:#20242B;
+    --navrail-text:#C6CBD3;
+    --navrail-active:#2E333C;
+    --shadow:0 1px 2px rgba(20,20,25,.06), 0 4px 14px rgba(20,20,25,.06);
+    --radius:10px;
+    --font-ui:'Roboto',-apple-system,'Segoe UI',sans-serif;
+    --font-cond:'Roboto Condensed','Roboto',sans-serif;
+    --font-mono:'Roboto Mono',monospace;
+  }
+  html[data-theme="dark"]{
+    --bg:#111318;
+    --surface:#191C22;
+    --surface-2:#20242B;
+    --border:#30353E;
+    --text:#E9EAED;
+    --text-muted:#A7ACB6;
+    --text-faint:#767C87;
+    --accent:#E2634F;
+    --accent-dark:#C74634;
+    --accent-tint:#2C1D1B;
+    --dr-blue:#5CA6E0;
+    --dr-blue-tint:#122436;
+    --cr-green:#57C594;
+    --cr-green-tint:#12271F;
+    --amber:#E0A458;
+    --amber-tint:#2B2013;
+    --header-bg:#5E2018;
+    --header-bg-2:#8C2E22;
+    --navrail-bg:#0D0F13;
+    --navrail-text:#9BA0AA;
+    --navrail-active:#262B33;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 18px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font-ui);
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  button{font-family:inherit;}
+  a{color:var(--dr-blue);}
+
+  /* ===== Top App Bar ===== */
+  .appbar{
+    display:flex;align-items:center;gap:12px;
+    padding:0 16px;height:54px;flex-shrink:0;
+    background:linear-gradient(90deg,var(--header-bg),var(--header-bg-2));
+    color:#fff;
+    position:sticky;top:0;z-index:40;
+  }
+  .appbar .burger{
+    background:transparent;border:none;color:#fff;font-size:20px;cursor:pointer;
+    width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  }
+  .appbar .burger:hover{background:rgba(255,255,255,.15);}
+  .brand{display:flex;flex-direction:column;line-height:1.1;cursor:pointer;}
+  .brand .b1{font-weight:700;font-size:14.5px;letter-spacing:.2px;}
+  .brand .b2{font-size:10.5px;opacity:.85;letter-spacing:.6px;text-transform:uppercase;}
+  .env-badge{
+    margin-left:8px;font-family:var(--font-cond);font-size:11px;font-weight:700;
+    background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);
+    padding:3px 9px;border-radius:20px;letter-spacing:.4px;
+  }
+  .appbar-spacer{flex:1;}
+  .icon-btn{
+    background:transparent;border:none;color:#fff;cursor:pointer;
+    width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+  }
+  .icon-btn:hover{background:rgba(255,255,255,.15);}
+  .avatar{
+    width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;
+    border:1px solid rgba(255,255,255,.4);
+  }
+
+  /* ===== Breadcrumb ===== */
+  .breadcrumb{
+    display:flex;align-items:center;gap:6px;padding:9px 20px;
+    background:var(--surface);border-bottom:1px solid var(--border);
+    font-size:12.5px;color:var(--text-muted);flex-shrink:0;
+    overflow-x:auto;white-space:nowrap;
+  }
+  .breadcrumb b{color:var(--text);font-weight:600;}
+  .breadcrumb .sep{color:var(--text-faint);}
+
+  /* ===== Layout shell ===== */
+  .shell{display:flex;flex:1;min-height:0;}
+  .navrail{
+    width:230px;flex-shrink:0;background:var(--navrail-bg);color:var(--navrail-text);
+    padding:14px 10px;transition:margin-left .2s ease;
+  }
+  .navrail.collapsed{margin-left:-230px;}
+  .navrail .nr-item{
+    display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;
+    cursor:pointer;font-size:13.5px;margin-bottom:2px;transition:background .12s;
+  }
+  .navrail .nr-item:hover{background:rgba(255,255,255,.06);}
+  .navrail .nr-item.active{background:var(--navrail-active);color:#fff;font-weight:600;}
+  .navrail .nr-item .ic{width:20px;text-align:center;font-size:15px;}
+  .navrail .nr-label{
+    font-family:var(--font-cond);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;
+    color:#6b7280;margin:16px 12px 6px;
+  }
+  .navrail .nr-sub{font-size:12px;padding:8px 12px 8px 34px;color:var(--navrail-text);opacity:.8;cursor:pointer;border-radius:8px;}
+  .navrail .nr-sub:hover{background:rgba(255,255,255,.06);}
+  .navrail .nr-sub.active{color:#fff;font-weight:600;opacity:1;}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .content{flex:1;padding:22px;max-width:1180px;width:100%;margin:0 auto;box-sizing:border-box;}
+
+  /* ===== Springboard / home ===== */
+  .hero-title{font-size:23px;font-weight:700;margin:0 0 2px;}
+  .hero-sub{font-size:13px;color:var(--text-muted);margin:0 0 20px;font-family:var(--font-cond);letter-spacing:.3px;}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+  @media (max-width:760px){.tiles{grid-template-columns:1fr;}}
+  .tile{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px;cursor:pointer;box-shadow:var(--shadow);position:relative;overflow:hidden;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .tile:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.1);}
+  .tile::before{
+    content:"";position:absolute;top:0;left:0;bottom:0;width:5px;background:var(--accent);
+  }
+  .tile .tag{
+    font-family:var(--font-cond);font-size:10.5px;letter-spacing:1px;color:var(--accent);
+    text-transform:uppercase;font-weight:700;
+  }
+  .tile h3{margin:6px 0 6px;font-size:19px;}
+  .tile p{margin:0 0 14px;color:var(--text-muted);font-size:13px;line-height:1.5;}
+  .tile .flow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .tile .flow span{
+    background:var(--surface-2);border:1px solid var(--border);padding:4px 9px;border-radius:14px;
+    font-size:11px;color:var(--text-muted);font-family:var(--font-cond);
+  }
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;
+    font-family:var(--font-ui);font-weight:600;font-size:13px;padding:9px 16px;border-radius:6px;
+    background:var(--accent);color:#fff;
+  }
+  .btn:hover{background:var(--accent-dark);}
+  .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent);}
+  .btn.ghost:hover{background:var(--accent-tint);}
+  .btn.subtle{background:var(--surface-2);color:var(--text);border:1px solid var(--border);}
+  .btn.subtle:hover{background:var(--border);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  .info-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px 18px;font-size:13px;color:var(--text-muted);line-height:1.6;box-shadow:var(--shadow);
+  }
+  .info-card b{color:var(--text);}
+
+  /* ===== Stepper ===== */
+  .stepper-wrap{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px 18px;margin-bottom:18px;box-shadow:var(--shadow);overflow-x:auto;
+  }
+  .stepper{display:flex;align-items:flex-start;min-width:max-content;}
+  .step-node{display:flex;flex-direction:column;align-items:center;width:118px;flex-shrink:0;cursor:pointer;}
+  .step-circle{
+    width:30px;height:30px;border-radius:50%;border:2px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;
+    color:var(--text-faint);background:var(--surface);flex-shrink:0;
+  }
+  .step-node.done .step-circle{background:var(--cr-green);border-color:var(--cr-green);color:#fff;}
+  .step-node.current .step-circle{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 0 4px var(--accent-tint);}
+  .step-line{flex:1;height:2px;background:var(--border);margin-top:14px;min-width:20px;}
+  .step-node.done + .step-line{background:var(--cr-green);}
+  .step-label{font-size:10.5px;text-align:center;margin-top:6px;color:var(--text-muted);font-family:var(--font-cond);letter-spacing:.2px;line-height:1.25;}
+  .step-node.current .step-label{color:var(--text);font-weight:700;}
+  .step-row{display:flex;align-items:flex-start;}
+
+  /* ===== Work area (form + guide) ===== */
+  .workarea{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start;}
+  @media (max-width:860px){.workarea{grid-template-columns:1fr;}}
+  .panel{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .panel-head{
+    padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;
+    background:var(--surface-2);
+  }
+  .panel-head h3{margin:0;font-size:14.5px;}
+  .panel-head .module-path{font-size:10.5px;color:var(--text-faint);font-family:var(--font-mono);margin-top:2px;}
+  .status-chip{
+    font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:20px;font-family:var(--font-cond);letter-spacing:.4px;text-transform:uppercase;
+  }
+  .status-chip.pending{background:var(--amber-tint);color:var(--amber);}
+  .status-chip.approved{background:var(--cr-green-tint);color:var(--cr-green);}
+  .status-chip.progress{background:var(--dr-blue-tint);color:var(--dr-blue);}
+  .panel-body{padding:18px;}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;}
+  @media (max-width:520px){.form-grid{grid-template-columns:1fr;}}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field.full{grid-column:1/-1;}
+  .field label{font-size:11.5px;color:var(--text-muted);font-weight:600;font-family:var(--font-cond);letter-spacing:.3px;text-transform:uppercase;}
+  .field input, .field select{
+    border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-size:13.5px;
+    background:var(--surface-2);color:var(--text);font-family:var(--font-ui);
+  }
+  .field input:focus, .field select:focus{outline:2px solid var(--accent);outline-offset:0;background:var(--surface);}
+  .field input:disabled{color:var(--text-faint);}
+  .field .hint{font-size:10.5px;color:var(--text-faint);}
+
+  .divider{height:1px;background:var(--border);margin:16px 0;}
+
+  table.docline{width:100%;border-collapse:collapse;font-size:12.5px;}
+  table.docline th{
+    text-align:left;font-family:var(--font-cond);text-transform:uppercase;letter-spacing:.4px;
+    font-size:10.5px;color:var(--text-faint);border-bottom:1px solid var(--border);padding:6px 8px;
+  }
+  table.docline td{padding:8px;border-bottom:1px solid var(--border);}
+  table.docline tfoot td{font-weight:700;border-bottom:none;}
+
+  .task-card{
+    display:flex;gap:12px;padding:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);
+  }
+  .task-card .tavatar{
+    width:38px;height:38px;border-radius:50%;background:var(--dr-blue-tint);color:var(--dr-blue);
+    display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;
+  }
+  .task-card .tbody{flex:1;}
+  .task-card .ttitle{font-weight:600;font-size:13.5px;margin-bottom:2px;}
+  .task-card .tmeta{font-size:11.5px;color:var(--text-muted);}
+
+  .match-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;}
+  @media (max-width:600px){.match-grid{grid-template-columns:1fr;}}
+  .match-box{border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;background:var(--surface-2);}
+  .match-box .mk{font-family:var(--font-cond);font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-faint);}
+  .match-box .mv{font-size:14px;font-weight:700;margin-top:3px;}
+  .match-box.ok{border-color:var(--cr-green);}
+  .match-box.ok .mv{color:var(--cr-green);}
+
+  .actions-row{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap;}
+
+  /* guide panel */
+  .guide h4{margin:0 0 6px;font-size:12.5px;font-family:var(--font-cond);text-transform:uppercase;letter-spacing:.5px;color:var(--accent);}
+  .guide p{margin:0 0 14px;font-size:12.8px;line-height:1.6;color:var(--text-muted);}
+  .guide .real-tag{
+    display:inline-block;font-size:10px;font-weight:700;background:var(--accent-tint);color:var(--accent);
+    padding:2px 8px;border-radius:10px;margin-bottom:8px;font-family:var(--font-cond);letter-spacing:.4px;
+  }
+  .acct-note{
+    background:var(--dr-blue-tint);border:1px solid var(--dr-blue);border-radius:8px;padding:10px 12px;font-size:12.3px;color:var(--text);
+    margin-top:4px;line-height:1.55;
+  }
+  .acct-note b{color:var(--dr-blue);}
+
+  /* ===== Journal strip ===== */
+  .journal-strip{
+    border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;
+  }
+  .journal-strip .js-head{
+    display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;
+    font-size:12px;font-weight:700;color:var(--text-muted);font-family:var(--font-cond);letter-spacing:.4px;text-transform:uppercase;
+  }
+  .journal-strip .js-head .count{
+    background:var(--accent);color:#fff;border-radius:10px;font-size:10.5px;padding:1px 8px;font-weight:700;
+  }
+  .journal-strip .js-body{max-height:0;overflow:hidden;transition:max-height .25s ease;padding:0 18px;}
+  .journal-strip.open .js-body{max-height:260px;overflow-y:auto;padding:0 18px 14px;}
+  table.jtable{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--font-mono);}
+  table.jtable th{text-align:left;padding:6px 8px;color:var(--text-faint);border-bottom:1px solid var(--border);font-family:var(--font-cond);text-transform:uppercase;font-size:10px;letter-spacing:.4px;}
+  table.jtable td{padding:6px 8px;border-bottom:1px solid var(--border);}
+  table.jtable td.dr{color:var(--dr-blue);}
+  table.jtable td.cr{color:var(--cr-green);}
+  .je-empty{padding:14px 0;color:var(--text-faint);font-size:12.5px;}
+
+  /* ===== Footer ===== */
+  footer{
+    text-align:center;padding:14px 12px 16px;font-size:11.5px;color:var(--text-faint);
+    border-top:1px solid var(--border);background:var(--surface);
+  }
+  footer a{color:var(--accent);text-decoration:none;font-weight:600;}
+  footer a:hover{text-decoration:underline;}
+  footer .credit{font-weight:600;color:var(--text-muted);}
+
+  .toast{
+    position:fixed;bottom:22px;right:22px;background:var(--text);color:var(--surface);
+    padding:11px 16px;border-radius:8px;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.25);
+    z-index:100;opacity:0;transform:translateY(10px);transition:all .25s ease;pointer-events:none;
+    max-width:280px;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  .complete-banner{
+    background:var(--cr-green-tint);border:1px solid var(--cr-green);border-radius:var(--radius);
+    padding:18px 20px;text-align:center;margin-bottom:18px;
+  }
+  .complete-banner h2{margin:0 0 4px;color:var(--cr-green);font-size:18px;}
+  .complete-banner p{margin:0;color:var(--text-muted);font-size:13px;}
+
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px;}
+
+  @media (max-width:700px){
+    .navrail{position:fixed;top:54px;bottom:0;left:0;z-index:39;box-shadow:4px 0 20px rgba(0,0,0,.2);}
+    .navrail.collapsed{margin-left:-230px;}
+    .navrail:not(.collapsed){margin-left:0;}
+    .content{padding:16px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <button class="burger" id="burgerBtn" aria-label="Toggle navigation">&#9776;</button>
+  <div class="brand" id="brandHome">
+    <span class="b1">Oracle Fusion Cloud Applications</span>
+    <span class="b2">Classroom Simulation Environment</span>
+  </div>
+  <span class="env-badge">TRAINING · ICAI ADV. ITT</span>
+  <div class="appbar-spacer"></div>
+  <button class="icon-btn" id="themeToggle" aria-label="Toggle day/night mode" title="Toggle day/night mode">&#9788;</button>
+  <div class="avatar" title="CA Final Student">CA</div>
+</div>
+
+<div class="breadcrumb" id="breadcrumb"></div>
+
+<div class="shell">
+  <div class="navrail" id="navrail">
+    <div class="nr-item active" data-nav="home"><span class="ic">&#8962;</span> Springboard</div>
+    <div class="nr-label">Simulations</div>
+    <div class="nr-item" data-nav="p2p"><span class="ic">&#128230;</span> Procure to Pay</div>
+    <div class="nr-item" data-nav="o2c"><span class="ic">&#128176;</span> Order to Cash</div>
+    <div class="nr-label">Reference</div>
+    <div class="nr-item" data-nav="ledger"><span class="ic">&#128220;</span> Subledger Journal</div>
+    <div class="nr-item" data-nav="about"><span class="ic">&#8505;</span> About this Trainer</div>
+    <div class="nr-label">Session</div>
+    <div class="nr-item" data-nav="reset"><span class="ic">&#8635;</span> Reset Simulation</div>
+  </div>
+
+  <div class="main">
+    <div class="content" id="content"></div>
+
+    <div class="journal-strip" id="journalStrip">
+      <div class="js-head" id="journalHead">
+        <span>&#9662; Live Subledger Journal Entries</span>
+        <span class="count" id="journalCount">0</span>
+      </div>
+      <div class="js-body" id="journalBody"></div>
+    </div>
+
+    <footer>
+      <div>Oracle, Oracle Fusion Cloud Applications and related marks are trademarks of Oracle Corporation. This is an unaffiliated, non-commercial classroom simulation for educational use only — no real Oracle software, code, or data is used.</div>
+      <div style="margin-top:6px;">
+        <span class="credit">Created by Smit Parekh</span> ·
+        <a href="https://www.youtube.com/@TheParekhShow" target="_blank" rel="noopener">www.youtube.com/@TheParekhShow</a>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   ORACLE FUSION P2P & O2C CLASSROOM SIMULATOR
+   Created by Smit Parekh — www.youtube.com/@TheParekhShow
+   ============================================================ */
+
+/* ---------- Theme ---------- */
+let theme = 'light';
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeToggle').innerHTML = theme === 'light' ? '&#9790;' : '&#9788;';
+}
+document.getElementById('themeToggle').addEventListener('click', () => {
+  theme = theme === 'light' ? 'dark' : 'light';
+  applyTheme();
+});
+applyTheme();
+
+/* ---------- Nav rail toggle ---------- */
+const navrail = document.getElementById('navrail');
+document.getElementById('burgerBtn').addEventListener('click', () => navrail.classList.toggle('collapsed'));
+document.getElementById('brandHome').addEventListener('click', () => go('home'));
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ---------- Money format ---------- */
+function inr(n){
+  return '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+
+/* ---------- Journal ledger ---------- */
+let journal = []; // {doc, desc, lines:[{acct, dr, cr}]}
+function postJournal(doc, desc, lines){
+  journal.push({doc, desc, lines, id: journal.length+1});
+  renderJournal();
+}
+function renderJournal(){
+  document.getElementById('journalCount').textContent = journal.length;
+  const body = document.getElementById('journalBody');
+  if(journal.length === 0){
+    body.innerHTML = '<div class="je-empty">No entries posted yet. Progress through a cycle to see subledger accounting build up here, exactly as Oracle Fusion\'s Create Accounting process would generate it.</div>';
+    return;
+  }
+  let rows = '';
+  journal.forEach(j => {
+    rows += `<tr><td colspan="4" style="padding-top:12px;font-weight:700;color:var(--text);border-bottom:1px solid var(--border);">JE-${String(j.id).padStart(3,'0')} · ${j.doc} — ${j.desc}</td></tr>`;
+    j.lines.forEach(l => {
+      rows += `<tr>
+        <td style="padding-left:18px;">${l.acct}</td>
+        <td class="dr">${l.dr ? inr(l.dr) : ''}</td>
+        <td class="cr">${l.cr ? inr(l.cr) : ''}</td>
+        <td></td>
+      </tr>`;
+    });
+  });
+  body.innerHTML = `<table class="jtable"><thead><tr><th>Account</th><th>Debit</th><th>Credit</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+document.getElementById('journalHead').addEventListener('click', () => {
+  document.getElementById('journalStrip').classList.toggle('open');
+});
+renderJournal();
+
+/* ---------- App state ---------- */
+let route = 'home'; // home | p2p | o2c | ledger | about
+let p2pStep = 0;
+let o2cStep = 0;
+let p2pPosted = {}; // guards against duplicate postings
+let o2cPosted = {};
+
+const P2P_DATA = {
+  requester: 'Priya Sharma (Trainee — Finance)',
+  bu: 'IN Business Unit 01',
+  item: 'Laptop — Dell Latitude 5450 (Office Equipment)',
+  category: 'OFFICE.EQUIPMENT',
+  qty: 10,
+  uom: 'Each',
+  price: 10000,
+  supplier: 'Bluechip Computers Pvt Ltd',
+  supplierSite: 'MUMBAI-MAIN',
+  needBy: '2026-08-10',
+  account: '01-000-5210-0000-000 (Office Equipment Expense)',
+  poNumber: 'PO-100234',
+  reqNumber: 'REQ-500981',
+  invoiceNumber: 'INV/BC/2026/0417',
+  receiptNumber: 'RCPT-40012'
+};
+P2P_DATA.baseValue = P2P_DATA.qty * P2P_DATA.price;
+P2P_DATA.gst = Math.round(P2P_DATA.baseValue * 0.18);
+P2P_DATA.total = P2P_DATA.baseValue + P2P_DATA.gst;
+
+const O2C_DATA = {
+  customer: 'Vertex Retail Solutions Ltd',
+  custSite: 'PUNE-SHIP-TO-01',
+  item: 'Commercial Router — NetCore CR-4400',
+  qty: 25,
+  uom: 'Each',
+  price: 6000,
+  orderNumber: 'SO-780112',
+  shipmentNumber: 'SHIP-990045',
+  invoiceNumber: 'RA-2026-88231',
+  receiptNumber: 'REC-CASH-33021',
+  warehouse: 'WH-PUNE-01',
+  cogsUnit: 3600
+};
+O2C_DATA.saleValue = O2C_DATA.qty * O2C_DATA.price;
+O2C_DATA.gst = Math.round(O2C_DATA.saleValue * 0.18);
+O2C_DATA.total = O2C_DATA.saleValue + O2C_DATA.gst;
+O2C_DATA.cogs = O2C_DATA.qty * O2C_DATA.cogsUnit;
+
+/* ---------- Step configs ---------- */
+const P2P_STEPS = [
+  {key:'req', label:'Requisition', module:'Procurement › Purchase Requisitions › Create Requisition'},
+  {key:'reqApprove', label:'Req. Approval', module:'Procurement › BPM Worklist › Approvals'},
+  {key:'po', label:'Purchase Order', module:'Procurement › Buyer Work Area › Purchase Orders'},
+  {key:'receipt', label:'Goods Receipt', module:'Procurement › Receiving › Receive Goods'},
+  {key:'invoice', label:'Supplier Invoice', module:'Payables › Invoices › Invoice Workbench'},
+  {key:'payment', label:'Payment', module:'Payables › Payments › Create Payment Process Request'},
+  {key:'done', label:'Cycle Complete', module:'Financials › General Ledger › Journal Summary'},
+];
+
+const O2C_STEPS = [
+  {key:'order', label:'Sales Order', module:'Order Management › Order Management Work Area › Create Order'},
+  {key:'sched', label:'Orchestration', module:'Order Management › Manage Orchestration Process'},
+  {key:'ship', label:'Pick &amp; Ship', module:'Inventory Management › Shipping › Ship Confirm'},
+  {key:'invoice', label:'AutoInvoice', module:'Receivables › Billing › Manage Transactions'},
+  {key:'receipt', label:'Cash Receipt', module:'Receivables › Receipts › Create Receipt'},
+  {key:'done', label:'Cycle Complete', module:'Financials › General Ledger › Journal Summary'},
+];
+
+/* ---------- Nav wiring ---------- */
+document.querySelectorAll('.nr-item[data-nav]').forEach(el => {
+  el.addEventListener('click', () => {
+    const n = el.getAttribute('data-nav');
+    if(n === 'reset'){
+      if(confirm('Reset the simulation? This clears both cycles and the journal ledger.')){
+        p2pStep = 0; o2cStep = 0; journal = []; p2pPosted = {}; o2cPosted = {};
+        renderJournal();
+        showToast('Simulation reset.');
+        go('home');
+      }
+      return;
+    }
+    go(n);
+  });
+});
+
+function setActiveNav(key){
+  document.querySelectorAll('.nr-item[data-nav]').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('data-nav') === key);
+  });
+}
+
+function go(r){
+  route = r;
+  setActiveNav(r === 'p2p' || r === 'o2c' ? r : (r==='home'?'home':r));
+  if(window.innerWidth <= 700) navrail.classList.add('collapsed');
+  render();
+  document.getElementById('content').scrollIntoView({behavior:'instant', block:'start'});
+}
+
+/* ---------- Breadcrumb ---------- */
+function setBreadcrumb(parts){
+  document.getElementById('breadcrumb').innerHTML = parts.map((p,i) =>
+    (i===parts.length-1 ? `<b>${p}</b>` : `<span>${p}</span>`)
+  ).join(' <span class="sep">›</span> ');
+}
+
+/* ---------- Renderer dispatch ---------- */
+function render(){
+  const c = document.getElementById('content');
+  if(route === 'home'){ setBreadcrumb(['Springboard']); c.innerHTML = renderHome(); wireHome(); }
+  else if(route === 'p2p'){ setBreadcrumb(['Procurement','Procure to Pay Cycle']); c.innerHTML = renderCycle('p2p'); wireCycle('p2p'); }
+  else if(route === 'o2c'){ setBreadcrumb(['Order Management','Order to Cash Cycle']); c.innerHTML = renderCycle('o2c'); wireCycle('o2c'); }
+  else if(route === 'ledger'){ setBreadcrumb(['Financials','General Ledger','Journal Summary']); c.innerHTML = renderLedgerPage(); document.getElementById('journalStrip').classList.add('open'); }
+  else if(route === 'about'){ setBreadcrumb(['Help','About this Trainer']); c.innerHTML = renderAbout(); }
+}
+
+/* ================= HOME ================= */
+function renderHome(){
+  return `
+  <h1 class="hero-title">Welcome to the Fusion Applications Training Springboard</h1>
+  <p class="hero-sub">CREATED BY SMIT PAREKH — CA FINAL ADVANCED ITT COURSEWARE</p>
+
+  <div class="tiles">
+    <div class="tile" id="tileP2P">
+      <div class="tag">Procurement → Payables</div>
+      <h3>Procure to Pay (P2P)</h3>
+      <p>Walk through Requisitioning, Purchase Orders, Receiving and Supplier Invoicing exactly as a Fusion Procurement / Payables user would, with 3-way match and live accounting entries.</p>
+      <div class="flow"><span>Requisition</span><span>Approval</span><span>PO</span><span>Receipt</span><span>Invoice (3-Way Match)</span><span>Payment</span></div>
+      <button class="btn">Launch P2P Simulation →</button>
+    </div>
+    <div class="tile" id="tileO2C">
+      <div class="tag">Order Management → Receivables</div>
+      <h3>Order to Cash (O2C)</h3>
+      <p>Walk through Sales Order entry, Fulfilment, Shipping, AutoInvoice and Cash Receipt exactly as a Fusion Order Management / Receivables user would, with revenue and cash entries.</p>
+      <div class="flow"><span>Sales Order</span><span>Orchestration</span><span>Ship Confirm</span><span>AutoInvoice</span><span>Cash Receipt</span></div>
+      <button class="btn">Launch O2C Simulation →</button>
+    </div>
+  </div>
+
+  <div class="info-card">
+    <b>How to use this in class:</b> Each screen mirrors the real Fusion work area name and navigation path (shown under the panel title) so students recognise the actual product even without live access. Every action a student takes posts a subledger journal entry to the strip at the bottom of the screen — use it to connect the transaction to the accounting, which is the crux of the ITT syllabus. Reset the simulation any time from the left rail.
+  </div>
+  `;
+}
+function wireHome(){
+  document.getElementById('tileP2P').addEventListener('click', () => go('p2p'));
+  document.getElementById('tileO2C').addEventListener('click', () => go('o2c'));
+}
+
+/* ================= ABOUT ================= */
+function renderAbout(){
+  return `
+  <h1 class="hero-title">About this Trainer</h1>
+  <p class="hero-sub">CREATED BY SMIT PAREKH</p>
+  <div class="info-card" style="line-height:1.8;">
+    This simulator was built as a teaching aid for CA Final students taking the ICAI Advanced Integrated Technology (ITT) course, to give hands-on exposure to how a Procure-to-Pay and Order-to-Cash cycle actually flows inside <b>Oracle Fusion Cloud Applications</b>, in the absence of a live demo licence.<br><br>
+    It reproduces the real work area names, navigation paths and process sequence (Requisition → PO → Receipt → Invoice → Payment, and Sales Order → Shipment → Invoice → Receipt), and reinforces each step with the subledger journal entry it triggers — because for a CA, the accounting behind the transaction is the point.<br><br>
+    This is an original, unaffiliated educational recreation. No Oracle software, source code, screens, or proprietary data have been copied — it does not replace hands-on access to a real Fusion instance.<br><br>
+    <b>Created by Smit Parekh</b> — <a href="https://www.youtube.com/@TheParekhShow" target="_blank" rel="noopener">www.youtube.com/@TheParekhShow</a>
+  </div>
+  `;
+}
+
+/* ================= LEDGER PAGE ================= */
+function renderLedgerPage(){
+  return `
+  <h1 class="hero-title">General Ledger — Journal Summary</h1>
+  <p class="hero-sub">FINANCIALS › GENERAL LEDGER › JOURNAL SUMMARY</p>
+  <div class="info-card">Every posting made across both cycles appears in the <b>Live Subledger Journal</b> strip pinned to the bottom of the screen. Expand it below, or from any other screen, to review debits and credits as they're generated.</div>
+  `;
+}
+
+/* ================= CYCLE (shared engine) ================= */
+function renderCycle(cycle){
+  const steps = cycle === 'p2p' ? P2P_STEPS : O2C_STEPS;
+  const idx = cycle === 'p2p' ? p2pStep : o2cStep;
+
+  let stepperHtml = '<div class="stepper-wrap"><div class="stepper">';
+  steps.forEach((s,i) => {
+    stepperHtml += `<div class="step-row">`;
+    stepperHtml += `<div class="step-node ${i<idx?'done':''} ${i===idx?'current':''}" data-goto="${i}">
+        <div class="step-circle">${i<idx?'&#10003;':i+1}</div>
+        <div class="step-label">${s.label}</div>
+      </div>`;
+    if(i < steps.length-1) stepperHtml += `<div class="step-line"></div>`;
+    stepperHtml += `</div>`;
+  });
+  stepperHtml += '</div></div>';
+
+  const bodyHtml = cycle === 'p2p' ? renderP2PStep(idx) : renderO2CStep(idx);
+
+  return stepperHtml + bodyHtml;
+}
+
+function wireCycle(cycle){
+  document.querySelectorAll('.step-node[data-goto]').forEach(el => {
+    el.addEventListener('click', () => {
+      const target = parseInt(el.getAttribute('data-goto'),10);
+      const cur = cycle==='p2p'?p2pStep:o2cStep;
+      if(target <= cur){ // only allow revisiting completed/current steps
+        if(cycle==='p2p') p2pStep = target; else o2cStep = target;
+        render(); wireCycle(cycle);
+      }
+    });
+  });
+  wireStepActions(cycle);
+}
+
+function advance(cycle){
+  if(cycle==='p2p') p2pStep = Math.min(p2pStep+1, P2P_STEPS.length-1);
+  else o2cStep = Math.min(o2cStep+1, O2C_STEPS.length-1);
+  render();
+  wireCycle(cycle);
+}
+function back(cycle){
+  if(cycle==='p2p') p2pStep = Math.max(p2pStep-1, 0);
+  else o2cStep = Math.max(o2cStep-1, 0);
+  render();
+  wireCycle(cycle);
+}
+
+function panelShell(module, statusLabel, statusClass, title, bodyHtml, guideHtml){
+  return `
+  <div class="workarea">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>${title}</h3>
+          <div class="module-path">${module}</div>
+        </div>
+        <span class="status-chip ${statusClass}">${statusLabel}</span>
+      </div>
+      <div class="panel-body">${bodyHtml}</div>
+    </div>
+    <div class="panel guide">
+      <div class="panel-head"><h3>Process Guide</h3></div>
+      <div class="panel-body">${guideHtml}</div>
+    </div>
+  </div>`;
+}
+
+/* ================= P2P STEPS ================= */
+function renderP2PStep(i){
+  const d = P2P_DATA;
+  const s = P2P_STEPS[i];
+
+  if(s.key === 'req'){
+    return panelShell(s.module, 'Draft', 'pending', 'Create Purchase Requisition', `
+      <div class="form-grid">
+        <div class="field"><label>Requester</label><input value="${d.requester}" disabled></div>
+        <div class="field"><label>Business Unit</label><input value="${d.bu}" disabled></div>
+        <div class="field full"><label>Item Description</label><input value="${d.item}" disabled></div>
+        <div class="field"><label>Category</label><input value="${d.category}" disabled></div>
+        <div class="field"><label>Need-By Date</label><input value="${d.needBy}" disabled></div>
+        <div class="field"><label>Quantity</label><input value="${d.qty} ${d.uom}" disabled></div>
+        <div class="field"><label>Unit Price</label><input value="${inr(d.price)}" disabled></div>
+        <div class="field"><label>Suggested Supplier</label><input value="${d.supplier}" disabled></div>
+        <div class="field"><label>Charge Account</label><input value="${d.account}" disabled></div>
+      </div>
+      <div class="divider"></div>
+      <table class="docline">
+        <thead><tr><th>Line</th><th>Description</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead>
+        <tbody><tr><td>1</td><td>${d.item}</td><td>${d.qty}</td><td>${inr(d.price)}</td><td>${inr(d.baseValue)}</td></tr></tbody>
+        <tfoot><tr><td colspan="4">Requisition Total</td><td>${inr(d.baseValue)}</td></tr></tfoot>
+      </table>
+      <div class="actions-row">
+        <button class="btn" id="actSubmitReq">Submit for Approval</button>
+      </div>
+    `, `
+      <span class="real-tag">Self Service Procurement</span>
+      <p>In live Fusion, this screen is where an employee raises a need — office equipment, stationery, services — and it flows into Purchasing once approved. Notice the <b>charge account</b>: this is the GL account that will ultimately be debited, decided right at requisition stage.</p>
+      <h4>Why this matters for CA students</h4>
+      <p>A requisition itself creates <b>no accounting entry</b> — it is a request, not a transaction. Accounting only begins from the Purchase Order / Receipt stage onward. This distinction (commitment vs. obligation vs. liability) is a favourite exam concept.</p>
+    `);
+  }
+
+  if(s.key === 'reqApprove'){
+    return panelShell(s.module, 'Pending Approval', 'pending', 'Requisition Approval Task', `
+      <div class="task-card">
+        <div class="tavatar">RM</div>
+        <div class="tbody">
+          <div class="ttitle">Approve Requisition ${d.reqNumber} — ${d.requester}</div>
+          <div class="tmeta">Assigned to: Rohit Mehta (Department Manager) · Amount: ${inr(d.baseValue)} · Due in 2 business days</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p style="font-size:13px;color:var(--text-muted);">This requisition was routed automatically by the approval hierarchy rule based on amount and cost centre. As the approver, you review the requisition and take an action below.</p>
+      <div class="actions-row">
+        <button class="btn subtle" id="actBack">← Back</button>
+        <button class="btn" id="actApproveReq">Approve</button>
+      </div>
+    `, `
+      <span class="real-tag">BPM Worklist</span>
+      <p>Fusion routes approvals through the <b>BPM Worklist</b> using configurable approval rules (by amount, category, or hierarchy). Approvers can approve, reject, or request more information — all logged with a full audit trail.</p>
+      <h4>Why this matters</h4>
+      <p>The audit trail here is exactly what an auditor relies on for testing <b>authorisation controls</b> in a purchasing cycle walkthrough.</p>
+    `);
+  }
+
+  if(s.key === 'po'){
+    return panelShell(s.module, 'Pending Approval', 'pending', 'Purchase Order — ' + d.poNumber, `
+      <div class="form-grid">
+        <div class="field"><label>PO Number</label><input value="${d.poNumber}" disabled></div>
+        <div class="field"><label>Source Requisition</label><input value="${d.reqNumber}" disabled></div>
+        <div class="field"><label>Supplier</label><input value="${d.supplier}" disabled></div>
+        <div class="field"><label>Supplier Site</label><input value="${d.supplierSite}" disabled></div>
+        <div class="field"><label>Buyer</label><input value="Anjali Rao (Category Buyer)" disabled></div>
+        <div class="field"><label>Payment Terms</label><input value="Net 30" disabled></div>
+      </div>
+      <div class="divider"></div>
+      <table class="docline">
+        <thead><tr><th>Line</th><th>Item</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead>
+        <tbody><tr><td>1</td><td>${d.item}</td><td>${d.qty}</td><td>${inr(d.price)}</td><td>${inr(d.baseValue)}</td></tr></tbody>
+        <tfoot>
+          <tr><td colspan="4">Taxable Value</td><td>${inr(d.baseValue)}</td></tr>
+          <tr><td colspan="4">Input GST @ 18%</td><td>${inr(d.gst)}</td></tr>
+          <tr><td colspan="4"><b>PO Total</b></td><td><b>${inr(d.total)}</b></td></tr>
+        </tfoot>
+      </table>
+      <div class="actions-row">
+        <button class="btn subtle" id="actBack">← Back</button>
+        <button class="btn" id="actApprovePO">Approve &amp; Dispatch to Supplier</button>
+      </div>
+    `, `
+      <span class="real-tag">Buyer Work Area</span>
+      <p>The approved requisition auto-creates a PO line here for the buyer to review, add a supplier and payment terms, and submit for its own approval. Once approved, Fusion communicates it to the supplier by email/EDI/print.</p>
+      <h4>Why this matters</h4>
+      <p>A PO is a legal <b>commitment</b>, not yet a liability in accounting. Some organisations track it as an "encumbrance" in a budgetary control ledger — that entry, if used, is a memo entry and not part of the financial statements.</p>
+    `);
+  }
+
+  if(s.key === 'receipt'){
+    const already = !!p2pPosted.receipt;
+    return panelShell(s.module, 'PO Open', 'progress', 'Receive Goods — ' + d.receiptNumber, `
+      <div class="form-grid">
+        <div class="field"><label>PO Number</label><input value="${d.poNumber}" disabled></div>
+        <div class="field"><label>Supplier</label><input value="${d.supplier}" disabled></div>
+        <div class="field"><label>Item</label><input value="${d.item}" disabled></div>
+        <div class="field"><label>Receipt Date</label><input value="2026-08-05" disabled></div>
+        <div class="field"><label>Quantity Ordered</label><input value="${d.qty}" disabled></div>
+        <div class="field"><label>Quantity Received</label><input value="${d.qty}" disabled></div>
+      </div>
+      <div class="divider"></div>
+      <p style="font-size:13px;color:var(--text-muted);">Goods have arrived at the dock. Confirming this receipt updates on-hand inventory and records a <b>receipt accrual</b> — Fusion's way of recognising the obligation before the supplier's invoice even arrives.</p>
+      <div class="actions-row">
+        <button class="btn subtle" id="actBack">← Back</button>
+        <button class="btn" id="actConfirmReceipt">${already ? 'Continue' : 'Confirm Receipt'}</button>
+      </div>
+    `, `
+      <span class="real-tag">Receiving Work Area</span>
+      <p>The store/warehouse team confirms physical receipt against the PO here (with optional inspection). This is a three-way match input: <b>PO → Receipt → Invoice</b>.</p>
+      <div class="acct-note"><b>Entry posted on confirm:</b><br>Dr Office Equipment (Asset/Expense) ${inr(d.baseValue)}<br>Cr Accrued Liability (Receipt Accrual) ${inr(d.baseValue)}</div>
+    `);
+  }
+
+  if(s.key === 'invoice'){
+    return panelShell(s.module, 'Matched', 'progress', 'Supplier Invoice — ' + d.invoiceNumber, `
+      <div class="form-grid">
+        <div class="field"><label>Invoice Number</label><input value="${d.invoiceNumber}" disabled></div>
+        <div class="field"><label>Supplier</label><input value="${d.supplier}" disabled></div>
+        <div class="field"><label>Matched PO</label><input value="${d.poNumber}" disabled></div>
+        <div class="field"><label>Matched Receipt</label><input value="${d.receiptNumber}" disabled></div>
+        <div class="field"><label>Invoice Date</label><input value="2026-08-07" disabled></div>
+        <div class="field"><label>Invoice Amount</label><input value="${inr(d.total)}" disabled></div>
+      </div>
+      <div class="match-grid">
+        <div class="match-box ok"><div class="mk">Qty Match</div><div class="mv">✓ ${d.qty} = ${d.qty}</div></div>
+        <div class="match-box ok"><div class="mk">Price Match</div><div class="mv">✓ ${inr(d.price)}</div></div>
+        <div class="match-box ok"><div class="mk">Tax Match</div><div class="mv">✓ GST 18%</div></div>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);">Three-way match (PO ↔ Receipt ↔ Invoice) passed within tolerance. The invoice can be validated and accounted.</p>
+      <div class="actions-row">
+        <button class="btn subtle" id="actBack">← Back</button>
+        <button class="btn" id="actValidateInvoice">Validate &amp; Account Invoice</button>
+      </div>
+    `, `
+      <span class="real-tag">Payables Invoice Workbench</span>
+      <p>AP imports/creates the supplier invoice and Fusion runs the <b>3-way match</b> automatically against tolerances set in Purchasing. A mismatch would hold the invoice for review instead of letting it validate.</p>
+      <div class="acct-note"><b>Entry posted on validate:</b><br>Dr Accrued Liability (clears receipt accrual) ${inr(d.baseValue)}<br>Dr Input GST Credit Receivable ${inr(d.gst)}<br>Cr Trade Payables — ${d.supplier} ${inr(d.total)}</div>
+    `);
+  }
+
+  if(s.key === 'payment'){
+    return panelShell(s.module, 'Due', 'pending', 'Create Payment Process Request', `
+      <div class="form-grid">
+        <div class="field"><label>Supplier</label><input value="${d.supplier}" disabled></div>
+        <div class="field"><label>Invoice(s)</label><input value="${d.invoiceNumber}" disabled></div>
+        <div class="field"><label>Payment Method</label><input value="Electronic — NEFT" disabled></div>
+        <div class="field"><label>Bank Account</label><input value="HDFC Bank — Current A/c 5021" disabled></div>
+        <div class="field"><label>Payment Date</label><input value="2026-08-20" disabled></div>
+        <div class="field"><label>Amount</label><input value="${inr(d.total)}" disabled></div>
+      </div>
+      <div class="actions-row">
+        <button class="btn subtle" id="actBack">← Back</button>
+        <button class="btn" id="actPay">Submit Payment Process Request</button>
+      </div>
+    `, `
+      <span class="real-tag">Payables Payments</span>
+      <p>AP settles the validated invoice through a Payment Process Request, which selects due invoices, builds a payment file, and disburses via the chosen method (NEFT/RTGS/cheque).</p>
+      <div class="acct-note"><b>Entry posted on payment:</b><br>Dr Trade Payables — ${d.supplier} ${inr(d.total)}<br>Cr Bank Account (HDFC — Current A/c) ${inr(d.total)}</div>
+    `);
+  }
+
+  // done
+  return `
+    <div class="complete-banner">
+      <h2>✓ Procure to Pay Cycle Complete</h2>
+      <p>Requisition ${d.reqNumber} → PO ${d.poNumber} → Receipt ${d.receiptNumber} → Invoice ${d.invoiceNumber} → Payment settled, for a total of ${inr(d.total)}.</p>
+    </div>
+    <div class="workarea">
+      <div class="panel">
+        <div class="panel-head"><h3>Full Cycle Journal Trail</h3></div>
+        <div class="panel-body">
+          <table class="docline">
+            <thead><tr><th>Event</th><th>Dr</th><th>Cr</th><th>Amount</th></tr></thead>
+            <tbody>
+              <tr><td>Goods Receipt</td><td>Office Equipment (Expense/Asset)</td><td>Accrued Liability</td><td>${inr(d.baseValue)}</td></tr>
+              <tr><td>Invoice Validation</td><td>Accrued Liability + Input GST Credit</td><td>Trade Payables</td><td>${inr(d.total)}</td></tr>
+              <tr><td>Payment</td><td>Trade Payables</td><td>Bank Account</td><td>${inr(d.total)}</td></tr>
+            </tbody>
+          </table>
+          <div class="actions-row">
+            <button class="btn subtle" id="actBack">← Review Payment Step</button>
+            <button class="btn ghost" id="actRestartP2P">Restart P2P Cycle</button>
+            <button class="btn" id="actGoO2C">Try Order to Cash →</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel guide">
+        <div class="panel-head"><h3>Process Guide</h3></div>
+        <div class="panel-body">
+          <p>This mirrors exactly what Fusion's <b>Create Accounting</b> process generates in the Payables and Costing subledgers, which then get transferred to the General Ledger.</p>
+          <p>For your ITT viva/practicals, be ready to explain why the accrual account is used at receipt instead of going straight to Trade Payables — it's because the legal invoice (and hence the exact liability) hasn't arrived yet.</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ================= O2C STEPS ================= */
+function renderO2CStep(i){
+  const d = O2C_DATA;
+  const s = O2C_STEPS[i];
+
+  if(s.key === 'order'){
+    return panelShell(s.module, 'Draft', 'pending', 'Create Sales Order — ' + d.orderNumber, `
+      <div class="form-grid">
+        <div class="field"><label>Customer</label><input value="${d.customer}" disabled></div>
+        <div class="field"><label>Ship-to Site</label><input value="${d.custSite}" disabled></div>
+        <div class="field"><label>Order Date</label><input value="2026-08-01" disabled></div>
+        <div class="field"><label>Requested Ship Date</label><input value="2026-08-06" disabled></div>
+        <div class="field"><label>Warehouse</label><input value="${d.warehouse}" disabled></div>
+        <div class="field"><label>Payment Terms</label><input value="Net 30" disabled></div>
+      </div>
+      <div class="divider"></div>
+      <table class="docline">
+        <thead><tr><th>Line</th><th>Item</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead>
+        <tbody><tr><td>1</td><td>${d.item}</td><td>${d.qty}</td><td>${inr(d.price)}</td><td>${inr(d.saleValue)}</td></tr></tbody>
+        <tfoot><tr><td colspan="4">Order Total (excl. tax)</td><td>${inr(d.saleValue)}</td></tr></tfoot>
+      </table>
+      <div class="actions-row">
+        <button class="btn" id="actSubmitOrder">Submit Order</button>
+      </div>
+    `, `
+      <span class="real-tag">Order Management Work Area</span>
+      <p>A customer-facing rep or the customer's own portal captures the order here. Fusion checks credit limits and item availability before allowing submission.</p>
+      <h4>Why this matters</h4>
+      <p>Like a requisition, a sales order alone triggers <b>no accounting entry</b> — revenue isn't recognised until performance obligations are satisfied (typically at shipment/delivery), which is straight out of Ind AS 115.</p>
+    `);
+  }
+
+  if(s.key === 'sched'){
+    return panelShell(s.module, 'Scheduled', 'progress', 'Order Orchestration — ' + d.orderNumber, `
+      <div class="task-card">
+        <div class="tavatar">OM</div>
+        <div class="tbody">
+          <div class="ttitle">Orchestration Process: Fulfil_GenericOrder</div>
+          <div class="tmeta">Status: Scheduled → Inventory Reserved → Awaiting Shipment</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p style="font-size:13px;color:var(--text-muted);">The order orchestration engine has automatically scheduled the line, reserved stock at ${d.warehouse}, and released it to Shipping — no manual entry needed at this stage.</p>
+      <div class="actions-row">
+        <button class="btn subtle" id="actBack">← Back</button>
+        <button class="btn" id="actSched">Continue to Shipping</button>
+      </div>
+    `, `
+      <span class="real-tag">Global Order Promising &amp; Orchestration</span>
+      <p>Fusion's orchestration process is a configurable workflow (like BPMN) that moves the order through scheduling, reservation, shipping and invoicing automatically, calling each module in sequence.</p>
+    `);
+  }
+
+  if(s.key === 'ship'){
+    return panelShell(s.module, 'Reserved', 'progress', 'Ship Confirm — ' + d.shipmentNumber, `
+      <div class="form-grid">
+        <div class="field"><label>Shipment Number</label><input value="${d.shipmentNumber}" disabled></div>
+        <div class="field"><label>Sales Order</label><input value="${d.orderNumber}" disabled></div>
+        <div class="field"><label>Item</label><input value="${d.item}" disabled></div>
+        <div class="field"><label>Qty Shipped</label><input value="${d.qty}" disabled></div>
+        <div class="field"><label>Carrier</label><input value="BlueDart Logistics" disabled></div>
+        <div class="field"><label>Ship Date</label><input value="2026-08-06" disabled></div>
+      </div>
+      <div class="actions-row">
+        <button class="btn subtle" id="actBack">← Back</button>
+        <button class="btn" id="actShip">Confirm Shipment</button>
+      </div>
+    `, `
+      <span class="real-tag">Shipping Work Area</span>
+      <p>The warehouse picks, packs and confirms the shipment here. Confirming relieves inventory and — because title/control has now passed — recognises Cost of Goods Sold.</p>
+      <div class="acct-note"><b>Entry posted on ship confirm:</b><br>Dr Cost of Goods Sold ${inr(d.cogs)}<br>Cr Inventory ${inr(d.cogs)}</div>
+    `);
+  }
+
+  if(s.key === 'invoice'){
+    return panelShell(s.module, 'Eligible', 'progress', 'AutoInvoice — ' + d.invoiceNumber, `
+      <div class="form-grid">
+        <div class="field"><label>Invoice Number</label><input value="${d.invoiceNumber}" disabled></div>
+        <div class="field"><label>Customer</label><input value="${d.customer}" disabled></div>
+        <div class="field"><label>Source</label><input value="Order Management — ${d.orderNumber}" disabled></div>
+        <div class="field"><label>Invoice Date</label><input value="2026-08-07" disabled></div>
+      </div>
+      <div class="divider"></div>
+      <table class="docline">
+        <thead><tr><th>Line</th><th>Item</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead>
+        <tbody><tr><td>1</td><td>${d.item}</td><td>${d.qty}</td><td>${inr(d.price)}</td><td>${inr(d.saleValue)}</td></tr></tbody>
+        <tfoot>
+          <tr><td colspan="4">Taxable Value</td><td>${inr(d.saleValue)}</td></tr>
+          <tr><td colspan="4">Output GST @ 18%</td><td>${inr(d.gst)}</td></tr>
+          <tr><td colspan="4"><b>Invoice Total</b></td><td><b>${inr(d.total)}</b></td></tr>
+        </tfoot>
+      </table>
+      <div class="actions-row">
+        <button class="btn subtle" id="actBack">← Back</button>
+        <button class="btn" id="actInvoice">Run AutoInvoice &amp; Complete</button>
+      </div>
+    `, `
+      <span class="real-tag">Receivables — AutoInvoice</span>
+      <p>AutoInvoice pulls fulfilled shipment lines from Order Management into Receivables and generates the customer invoice automatically, applying the tax and AR rules configured for the business unit.</p>
+      <div class="acct-note"><b>Entry posted on complete:</b><br>Dr Accounts Receivable — ${d.customer} ${inr(d.total)}<br>Cr Sales Revenue ${inr(d.saleValue)}<br>Cr Output GST Payable ${inr(d.gst)}</div>
+    `);
+  }
+
+  if(s.key === 'receipt'){
+    return panelShell(s.module, 'Open Balance', 'pending', 'Create Receipt — ' + d.receiptNumber, `
+      <div class="form-grid">
+        <div class="field"><label>Receipt Number</label><input value="${d.receiptNumber}" disabled></div>
+        <div class="field"><label>Customer</label><input value="${d.customer}" disabled></div>
+        <div class="field"><label>Applied To Invoice</label><input value="${d.invoiceNumber}" disabled></div>
+        <div class="field"><label>Deposit Bank</label><input value="HDFC Bank — Current A/c 5021" disabled></div>
+        <div class="field"><label>Receipt Date</label><input value="2026-08-28" disabled></div>
+        <div class="field"><label>Amount Received</label><input value="${inr(d.total)}" disabled></div>
+      </div>
+      <div class="actions-row">
+        <button class="btn subtle" id="actBack">← Back</button>
+        <button class="btn" id="actReceipt">Apply Receipt</button>
+      </div>
+    `, `
+      <span class="real-tag">Receivables — Receipts / Cash Application</span>
+      <p>Cash is recorded and matched (auto or manually) against the open invoice. Fusion's Cash Application can also use AI-based matching for lockbox files.</p>
+      <div class="acct-note"><b>Entry posted on apply:</b><br>Dr Bank Account (HDFC — Current A/c) ${inr(d.total)}<br>Cr Accounts Receivable — ${d.customer} ${inr(d.total)}</div>
+    `);
+  }
+
+  // done
+  return `
+    <div class="complete-banner">
+      <h2>✓ Order to Cash Cycle Complete</h2>
+      <p>Order ${d.orderNumber} → Shipment ${d.shipmentNumber} → Invoice ${d.invoiceNumber} → Receipt ${d.receiptNumber} settled, for a total of ${inr(d.total)}.</p>
+    </div>
+    <div class="workarea">
+      <div class="panel">
+        <div class="panel-head"><h3>Full Cycle Journal Trail</h3></div>
+        <div class="panel-body">
+          <table class="docline">
+            <thead><tr><th>Event</th><th>Dr</th><th>Cr</th><th>Amount</th></tr></thead>
+            <tbody>
+              <tr><td>Ship Confirm</td><td>Cost of Goods Sold</td><td>Inventory</td><td>${inr(d.cogs)}</td></tr>
+              <tr><td>AutoInvoice</td><td>Accounts Receivable</td><td>Sales Revenue + Output GST</td><td>${inr(d.total)}</td></tr>
+              <tr><td>Cash Receipt</td><td>Bank Account</td><td>Accounts Receivable</td><td>${inr(d.total)}</td></tr>
+            </tbody>
+          </table>
+          <div class="actions-row">
+            <button class="btn subtle" id="actBack">← Review Receipt Step</button>
+            <button class="btn ghost" id="actRestartO2C">Restart O2C Cycle</button>
+            <button class="btn" id="actGoP2P">Try Procure to Pay →</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel guide">
+        <div class="panel-head"><h3>Process Guide</h3></div>
+        <div class="panel-body">
+          <p>Notice O2C is the customer-side mirror of P2P: COGS/Inventory here parallels the receipt accrual there, and AR parallels Trade Payables.</p>
+          <p>A useful exam angle: revenue is recognised at <b>ship confirm / AutoInvoice</b> (performance obligation satisfied), not at order booking or cash receipt — a core Ind AS 115 point examiners like to test via a "when is revenue recognised" MCQ.</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- Step action wiring ---------- */
+function wireStepActions(cycle){
+  const d = cycle === 'p2p' ? P2P_DATA : O2C_DATA;
+  const backBtn = document.getElementById('actBack');
+  if(backBtn) backBtn.addEventListener('click', () => back(cycle));
+
+  if(cycle === 'p2p'){
+    const bind = (id, fn) => { const el = document.getElementById(id); if(el) el.addEventListener('click', fn); };
+    bind('actSubmitReq', () => { showToast('Requisition ' + d.reqNumber + ' submitted for approval.'); advance('p2p'); });
+    bind('actApproveReq', () => { showToast('Requisition approved by Rohit Mehta.'); advance('p2p'); });
+    bind('actApprovePO', () => { showToast('PO ' + d.poNumber + ' approved and dispatched to supplier.'); advance('p2p'); });
+    bind('actConfirmReceipt', () => {
+      if(!p2pPosted.receipt){
+        postJournal(d.receiptNumber, 'Goods Receipt against ' + d.poNumber, [
+          {acct:'Office Equipment (Expense/Asset)', dr:d.baseValue},
+          {acct:'Accrued Liability (Receipt Accrual)', cr:d.baseValue}
+        ]);
+        p2pPosted.receipt = true;
+        showToast('Receipt confirmed — accrual entry posted to journal.');
+      }
+      advance('p2p');
+    });
+    bind('actValidateInvoice', () => {
+      if(!p2pPosted.invoice){
+        postJournal(d.invoiceNumber, 'Supplier Invoice validated (3-way matched)', [
+          {acct:'Accrued Liability (Receipt Accrual)', dr:d.baseValue},
+          {acct:'Input GST Credit Receivable', dr:d.gst},
+          {acct:'Trade Payables — ' + d.supplier, cr:d.total}
+        ]);
+        p2pPosted.invoice = true;
+        showToast('Invoice validated — liability entry posted to journal.');
+      }
+      advance('p2p');
+    });
+    bind('actPay', () => {
+      if(!p2pPosted.payment){
+        postJournal('PAY-' + d.invoiceNumber, 'Payment processed to ' + d.supplier, [
+          {acct:'Trade Payables — ' + d.supplier, dr:d.total},
+          {acct:'Bank Account (HDFC — Current A/c)', cr:d.total}
+        ]);
+        p2pPosted.payment = true;
+        showToast('Payment processed — cash entry posted to journal.');
+      }
+      advance('p2p');
+    });
+    bind('actRestartP2P', () => { p2pStep = 0; p2pPosted = {}; render(); wireCycle('p2p'); });
+    bind('actGoO2C', () => go('o2c'));
+  } else {
+    const bind = (id, fn) => { const el = document.getElementById(id); if(el) el.addEventListener('click', fn); };
+    bind('actSubmitOrder', () => { showToast('Order ' + d.orderNumber + ' submitted.'); advance('o2c'); });
+    bind('actSched', () => { showToast('Order scheduled and inventory reserved.'); advance('o2c'); });
+    bind('actShip', () => {
+      if(!o2cPosted.ship){
+        postJournal(d.shipmentNumber, 'Shipment confirmed for ' + d.orderNumber, [
+          {acct:'Cost of Goods Sold', dr:d.cogs},
+          {acct:'Inventory', cr:d.cogs}
+        ]);
+        o2cPosted.ship = true;
+        showToast('Shipment confirmed — COGS entry posted to journal.');
+      }
+      advance('o2c');
+    });
+    bind('actInvoice', () => {
+      if(!o2cPosted.invoice){
+        postJournal(d.invoiceNumber, 'AutoInvoice completed for ' + d.customer, [
+          {acct:'Accounts Receivable — ' + d.customer, dr:d.total},
+          {acct:'Sales Revenue', cr:d.saleValue},
+          {acct:'Output GST Payable', cr:d.gst}
+        ]);
+        o2cPosted.invoice = true;
+        showToast('Invoice completed — revenue entry posted to journal.');
+      }
+      advance('o2c');
+    });
+    bind('actReceipt', () => {
+      if(!o2cPosted.receipt){
+        postJournal(d.receiptNumber, 'Cash receipt applied for ' + d.customer, [
+          {acct:'Bank Account (HDFC — Current A/c)', dr:d.total},
+          {acct:'Accounts Receivable — ' + d.customer, cr:d.total}
+        ]);
+        o2cPosted.receipt = true;
+        showToast('Receipt applied — cash entry posted to journal.');
+      }
+      advance('o2c');
+    });
+    bind('actRestartO2C', () => { o2cStep = 0; o2cPosted = {}; render(); wireCycle('o2c'); });
+    bind('actGoP2P', () => go('p2p'));
+  }
+}
+
+/* ---------- PWA install & service worker ---------- */
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {
+      /* Service workers require http(s) hosting — silently ignore under file:// */
+    });
+  });
+}
+
+/* ---------- Initial render ---------- */
+navrail.classList.toggle('collapsed', window.innerWidth <= 700);
+render();
+</script>
+</body>
+</html>
