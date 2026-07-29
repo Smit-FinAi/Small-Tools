@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CyberShield Lab | CA Final ITT Cyber Security Simulator</title>
+<meta name="description" content="Interactive Cyber Security simulation tool for CA Final Advanced ITT students">
+<meta name="theme-color" content="#0B1220">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CyberShield Lab">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-950:#0B1220;
+  --navy-900:#0F1830;
+  --navy-800:#131B2C;
+  --navy-700:#1B2740;
+  --navy-600:#26334F;
+  --line:#2A3752;
+  --cyan:#22D3EE;
+  --cyan-dim:#0E7490;
+  --amber:#F59E0B;
+  --red:#F43F5E;
+  --green:#10B981;
+  --text-hi:#EAF2FF;
+  --text-mid:#9FB1CC;
+  --text-lo:#6B7B9C;
+  --bg:var(--navy-950);
+  --panel:var(--navy-800);
+  --panel-2:var(--navy-700);
+  --shadow: 0 8px 30px rgba(0,0,0,0.35);
+  --radius:14px;
+  --font-ui:'Roboto',system-ui,-apple-system,sans-serif;
+  --font-mono:'Roboto Mono',ui-monospace,monospace;
+}
+html[data-theme="light"]{
+  --bg:#F3F6FC;
+  --panel:#FFFFFF;
+  --panel-2:#EAF0FB;
+  --line:#D8E1F2;
+  --text-hi:#0B1220;
+  --text-mid:#3A4A66;
+  --text-lo:#6B7B9C;
+  --shadow: 0 8px 24px rgba(20,40,80,0.10);
+  --cyan-dim:#0E7490;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text-hi);
+  font-family:var(--font-ui);
+  min-height:100vh;
+  transition:background .3s ease, color .3s ease;
+  padding-bottom:60px;
+}
+::selection{ background:var(--cyan); color:#001018; }
+a{ color:var(--cyan); }
+
+/* ===== Top bar ===== */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+  padding:14px 20px;
+  background:linear-gradient(180deg, var(--navy-950) 0%, rgba(11,18,32,0.94) 100%);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(10px);
+}
+html[data-theme="light"] .topbar{ background:linear-gradient(180deg,#fff 0%, rgba(255,255,255,0.94) 100%); }
+.brand{ display:flex; align-items:center; gap:10px; }
+.brand-mark{
+  width:38px; height:38px; border-radius:9px;
+  background:linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-mono); font-weight:700; color:#001018; font-size:16px;
+  flex-shrink:0;
+}
+.brand-text .name{ font-weight:900; font-size:17px; letter-spacing:.2px; line-height:1.1; }
+.brand-text .sub{ font-size:11px; color:var(--text-lo); font-family:var(--font-mono); letter-spacing:.4px; }
+.top-actions{ display:flex; align-items:center; gap:10px; }
+.icon-btn{
+  width:38px; height:38px; border-radius:10px;
+  background:var(--panel-2); border:1px solid var(--line);
+  color:var(--text-hi); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:16px; transition:.15s;
+}
+.icon-btn:hover{ border-color:var(--cyan); color:var(--cyan); }
+#installBtn{ display:none; }
+
+/* ===== Tabs ===== */
+.tabbar{
+  position:sticky; top:66px; z-index:40;
+  display:flex; gap:6px; overflow-x:auto;
+  padding:10px 16px; background:var(--bg);
+  border-bottom:1px solid var(--line);
+  scrollbar-width:thin;
+}
+.tabbar::-webkit-scrollbar{ height:5px; }
+.tabbar::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+.tab-btn{
+  flex-shrink:0;
+  font-family:var(--font-mono);
+  font-size:12.5px; font-weight:500;
+  padding:9px 14px; border-radius:9px;
+  background:transparent; border:1px solid var(--line);
+  color:var(--text-mid); cursor:pointer; white-space:nowrap;
+  transition:.15s;
+}
+.tab-btn .n{ color:var(--text-lo); margin-right:6px; }
+.tab-btn:hover{ color:var(--text-hi); border-color:var(--cyan-dim); }
+.tab-btn.active{ background:var(--cyan); color:#001018; border-color:var(--cyan); font-weight:700; }
+.tab-btn.active .n{ color:#00303a; }
+
+/* ===== Layout ===== */
+.wrap{ max-width:980px; margin:0 auto; padding:26px 18px 10px; }
+.view{ display:none; animation:fadeUp .35s ease; }
+.view.active{ display:block; }
+@keyframes fadeUp{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+.eyebrow{
+  font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--cyan); margin-bottom:8px; font-weight:700;
+}
+h1.page-title{ font-size:clamp(24px,4vw,32px); font-weight:900; margin-bottom:6px; letter-spacing:-.3px; }
+.page-desc{ color:var(--text-mid); font-size:14.5px; line-height:1.6; max-width:640px; margin-bottom:26px; }
+
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+  padding:20px; margin-bottom:16px; box-shadow:var(--shadow);
+}
+.card h3{ font-size:15px; margin-bottom:10px; font-weight:700; }
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+@media(max-width:720px){ .grid2,.grid3{ grid-template-columns:1fr; } }
+
+/* Home stat tiles */
+.stat-tile{
+  background:var(--panel-2); border:1px solid var(--line); border-radius:12px;
+  padding:16px; text-align:center;
+}
+.stat-tile .val{ font-family:var(--font-mono); font-size:26px; font-weight:700; color:var(--cyan); }
+.stat-tile .lab{ font-size:11.5px; color:var(--text-mid); margin-top:4px; letter-spacing:.3px; }
+
+/* CIA triangle */
+.cia-row{ display:flex; gap:14px; flex-wrap:wrap; margin-top:14px;}
+.cia-pill{
+  flex:1; min-width:160px; padding:16px; border-radius:12px; border:1px solid var(--line);
+  background:var(--panel-2);
+}
+.cia-pill .t{ font-weight:700; font-size:14px; margin-bottom:6px; }
+.cia-pill .c{ font-family:var(--font-mono); font-size:11px; color:var(--text-lo); }
+.cia-pill.conf{ border-left:4px solid var(--cyan); }
+.cia-pill.integ{ border-left:4px solid var(--green); }
+.cia-pill.avail{ border-left:4px solid var(--amber); }
+
+/* module nav grid on home */
+.module-link{
+  display:flex; align-items:center; gap:12px; padding:14px 16px;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:12px;
+  cursor:pointer; transition:.15s;
+}
+.module-link:hover{ border-color:var(--cyan); transform:translateX(3px); }
+.module-link .ic{ font-size:20px; width:30px; text-align:center; }
+.module-link .tx .t{ font-weight:700; font-size:13.5px; }
+.module-link .tx .d{ font-size:11.5px; color:var(--text-lo); }
+
+/* Buttons */
+.btn{
+  font-family:var(--font-ui); font-weight:700; font-size:13.5px;
+  padding:11px 20px; border-radius:10px; border:1px solid var(--cyan);
+  background:var(--cyan); color:#001018; cursor:pointer; transition:.15s;
+}
+.btn:hover{ filter:brightness(1.08); }
+.btn.ghost{ background:transparent; color:var(--text-hi); border-color:var(--line); }
+.btn.ghost:hover{ border-color:var(--cyan); color:var(--cyan); }
+.btn.danger{ background:var(--red); border-color:var(--red); color:#fff; }
+.btn:disabled{ opacity:.4; cursor:not-allowed; }
+.btn-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+
+/* Phishing module */
+.mail-card{
+  background:var(--panel-2); border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-bottom:16px;
+}
+.mail-head{ padding:12px 16px; border-bottom:1px solid var(--line); font-family:var(--font-mono); font-size:12px; color:var(--text-mid); }
+.mail-head .from{ color:var(--text-hi); font-weight:700; font-size:13px; }
+.mail-body{ padding:16px; font-size:13.5px; line-height:1.7; color:var(--text-mid); }
+.clue{
+  cursor:pointer; border-bottom:2px dashed var(--amber); padding:1px 2px; border-radius:3px; transition:.15s;
+}
+.clue:hover{ background:rgba(245,158,11,0.12); }
+.clue.found{ background:rgba(244,63,94,0.18); border-bottom-color:var(--red); color:var(--text-hi); }
+.mail-foot{ padding:12px 16px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+.progress-pill{ font-family:var(--font-mono); font-size:12px; color:var(--text-mid); }
+.verdict-row{ display:flex; gap:10px; }
+.verdict-row .btn{ padding:8px 14px; font-size:12.5px; }
+
+/* Password lab */
+#pwInput{
+  width:100%; padding:14px 16px; font-family:var(--font-mono); font-size:15px;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:10px; color:var(--text-hi); outline:none;
+}
+#pwInput:focus{ border-color:var(--cyan); }
+.meter{ height:8px; border-radius:6px; background:var(--panel-2); margin-top:14px; overflow:hidden; border:1px solid var(--line); }
+.meter-fill{ height:100%; width:0%; background:var(--red); transition:width .3s, background .3s; }
+.pw-stats{ display:flex; justify-content:space-between; margin-top:10px; font-family:var(--font-mono); font-size:12px; color:var(--text-mid); }
+.checklist{ list-style:none; margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+.checklist li{ font-size:13px; color:var(--text-lo); display:flex; align-items:center; gap:8px; }
+.checklist li.ok{ color:var(--green); }
+.checklist li .box{ width:16px; height:16px; border-radius:4px; border:1px solid var(--line); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; }
+.checklist li.ok .box{ background:var(--green); border-color:var(--green); color:#00220f; }
+
+/* Scenario module */
+.scenario-nav{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.scenario-chip{
+  font-family:var(--font-mono); font-size:11.5px; padding:7px 12px; border-radius:20px;
+  border:1px solid var(--line); color:var(--text-mid); background:var(--panel-2); cursor:pointer;
+}
+.scenario-chip.active{ background:var(--cyan); color:#001018; border-color:var(--cyan); font-weight:700; }
+.scenario-chip.done::after{ content:" ✓"; }
+.choice-btn{
+  display:block; width:100%; text-align:left; padding:13px 16px; margin-bottom:10px;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:10px; color:var(--text-hi);
+  font-size:13.5px; cursor:pointer; transition:.15s;
+}
+.choice-btn:hover{ border-color:var(--cyan); }
+.feedback-box{ padding:14px 16px; border-radius:10px; margin-top:12px; font-size:13.5px; line-height:1.6; display:none; }
+.feedback-box.good{ background:rgba(16,185,129,0.12); border:1px solid var(--green); color:var(--green); }
+.feedback-box.bad{ background:rgba(244,63,94,0.12); border:1px solid var(--red); color:var(--red); }
+
+/* Firewall module */
+.rule-table{ width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:12px; }
+.rule-table th{ text-align:left; color:var(--text-lo); font-weight:500; padding:8px 10px; border-bottom:1px solid var(--line); text-transform:uppercase; font-size:10.5px; letter-spacing:.5px; }
+.rule-table td{ padding:9px 10px; border-bottom:1px solid var(--line); color:var(--text-mid); }
+.rule-table select, .rule-table input{ background:var(--panel-2); border:1px solid var(--line); color:var(--text-hi); border-radius:6px; padding:5px 8px; font-family:var(--font-mono); font-size:12px; width:100%; }
+.tag{ display:inline-block; padding:3px 9px; border-radius:20px; font-size:10.5px; font-weight:700; font-family:var(--font-mono); }
+.tag.allow{ background:rgba(16,185,129,0.15); color:var(--green); }
+.tag.deny{ background:rgba(244,63,94,0.15); color:var(--red); }
+.packet-log{ margin-top:16px; max-height:260px; overflow-y:auto; border:1px solid var(--line); border-radius:10px; }
+.packet-row{ display:flex; justify-content:space-between; padding:9px 14px; border-bottom:1px solid var(--line); font-family:var(--font-mono); font-size:11.5px; }
+.packet-row:last-child{ border-bottom:none; }
+
+/* Encryption module */
+textarea, input[type=text]{
+  width:100%; font-family:var(--font-mono); font-size:13.5px; padding:12px 14px;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:10px; color:var(--text-hi); outline:none; resize:vertical;
+}
+textarea:focus, input[type=text]:focus{ border-color:var(--cyan); }
+.hash-out{ font-family:var(--font-mono); font-size:11.5px; word-break:break-all; padding:12px 14px; background:var(--panel-2); border:1px solid var(--line); border-radius:10px; color:var(--cyan); margin-top:8px; min-height:20px; }
+.match-badge{ display:inline-block; margin-top:8px; padding:5px 12px; border-radius:20px; font-size:11.5px; font-family:var(--font-mono); font-weight:700; }
+.match-badge.yes{ background:rgba(16,185,129,0.15); color:var(--green); }
+.match-badge.no{ background:rgba(244,63,94,0.15); color:var(--red); }
+
+/* Audit log */
+.log-table{ width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:11.5px; }
+.log-table th{ text-align:left; padding:8px; color:var(--text-lo); border-bottom:1px solid var(--line); font-size:10px; text-transform:uppercase; }
+.log-table td{ padding:9px 8px; border-bottom:1px solid var(--line); color:var(--text-mid); cursor:pointer; }
+.log-table tr:hover td{ background:var(--panel-2); }
+.log-table tr.flagged td{ background:rgba(244,63,94,0.1); color:var(--text-hi); }
+.log-table tr.wrong-flag td{ background:rgba(245,158,11,0.1); }
+
+/* Kill chain */
+.chain{ display:flex; flex-direction:column; gap:0; margin-top:10px; }
+.chain-step{ display:flex; gap:16px; padding:16px 0; border-bottom:1px solid var(--line); cursor:pointer; }
+.chain-step:last-child{ border-bottom:none; }
+.chain-num{ font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--cyan-dim); width:38px; flex-shrink:0; }
+.chain-step.active .chain-num{ color:var(--cyan); }
+.chain-tx .t{ font-weight:700; font-size:14px; margin-bottom:4px; }
+.chain-tx .d{ font-size:12.5px; color:var(--text-mid); line-height:1.6; display:none; }
+.chain-step.active .chain-tx .d{ display:block; }
+.chain-tx .ctrl{ font-family:var(--font-mono); font-size:11px; color:var(--green); margin-top:6px; display:none; }
+.chain-step.active .chain-tx .ctrl{ display:block; }
+
+/* Quiz */
+.q-progress{ font-family:var(--font-mono); font-size:12px; color:var(--text-lo); margin-bottom:10px; }
+.q-text{ font-size:16px; font-weight:700; margin-bottom:16px; line-height:1.5; }
+.opt-btn{
+  display:block; width:100%; text-align:left; padding:13px 16px; margin-bottom:9px;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:10px; color:var(--text-hi);
+  font-size:13.5px; cursor:pointer;
+}
+.opt-btn:hover{ border-color:var(--cyan); }
+.opt-btn.correct{ background:rgba(16,185,129,0.15); border-color:var(--green); }
+.opt-btn.incorrect{ background:rgba(244,63,94,0.15); border-color:var(--red); }
+.score-ring{ text-align:center; padding:20px 0; }
+.score-ring .big{ font-family:var(--font-mono); font-size:52px; font-weight:700; color:var(--cyan); }
+.cert{
+  background:linear-gradient(135deg, var(--panel), var(--panel-2));
+  border:1.5px solid var(--cyan); border-radius:16px; padding:34px; text-align:center; margin-top:16px;
+}
+.cert .title{ font-family:var(--font-mono); font-size:11px; letter-spacing:2px; color:var(--cyan); text-transform:uppercase; }
+.cert h2{ font-size:24px; margin:14px 0 4px; }
+.cert .name{ font-size:20px; font-weight:700; margin:10px 0; color:var(--text-hi); border-bottom:1px solid var(--line); display:inline-block; padding-bottom:6px; min-width:220px; }
+
+/* Footer / creator credit */
+footer{
+  max-width:980px; margin:40px auto 0; padding:22px 18px; text-align:center;
+  border-top:1px solid var(--line); color:var(--text-lo); font-size:12px; line-height:1.9;
+}
+footer .credit{ font-family:var(--font-mono); font-size:12.5px; color:var(--text-mid); }
+footer .credit b{ color:var(--cyan); font-weight:700; }
+footer a{ text-decoration:none; }
+footer a:hover{ text-decoration:underline; }
+
+input[type=range]{ width:100%; accent-color:var(--cyan); }
+.small-note{ font-size:11.5px; color:var(--text-lo); margin-top:8px; }
+.badge-warn{ display:inline-block; padding:4px 10px; border-radius:8px; background:rgba(245,158,11,0.14); color:var(--amber); font-family:var(--font-mono); font-size:11px; margin-bottom:14px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">CS</div>
+    <div class="brand-text">
+      <div class="name">CyberShield Lab</div>
+      <div class="sub">Created by Smit Parekh</div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button id="installBtn" class="icon-btn" title="Install App">⬇</button>
+    <button id="themeBtn" class="icon-btn" title="Toggle theme">🌙</button>
+  </div>
+</div>
+
+<div class="tabbar" id="tabbar">
+  <button class="tab-btn active" data-view="home"><span class="n">00</span>Home</button>
+  <button class="tab-btn" data-view="phishing"><span class="n">01</span>Phishing Simulator</button>
+  <button class="tab-btn" data-view="password"><span class="n">02</span>Password Lab</button>
+  <button class="tab-btn" data-view="social"><span class="n">03</span>Social Engineering</button>
+  <button class="tab-btn" data-view="firewall"><span class="n">04</span>Firewall / ACL</button>
+  <button class="tab-btn" data-view="crypto"><span class="n">05</span>Encryption &amp; Hashing</button>
+  <button class="tab-btn" data-view="audit"><span class="n">06</span>Audit Log Review</button>
+  <button class="tab-btn" data-view="chain"><span class="n">07</span>Attack Lifecycle</button>
+  <button class="tab-btn" data-view="quiz"><span class="n">08</span>Assessment</button>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ HOME ============ -->
+  <section class="view active" id="view-home">
+    <div class="eyebrow">CA Final · Advanced ITT · Cyber Security Module</div>
+    <h1 class="page-title">Learn cyber security by doing, not just reading.</h1>
+    <p class="page-desc">Eight hands-on simulations built to mirror the Cyber Security &amp; Controls portion of the Advanced ITT curriculum — phishing detection, password governance, social engineering, network access control, cryptography, IS-audit log review, and the attack lifecycle used in incident response.</p>
+
+    <div class="grid3" style="margin-bottom:22px;">
+      <div class="stat-tile"><div class="val">8</div><div class="lab">Interactive Modules</div></div>
+      <div class="stat-tile"><div class="val">100%</div><div class="lab">Runs Offline / No License</div></div>
+      <div class="stat-tile"><div class="val">CIA</div><div class="lab">Triad-Mapped Content</div></div>
+    </div>
+
+    <div class="card">
+      <h3>The CIA Triad — the spine of every module</h3>
+      <p style="font-size:13px; color:var(--text-mid); line-height:1.6;">Every control, threat and simulation in this lab maps back to one of these three objectives. Ask students which one is under attack in each exercise.</p>
+      <div class="cia-row">
+        <div class="cia-pill conf"><div class="t">Confidentiality</div><div class="c">Prevent unauthorised disclosure — phishing, weak passwords</div></div>
+        <div class="cia-pill integ"><div class="t">Integrity</div><div class="c">Prevent unauthorised alteration — hashing, audit logs</div></div>
+        <div class="cia-pill avail"><div class="t">Availability</div><div class="c">Ensure access when needed — ransomware, DoS</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Jump into a module</h3>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+        <div class="module-link" data-view="phishing"><div class="ic">🎣</div><div class="tx"><div class="t">Phishing Simulator</div><div class="d">Spot red flags in 4 realistic emails</div></div></div>
+        <div class="module-link" data-view="password"><div class="ic">🔑</div><div class="tx"><div class="t">Password Strength Lab</div><div class="d">Live entropy meter &amp; crack-time estimate</div></div></div>
+        <div class="module-link" data-view="social"><div class="ic">🎭</div><div class="tx"><div class="t">Social Engineering Scenarios</div><div class="d">Branching decisions: vishing, pretexting, baiting</div></div></div>
+        <div class="module-link" data-view="firewall"><div class="ic">🧱</div><div class="tx"><div class="t">Firewall / Access Control Simulator</div><div class="d">Build ACL rules, watch packets get filtered</div></div></div>
+        <div class="module-link" data-view="crypto"><div class="ic">🔐</div><div class="tx"><div class="t">Encryption &amp; Hashing Demo</div><div class="d">Caesar cipher + live SHA-256 integrity check</div></div></div>
+        <div class="module-link" data-view="audit"><div class="ic">📋</div><div class="tx"><div class="t">Audit Log Review</div><div class="d">Flag anomalies in a system access log</div></div></div>
+        <div class="module-link" data-view="chain"><div class="ic">⛓️</div><div class="tx"><div class="t">Cyber Attack Lifecycle</div><div class="d">7-stage kill chain mapped to controls</div></div></div>
+        <div class="module-link" data-view="quiz"><div class="ic">📝</div><div class="tx"><div class="t">Assessment &amp; Certificate</div><div class="d">12-question scored quiz, printable result</div></div></div>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:var(--cyan-dim);">
+      <h3>Note for faculty</h3>
+      <p style="font-size:13px; color:var(--text-mid); line-height:1.6;">This is a self-contained teaching aid, not a substitute for ICAI study material. All scenarios are fictional and safe for classroom use — no real credentials, live attacks, or external services are involved. Suggested flow: Home → Phishing → Password → Social Engineering → Firewall → Encryption → Audit Log → Attack Lifecycle → Assessment (approx. 60–75 minutes for a full batch walkthrough).</p>
+    </div>
+  </section>
+
+  <!-- ============ PHISHING ============ -->
+  <section class="view" id="view-phishing">
+    <div class="eyebrow">Module 01</div>
+    <h1 class="page-title">Phishing Email Simulator</h1>
+    <p class="page-desc">Click on every part of the email you believe is a red flag. Then mark the email as Genuine or Phishing. Words with a dashed underline are clickable clues.</p>
+    <div id="mailContainer"></div>
+    <div class="card" id="phishScoreCard" style="display:none;">
+      <h3>Session score</h3>
+      <p style="font-size:14px;">You identified <b id="phishScore">0</b> of <b id="phishTotal">0</b> total red flags across all emails, and correctly classified <b id="phishVerdictScore">0</b> of 4 emails.</p>
+    </div>
+  </section>
+
+  <!-- ============ PASSWORD ============ -->
+  <section class="view" id="view-password">
+    <div class="eyebrow">Module 02</div>
+    <h1 class="page-title">Password Strength Lab</h1>
+    <p class="page-desc">Type a sample password below (never use a real one). See how length, character variety and dictionary patterns affect brute-force resistance — a core preventive control under logical access security.</p>
+    <div class="card">
+      <input type="text" id="pwInput" placeholder="Type a test password here..." autocomplete="off" spellcheck="false">
+      <div class="meter"><div class="meter-fill" id="pwMeterFill"></div></div>
+      <div class="pw-stats">
+        <span id="pwLabel">Strength: —</span>
+        <span id="pwCrack">Est. crack time: —</span>
+      </div>
+      <ul class="checklist" id="pwChecklist">
+        <li id="c-len"><span class="box"></span> At least 12 characters</li>
+        <li id="c-upper"><span class="box"></span> Contains uppercase letter</li>
+        <li id="c-lower"><span class="box"></span> Contains lowercase letter</li>
+        <li id="c-num"><span class="box"></span> Contains a number</li>
+        <li id="c-sym"><span class="box"></span> Contains a special character</li>
+        <li id="c-dict"><span class="box"></span> Avoids common dictionary words</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Why this matters for ITT / IS audit</h3>
+      <p style="font-size:13px; color:var(--text-mid); line-height:1.7;">Password policy is one of the most commonly tested preventive controls in an IS audit — minimum length, complexity, history, expiry and lockout threshold. A weak password policy is frequently flagged as a control deficiency. Discuss: should this be a detective or preventive control? What compensating control (MFA) reduces reliance on password strength alone?</p>
+    </div>
+  </section>
+
+  <!-- ============ SOCIAL ENGINEERING ============ -->
+  <section class="view" id="view-social">
+    <div class="eyebrow">Module 03</div>
+    <h1 class="page-title">Social Engineering Scenarios</h1>
+    <p class="page-desc">You are the employee. Read each scenario and choose how you would respond. There's immediate feedback after every choice.</p>
+    <div class="scenario-nav" id="scenarioNav"></div>
+    <div class="card" id="scenarioCard"></div>
+  </section>
+
+  <!-- ============ FIREWALL ============ -->
+  <section class="view" id="view-firewall">
+    <div class="eyebrow">Module 04</div>
+    <h1 class="page-title">Firewall / Access Control List Simulator</h1>
+    <p class="page-desc">Edit the ACL rules below (evaluated top to bottom, first match wins — the standard firewall logic). Then fire sample packets and see which are allowed or denied.</p>
+    <div class="card">
+      <h3>Access Control List</h3>
+      <table class="rule-table" id="ruleTable">
+        <thead><tr><th>#</th><th>Source</th><th>Destination Port</th><th>Action</th></tr></thead>
+        <tbody id="ruleBody"></tbody>
+      </table>
+      <div class="btn-row"><button class="btn ghost" id="addRuleBtn">+ Add Rule</button></div>
+    </div>
+    <div class="card">
+      <h3>Send a test packet</h3>
+      <div class="grid2">
+        <div>
+          <label class="small-note">Source IP</label>
+          <select id="pkSrc"></select>
+        </div>
+        <div>
+          <label class="small-note">Destination Port</label>
+          <select id="pkPort"></select>
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn" id="sendPacketBtn">Send Packet</button><button class="btn ghost" id="clearLogBtn">Clear Log</button></div>
+      <div class="packet-log" id="packetLog"></div>
+    </div>
+  </section>
+
+  <!-- ============ ENCRYPTION ============ -->
+  <section class="view" id="view-crypto">
+    <div class="eyebrow">Module 05</div>
+    <h1 class="page-title">Encryption &amp; Hashing Demo</h1>
+    <p class="page-desc">Two pillars of cryptographic control: encryption protects confidentiality, hashing protects integrity. Try both below.</p>
+
+    <div class="card">
+      <h3>Caesar Cipher (classic substitution encryption)</h3>
+      <textarea id="caesarInput" rows="2" placeholder="Type plain text to encrypt...">CA FINAL ITT COURSE</textarea>
+      <div style="margin-top:10px;">
+        <label class="small-note">Shift key: <span id="shiftVal">3</span></label>
+        <input type="range" id="shiftRange" min="1" max="25" value="3">
+      </div>
+      <div class="hash-out" id="caesarOutput"></div>
+      <p class="small-note">This is a weak, historical cipher shown for concept only — real systems use AES-256 / RSA. Ask: why is a fixed shift trivially breakable by frequency analysis?</p>
+    </div>
+
+    <div class="card">
+      <h3>SHA-256 Hashing &amp; Integrity Verification</h3>
+      <textarea id="hashInput" rows="2" placeholder="Type a message to hash..."></textarea>
+      <div class="hash-out" id="hashOutput">—</div>
+      <div class="grid2" style="margin-top:14px;">
+        <div>
+          <label class="small-note">Original file hash (auto-filled above)</label>
+          <input type="text" id="hashOriginal" readonly>
+        </div>
+        <div>
+          <label class="small-note">Received file hash (edit a character to simulate tampering)</label>
+          <input type="text" id="hashCompare" placeholder="Paste / edit hash to compare">
+        </div>
+      </div>
+      <div id="hashMatch"></div>
+      <p class="small-note">This mirrors how auditors verify file integrity (e.g. digital evidence, backups) — even a 1-character change produces a completely different hash (the avalanche effect).</p>
+    </div>
+  </section>
+
+  <!-- ============ AUDIT LOG ============ -->
+  <section class="view" id="view-audit">
+    <div class="eyebrow">Module 06</div>
+    <h1 class="page-title">Audit Log Review Exercise</h1>
+    <p class="page-desc">This is a system access log for a finance application. Click every row you consider anomalous or worth flagging in an IS audit, then reveal the answer.</p>
+    <div class="card">
+      <table class="log-table" id="logTable">
+        <thead><tr><th>Time</th><th>User</th><th>Action</th><th>IP Address</th><th>Result</th></tr></thead>
+        <tbody id="logBody"></tbody>
+      </table>
+      <div class="btn-row"><button class="btn" id="revealLogBtn">Reveal Answer</button><button class="btn ghost" id="resetLogBtn">Reset</button></div>
+      <div class="card" id="logExplain" style="display:none; margin-top:16px; background:var(--panel-2);"></div>
+    </div>
+  </section>
+
+  <!-- ============ ATTACK CHAIN ============ -->
+  <section class="view" id="view-chain">
+    <div class="eyebrow">Module 07</div>
+    <h1 class="page-title">Cyber Attack Lifecycle (Kill Chain)</h1>
+    <p class="page-desc">Click each stage to expand it. This 7-stage model is used to design layered/defense-in-depth controls — for every attacker stage there is a corresponding organisational control.</p>
+    <div class="card"><div class="chain" id="chainList"></div></div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="view" id="view-quiz">
+    <div class="eyebrow">Module 08</div>
+    <h1 class="page-title">Assessment &amp; Certificate</h1>
+    <p class="page-desc">12 questions covering every module above. Answer to see your score and generate a printable completion certificate.</p>
+    <div class="card" id="quizCard"></div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="credit">Created by <b>Smit Parekh</b> — CyberShield Lab</div>
+  <div>YouTube: <a href="https://www.youtube.com/@TheParekhShow" target="_blank" rel="noopener">www.youtube.com/@TheParekhShow</a></div>
+  <div style="margin-top:6px; color:var(--text-lo);">Built for CA Final Advanced ITT · Cyber Security teaching demonstration</div>
+</footer>
+
+<script>
+/* ================= THEME ================= */
+const root = document.documentElement;
+const themeBtn = document.getElementById('themeBtn');
+function applyTheme(t){
+  root.setAttribute('data-theme', t);
+  themeBtn.textContent = t === 'dark' ? '🌙' : '☀️';
+  localStorage.setItem('csl-theme', t);
+}
+applyTheme(localStorage.getItem('csl-theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+
+/* ================= TABS ================= */
+const tabBtns = document.querySelectorAll('.tab-btn');
+function showView(name){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  tabBtns.forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+tabBtns.forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+document.querySelectorAll('.module-link').forEach(m => m.addEventListener('click', () => showView(m.dataset.view)));
+
+/* ================= PWA: SERVICE WORKER + INSTALL ================= */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'flex';
+});
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBtn.style.display = 'none';
+});
+window.addEventListener('appinstalled', () => { installBtn.style.display = 'none'; });
+
+/* ================= MODULE 01: PHISHING ================= */
+const emails = [
+  {
+    from: "IT-Support@icai-secure-verify.com", subject: "URGENT: Your ICAI Portal Access Will Be Suspended",
+    isPhish: true,
+    body: `Dear Student, {{We detected unusual login activity on your account}}. Your access to the student portal will be {{suspended within 24 hours}} unless you verify your details immediately. {{Click here to verify: http://icai-secure-verify.com/login}} and enter your registration number and password. {{Failure to act immediately will result in permanent loss of exam registration.}} Regards, IT Support Team.`
+  },
+  {
+    from: "training@icai.org", subject: "Advanced ITT Batch Schedule - August 2026",
+    isPhish: false,
+    body: `Dear Student, Please find attached the schedule for the Advanced ITT batch commencing in August 2026. Sessions will be held at the regional centre from 9:30 AM to 5:30 PM. For any queries, please contact the regional office during working hours. Regards, Training Coordination Team.`
+  },
+  {
+    from: "hr.payroll@yourcompany-hrms.net", subject: "Salary Revision Letter - Action Required",
+    isPhish: true,
+    body: `Hi, Attached is your {{revised salary structure}} for this financial year. {{Please download and open the attached invoice.exe file}} to view your new CTC breakup and {{confirm your bank account number and IFSC code by replying to this email}} before end of day. {{This is time sensitive}} - HR Payroll Desk.`
+  },
+  {
+    from: "no-reply@notifications.linkedin.com", subject: "You have 3 new connection requests",
+    isPhish: false,
+    body: `Hi, You have new connection requests waiting for your response on LinkedIn. Log in to your account directly through the LinkedIn app or by typing www.linkedin.com in your browser to view and respond to these requests. Thanks, The LinkedIn Team.`
+  }
+];
+let phishFoundTotal = 0, phishCluesTotal = 0, phishVerdictCorrect = 0, phishAnswered = 0;
+
+function renderEmails(){
+  const c = document.getElementById('mailContainer');
+  c.innerHTML = '';
+  emails.forEach((mail, idx) => {
+    let clueCount = 0;
+    const bodyHtml = mail.body.replace(/\{\{(.*?)\}\}/g, (m, txt) => { clueCount++; return `<span class="clue" data-mail="${idx}">${txt}</span>`; });
+    phishCluesTotal += mail.isPhish ? clueCount : 0;
+    const div = document.createElement('div');
+    div.className = 'mail-card';
+    div.innerHTML = `
+      <div class="mail-head"><span class="from">${mail.from}</span><br>Subject: ${mail.subject}</div>
+      <div class="mail-body">${bodyHtml}</div>
+      <div class="mail-foot">
+        <span class="progress-pill">Flags found: <span id="found-${idx}">0</span>${mail.isPhish ? '/' + clueCount : ''}</span>
+        <div class="verdict-row">
+          <button class="btn ghost" data-verdict="genuine" data-mail="${idx}">Mark Genuine</button>
+          <button class="btn danger" data-verdict="phish" data-mail="${idx}">Mark Phishing</button>
+        </div>
+      </div>`;
+    c.appendChild(div);
+  });
+  document.getElementById('phishTotal').textContent = phishCluesTotal;
+
+  c.querySelectorAll('.clue').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.classList.contains('found')) return;
+      el.classList.add('found');
+      const idx = el.dataset.mail;
+      const counter = document.getElementById('found-' + idx);
+      counter.textContent = parseInt(counter.textContent) + 1;
+      phishFoundTotal++;
+      document.getElementById('phishScore').textContent = phishFoundTotal;
+      document.getElementById('phishScoreCard').style.display = 'block';
+    });
+  });
+  c.querySelectorAll('[data-verdict]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.mail);
+      const correct = (btn.dataset.verdict === 'phish') === emails[idx].isPhish;
+      const foot = btn.closest('.mail-foot');
+      foot.querySelectorAll('.btn').forEach(b => b.disabled = true);
+      const note = document.createElement('div');
+      note.style.fontSize = '12px';
+      note.style.marginTop = '8px';
+      note.style.fontFamily = 'var(--font-mono)';
+      note.style.color = correct ? 'var(--green)' : 'var(--red)';
+      note.textContent = correct ? '✓ Correct classification' : `✗ Incorrect — this email is ${emails[idx].isPhish ? 'a phishing attempt' : 'genuine'}`;
+      btn.closest('.mail-card').appendChild(note);
+      if (correct) phishVerdictCorrect++;
+      phishAnswered++;
+      document.getElementById('phishVerdictScore').textContent = phishVerdictCorrect;
+      document.getElementById('phishScoreCard').style.display = 'block';
+    });
+  });
+}
+renderEmails();
+
+/* ================= MODULE 02: PASSWORD LAB ================= */
+const commonWords = ['password','india','admin','welcome','qwerty','letmein','ca2026','finalexam','icai','123456','iloveyou'];
+const pwInput = document.getElementById('pwInput');
+function estimateCrackTime(pw){
+  let poolSize = 0;
+  if (/[a-z]/.test(pw)) poolSize += 26;
+  if (/[A-Z]/.test(pw)) poolSize += 26;
+  if (/[0-9]/.test(pw)) poolSize += 10;
+  if (/[^a-zA-Z0-9]/.test(pw)) poolSize += 32;
+  if (poolSize === 0 || pw.length === 0) return {seconds:0, entropy:0};
+  const entropy = pw.length * Math.log2(poolSize);
+  const guessesPerSecond = 1e10; // offline fast attack assumption for classroom illustration
+  const combinations = Math.pow(poolSize, pw.length);
+  const seconds = combinations / guessesPerSecond / 2;
+  return {seconds, entropy};
+}
+function humanTime(s){
+  if (s < 1) return 'instantly';
+  const units = [['years',31536000],['days',86400],['hours',3600],['minutes',60],['seconds',1]];
+  for (const [name, size] of units){
+    if (s >= size){
+      const v = s / size;
+      if (v > 1e6) return `${v.toExponential(1)} ${name}`;
+      return `${Math.round(v).toLocaleString()} ${name}`;
+    }
+  }
+  return 'instantly';
+}
+pwInput.addEventListener('input', () => {
+  const pw = pwInput.value;
+  const hasLen = pw.length >= 12;
+  const hasUpper = /[A-Z]/.test(pw);
+  const hasLower = /[a-z]/.test(pw);
+  const hasNum = /[0-9]/.test(pw);
+  const hasSym = /[^a-zA-Z0-9]/.test(pw);
+  const lower = pw.toLowerCase();
+  const hasDict = commonWords.some(w => lower.includes(w));
+  const noDict = pw.length > 0 && !hasDict;
+
+  const checks = {'c-len':hasLen,'c-upper':hasUpper,'c-lower':hasLower,'c-num':hasNum,'c-sym':hasSym,'c-dict':noDict};
+  let passed = 0;
+  Object.entries(checks).forEach(([id, ok]) => {
+    document.getElementById(id).classList.toggle('ok', ok);
+    document.getElementById(id).querySelector('.box').textContent = ok ? '✓' : '';
+    if (ok) passed++;
+  });
+
+  const {seconds, entropy} = estimateCrackTime(pw);
+  const effectiveSeconds = hasDict ? Math.min(seconds, 5) : seconds;
+  const pct = Math.min(100, Math.round((passed / 6) * 100));
+  const fill = document.getElementById('pwMeterFill');
+  fill.style.width = pct + '%';
+  let label, color;
+  if (pw.length === 0) { label = '—'; color = 'var(--red)'; }
+  else if (passed <= 2) { label = 'Very Weak'; color = 'var(--red)'; }
+  else if (passed <= 4) { label = 'Weak'; color = 'var(--amber)'; }
+  else if (passed === 5) { label = 'Moderate'; color = 'var(--cyan-dim)'; }
+  else { label = 'Strong'; color = 'var(--green)'; }
+  fill.style.background = color;
+  document.getElementById('pwLabel').textContent = 'Strength: ' + label;
+  document.getElementById('pwCrack').textContent = pw.length ? `Est. crack time: ${humanTime(effectiveSeconds)}` : 'Est. crack time: —';
+});
+
+/* ================= MODULE 03: SOCIAL ENGINEERING ================= */
+const scenarios = [
+  {
+    title: 'The Urgent Call',
+    text: 'You receive a phone call from someone claiming to be from your IT helpdesk. They say there\'s a critical security issue and ask you to read out the OTP that just arrived on your phone so they can "verify your identity" and fix it.',
+    choices: [
+      { text: 'Read out the OTP since they sound like they know internal details', good:false, fb:'Never share an OTP over a phone call. Genuine IT teams never ask for OTPs — this is a classic vishing (voice phishing) attack. Knowing internal-sounding details does not prove legitimacy; attackers research their targets.' },
+      { text: 'Refuse, hang up, and call the IT helpdesk back using the official number', good:true, fb:'Correct. Verify identity independently through a known, trusted channel rather than the one the caller gave you. This breaks the attacker\'s control of the interaction.' },
+      { text: 'Ask them to email you instead, then reply with the OTP', good:false, fb:'Changing channel does not fix the core problem — OTPs should never be shared with anyone, over any channel, for any reason.' }
+    ]
+  },
+  {
+    title: 'The USB Drive',
+    text: 'You find a USB drive labelled "Salary Increments 2026 - CONFIDENTIAL" in the office parking lot. Curious, you consider plugging it into your work laptop to see whose it is and return it.',
+    choices: [
+      { text: 'Plug it in briefly just to check the owner\'s name in a document', good:false, fb:'This is a classic "baiting" attack. Plugging in an unknown USB device can auto-run malware, install keyloggers or ransomware — even briefly.' },
+      { text: 'Hand it to the IT / security team without connecting it to any device', good:true, fb:'Correct. Unknown removable media should always be handed to IT security, who can inspect it in an isolated/sandboxed environment.' },
+      { text: 'Take it home to check it on your personal laptop instead', good:false, fb:'This only shifts the risk to a different device and still doesn\'t address the organisational threat — and personal devices may lack adequate controls too.' }
+    ]
+  },
+  {
+    title: 'The New Vendor',
+    text: 'Someone calls the front desk claiming to be from a new empanelled auditor\'s office, asking for the CFO\'s direct mobile number and the name of the ERP system used, saying it\'s needed to "prepare for next week\'s audit."',
+    choices: [
+      { text: 'Share the requested details since audits are routine and time-sensitive', good:false, fb:'This is pretexting — inventing a plausible scenario to extract information. Legitimate audit engagements are coordinated through official channels, not cold calls to the front desk.' },
+      { text: 'Politely decline and direct the caller to email the audit coordination team through the official channel', good:true, fb:'Correct. Verify any unsolicited request through an independent, known channel before disclosing internal information such as personnel contacts or system names.' },
+      { text: 'Give the ERP system name only, since that seems harmless', good:false, fb:'Even seemingly minor details (like the ERP system in use) can be used for reconnaissance in a larger attack chain. Follow verification procedure for every request, however small.' }
+    ]
+  }
+];
+let scenarioProgress = new Array(scenarios.length).fill(false);
+let currentScenario = 0;
+
+function renderScenarioNav(){
+  const nav = document.getElementById('scenarioNav');
+  nav.innerHTML = '';
+  scenarios.forEach((s, i) => {
+    const chip = document.createElement('button');
+    chip.className = 'scenario-chip' + (i === currentScenario ? ' active' : '') + (scenarioProgress[i] ? ' done' : '');
+    chip.textContent = `Scenario ${i+1}`;
+    chip.addEventListener('click', () => { currentScenario = i; renderScenario(); });
+    nav.appendChild(chip);
+  });
+}
+function renderScenario(){
+  renderScenarioNav();
+  const s = scenarios[currentScenario];
+  const card = document.getElementById('scenarioCard');
+  card.innerHTML = `
+    <span class="badge-warn">${s.title}</span>
+    <p style="font-size:14px; line-height:1.7; margin-bottom:18px;">${s.text}</p>
+    <div id="choicesArea"></div>
+    <div class="feedback-box" id="fbBox"></div>
+  `;
+  const area = document.getElementById('choicesArea');
+  s.choices.forEach((c, i) => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.textContent = c.text;
+    b.addEventListener('click', () => {
+      area.querySelectorAll('.choice-btn').forEach(x => x.disabled = true);
+      const fb = document.getElementById('fbBox');
+      fb.className = 'feedback-box ' + (c.good ? 'good' : 'bad') ;
+      fb.style.display = 'block';
+      fb.textContent = (c.good ? '✓ Good choice. ' : '✗ Risky choice. ') + c.fb;
+      scenarioProgress[currentScenario] = true;
+      renderScenarioNav();
+    });
+    area.appendChild(b);
+  });
+}
+renderScenario();
+
+/* ================= MODULE 04: FIREWALL ================= */
+let rules = [
+  { src: '10.0.0.0/24', port: '443 (HTTPS)', action: 'ALLOW' },
+  { src: '10.0.0.0/24', port: '22 (SSH)', action: 'DENY' },
+  { src: 'ANY', port: '3389 (RDP)', action: 'DENY' },
+  { src: 'ANY', port: '80 (HTTP)', action: 'ALLOW' },
+];
+const ipOptions = ['10.0.0.5','10.0.0.55','203.0.113.9','198.51.100.4'];
+const portOptions = ['443 (HTTPS)','22 (SSH)','3389 (RDP)','80 (HTTP)','21 (FTP)'];
+
+function renderRules(){
+  const body = document.getElementById('ruleBody');
+  body.innerHTML = '';
+  rules.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td><input type="text" value="${r.src}" data-i="${i}" data-f="src"></td>
+      <td>
+        <select data-i="${i}" data-f="port">
+          ${portOptions.map(p => `<option ${p===r.port?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select data-i="${i}" data-f="action">
+          <option ${r.action==='ALLOW'?'selected':''}>ALLOW</option>
+          <option ${r.action==='DENY'?'selected':''}>DENY</option>
+        </select>
+      </td>`;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('input,select').forEach(el => {
+    el.addEventListener('change', () => {
+      rules[el.dataset.i][el.dataset.f] = el.value;
+    });
+  });
+}
+document.getElementById('addRuleBtn').addEventListener('click', () => {
+  rules.push({src:'ANY', port: portOptions[0], action:'DENY'});
+  renderRules();
+});
+renderRules();
+
+function populateSelect(id, opts){
+  const sel = document.getElementById(id);
+  sel.innerHTML = opts.map(o => `<option>${o}</option>`).join('');
+}
+populateSelect('pkSrc', ipOptions);
+populateSelect('pkPort', portOptions);
+
+function ipInCidr(ip, cidr){
+  if (cidr === 'ANY') return true;
+  if (!cidr.includes('/')) return ip === cidr;
+  const [base, bits] = cidr.split('/');
+  const toInt = a => a.split('.').reduce((acc,o) => (acc<<8) + parseInt(o), 0) >>> 0;
+  const mask = bits==0 ? 0 : (~0 << (32-bits)) >>> 0;
+  return (toInt(ip) & mask) === (toInt(base) & mask);
+}
+document.getElementById('sendPacketBtn').addEventListener('click', () => {
+  const src = document.getElementById('pkSrc').value;
+  const port = document.getElementById('pkPort').value;
+  let result = 'DENY (default deny — no matching rule)';
+  let matched = false;
+  for (const r of rules){
+    const srcMatch = r.src === 'ANY' || ipInCidr(src, r.src) || r.src === src;
+    const portMatch = r.port === port;
+    if (srcMatch && portMatch){ result = r.action + ' (matched rule)'; matched = true; break; }
+  }
+  const log = document.getElementById('packetLog');
+  const row = document.createElement('div');
+  row.className = 'packet-row';
+  const isAllow = result.startsWith('ALLOW');
+  row.innerHTML = `<span>${src} → port ${port}</span><span class="tag ${isAllow?'allow':'deny'}">${result}</span>`;
+  log.prepend(row);
+});
+document.getElementById('clearLogBtn').addEventListener('click', () => {
+  document.getElementById('packetLog').innerHTML = '';
+});
+
+/* ================= MODULE 05: ENCRYPTION & HASHING ================= */
+function caesarEncrypt(text, shift){
+  return text.replace(/[a-zA-Z]/g, ch => {
+    const base = ch <= 'Z' ? 65 : 97;
+    return String.fromCharCode(((ch.charCodeAt(0) - base + shift) % 26) + base);
+  });
+}
+const caesarInput = document.getElementById('caesarInput');
+const shiftRange = document.getElementById('shiftRange');
+const shiftVal = document.getElementById('shiftVal');
+function updateCaesar(){
+  shiftVal.textContent = shiftRange.value;
+  document.getElementById('caesarOutput').textContent = caesarEncrypt(caesarInput.value, parseInt(shiftRange.value)) || '—';
+}
+caesarInput.addEventListener('input', updateCaesar);
+shiftRange.addEventListener('input', updateCaesar);
+updateCaesar();
+
+async function sha256(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+const hashInput = document.getElementById('hashInput');
+const hashOutput = document.getElementById('hashOutput');
+const hashOriginal = document.getElementById('hashOriginal');
+const hashCompare = document.getElementById('hashCompare');
+const hashMatch = document.getElementById('hashMatch');
+async function updateHash(){
+  const h = hashInput.value ? await sha256(hashInput.value) : '—';
+  hashOutput.textContent = h;
+  hashOriginal.value = h === '—' ? '' : h;
+  checkMatch();
+}
+function checkMatch(){
+  if (!hashCompare.value){ hashMatch.innerHTML = ''; return; }
+  const match = hashCompare.value.trim() === hashOriginal.value.trim();
+  hashMatch.innerHTML = `<span class="match-badge ${match?'yes':'no'}">${match ? '✓ Integrity Verified — Hashes Match' : '✗ Integrity Compromised — Hashes Do Not Match'}</span>`;
+}
+hashInput.addEventListener('input', updateHash);
+hashCompare.addEventListener('input', checkMatch);
+
+/* ================= MODULE 06: AUDIT LOG ================= */
+const logEntries = [
+  {time:'09:02:14', user:'rmehta', action:'Login Success', ip:'10.0.4.21', result:'OK', flag:false},
+  {time:'09:15:40', user:'rmehta', action:'View Ledger - GL001', ip:'10.0.4.21', result:'OK', flag:false},
+  {time:'11:47:03', user:'admin', action:'Login Success', ip:'185.220.101.7', result:'OK', flag:true, why:'Admin account login from an external / unusual foreign IP address outside normal office range — potential compromised credential.'},
+  {time:'11:48:55', user:'admin', action:'User Role Modified: rmehta → Super Admin', ip:'185.220.101.7', result:'OK', flag:true, why:'Privilege escalation performed immediately after a suspicious login — classic pattern of an attacker granting themselves persistent access.'},
+  {time:'13:02:19', user:'ppatel', action:'Login Failed (5th attempt)', ip:'10.0.4.55', result:'FAIL', flag:true, why:'Multiple consecutive failed logins indicate a possible brute-force attempt; account lockout policy should trigger here.'},
+  {time:'14:20:03', user:'ppatel', action:'View Ledger - GL014', ip:'10.0.4.55', result:'OK', flag:false},
+  {time:'02:11:47', user:'svendor', action:'Bulk Export: Vendor Master (4,210 records)', ip:'10.0.4.21', result:'OK', flag:true, why:'Large bulk data export at 2:11 AM — well outside business hours — is a strong indicator of data exfiltration.'},
+  {time:'16:05:12', user:'skhan', action:'Password Changed (self-service)', ip:'10.0.4.30', result:'OK', flag:false},
+  {time:'16:40:29', user:'admin', action:'Audit Log Cleared', ip:'185.220.101.7', result:'OK', flag:true, why:'Clearing the audit log is a major red flag — attackers cover their tracks by deleting or clearing logs. This alone should trigger an immediate incident response.'},
+  {time:'17:55:00', user:'rmehta', action:'Logout', ip:'10.0.4.21', result:'OK', flag:false},
+];
+let userFlags = new Array(logEntries.length).fill(false);
+function renderLog(){
+  const body = document.getElementById('logBody');
+  body.innerHTML = '';
+  logEntries.forEach((e, i) => {
+    const tr = document.createElement('tr');
+    tr.dataset.i = i;
+    tr.innerHTML = `<td>${e.time}</td><td>${e.user}</td><td>${e.action}</td><td>${e.ip}</td><td>${e.result}</td>`;
+    tr.addEventListener('click', () => {
+      userFlags[i] = !userFlags[i];
+      tr.classList.toggle('flagged', userFlags[i]);
+    });
+    body.appendChild(tr);
+  });
+}
+renderLog();
+document.getElementById('revealLogBtn').addEventListener('click', () => {
+  let correct = 0, missed = 0, falsePos = 0;
+  const rows = document.querySelectorAll('#logBody tr');
+  rows.forEach((tr, i) => {
+    tr.classList.remove('flagged','wrong-flag');
+    if (logEntries[i].flag && userFlags[i]){ tr.classList.add('flagged'); correct++; }
+    else if (logEntries[i].flag && !userFlags[i]){ tr.classList.add('flagged'); missed++; }
+    else if (!logEntries[i].flag && userFlags[i]){ tr.classList.add('wrong-flag'); falsePos++; }
+  });
+  const totalAnomalies = logEntries.filter(e => e.flag).length;
+  const explain = document.getElementById('logExplain');
+  explain.style.display = 'block';
+  explain.innerHTML = `<h3>Result: ${correct}/${totalAnomalies} anomalies correctly identified${falsePos ? `, ${falsePos} false positive(s)` : ''}</h3>
+    <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+    ${logEntries.filter(e=>e.flag).map(e => `<div style="font-size:12.5px; line-height:1.6;"><b style="font-family:var(--font-mono); color:var(--red);">${e.time} · ${e.user}</b><br>${e.why}</div>`).join('')}
+    </div>`;
+});
+document.getElementById('resetLogBtn').addEventListener('click', () => {
+  userFlags = new Array(logEntries.length).fill(false);
+  document.getElementById('logExplain').style.display = 'none';
+  renderLog();
+});
+
+/* ================= MODULE 07: ATTACK CHAIN ================= */
+const chainSteps = [
+  {t:'Reconnaissance', d:'Attacker gathers information about the target — employee names, email formats, technology stack — often from public sources (LinkedIn, job postings, company website).', c:'Control: Security awareness training, limiting public disclosure of internal details'},
+  {t:'Weaponization', d:'Attacker builds a deliverable payload — e.g. a malicious macro-enabled document or a crafted phishing link — designed to exploit a known vulnerability.', c:'Control: Patch management, vulnerability scanning'},
+  {t:'Delivery', d:'The payload is delivered to the target, typically via email attachment, malicious link, infected USB drive, or a compromised website.', c:'Control: Email gateway filtering, web content filtering, USB port control'},
+  {t:'Exploitation', d:'The payload executes, exploiting a vulnerability in the system or tricking the user (e.g. enabling macros) to gain initial code execution.', c:'Control: Endpoint protection (EDR/antivirus), least-privilege user accounts'},
+  {t:'Installation', d:'Malware installs itself to maintain persistence on the compromised system, such as a backdoor or scheduled task that survives reboots.', c:'Control: Application whitelisting, host intrusion detection'},
+  {t:'Command &amp; Control (C2)', d:'The compromised system "phones home" to an attacker-controlled server, giving the attacker remote hands-on-keyboard access to the network.', c:'Control: Network segmentation, egress firewall rules, DNS/traffic monitoring'},
+  {t:'Actions on Objectives', d:'The attacker achieves their goal: data exfiltration, ransomware deployment, financial fraud, or destruction of data/systems.', c:'Control: Data loss prevention (DLP), offline backups, incident response plan'},
+];
+function renderChain(){
+  const list = document.getElementById('chainList');
+  list.innerHTML = '';
+  chainSteps.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'chain-step';
+    div.innerHTML = `<div class="chain-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="chain-tx"><div class="t">${s.t}</div><div class="d">${s.d}</div><div class="ctrl">${s.c}</div></div>`;
+    div.addEventListener('click', () => div.classList.toggle('active'));
+    list.appendChild(div);
+  });
+}
+renderChain();
+
+/* ================= MODULE 08: QUIZ ================= */
+const quizQuestions = [
+  {q:'Which element of the CIA triad is directly compromised by a ransomware attack that locks users out of their files?', opts:['Confidentiality','Integrity','Availability','Non-repudiation'], a:2},
+  {q:'A caller pretending to be from IT support asks an employee to read out an OTP over the phone. This is an example of:', opts:['Baiting','Vishing (voice phishing)','Tailgating','Spoofing'], a:1},
+  {q:'Which of the following is the strongest indicator of a phishing email?', opts:['Sent during business hours','Mismatched / lookalike sender domain with urgent call to action','Contains a company logo','Addressed to "Dear Customer"'], a:1},
+  {q:'In firewall/ACL evaluation, when multiple rules could match a packet, which typically applies?', opts:['The most restrictive rule always wins','The last matching rule in the list','The first matching rule in the list (top-down)','All matching rules are combined'], a:2},
+  {q:'Hashing (e.g. SHA-256) is primarily used to ensure which control objective?', opts:['Confidentiality','Integrity','Availability','Authorization'], a:1},
+  {q:'What is a key weakness of the Caesar cipher demonstrated in this lab?', opts:['It requires too much computing power','It is vulnerable to frequency analysis due to a small, fixed key space','It cannot encrypt numbers','It is a form of asymmetric encryption'], a:1},
+  {q:'Finding an unlabelled USB drive and plugging it into a work laptop to identify the owner is risky because of:', opts:['Pretexting', 'Baiting-based malware delivery', 'Shoulder surfing', 'Denial of Service'], a:1},
+  {q:'A bulk export of 4,000+ vendor records at 2 AM by a low-privilege account is most likely a sign of:', opts:['Routine month-end processing','Scheduled backup job','Potential data exfiltration','System performance testing'], a:2},
+  {q:'Clearing or deleting audit logs after a suspicious login is best described as:', opts:['Standard system maintenance','Evidence of an attacker covering their tracks','A compensating control','A detective control'], a:1},
+  {q:'Which stage of the cyber attack lifecycle involves the attacker establishing a remote command channel to the compromised system?', opts:['Reconnaissance','Delivery','Command & Control','Weaponization'], a:2},
+  {q:'Which password attribute contributes MOST to resisting brute-force attacks?', opts:['Using a well-known word in leetspeak (e.g. P@ssw0rd)','Overall length combined with character variety','Changing the password every 7 days','Using your name and birth year'], a:1},
+  {q:'In an IS audit, a weak password policy would most likely be classified as a deficiency in which type of control?', opts:['Corrective control','Preventive control','Detective control','Compensating control'], a:1},
+];
+let quizIdx = 0, quizScore = 0, quizAnswered = false;
+function renderQuiz(){
+  const card = document.getElementById('quizCard');
+  if (quizIdx >= quizQuestions.length){
+    renderQuizResult();
+    return;
+  }
+  const q = quizQuestions[quizIdx];
+  quizAnswered = false;
+  card.innerHTML = `
+    <div class="q-progress">Question ${quizIdx+1} of ${quizQuestions.length} &nbsp;·&nbsp; Score: ${quizScore}</div>
+    <div class="q-text">${q.q}</div>
+    <div id="optsArea"></div>
+  `;
+  const area = document.getElementById('optsArea');
+  q.opts.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.textContent = opt;
+    b.addEventListener('click', () => {
+      if (quizAnswered) return;
+      quizAnswered = true;
+      const correct = i === q.a;
+      if (correct) quizScore++;
+      area.querySelectorAll('.opt-btn').forEach((x, xi) => {
+        x.disabled = true;
+        if (xi === q.a) x.classList.add('correct');
+        else if (xi === i && !correct) x.classList.add('incorrect');
+      });
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'btn';
+      nextBtn.style.marginTop = '16px';
+      nextBtn.textContent = quizIdx === quizQuestions.length - 1 ? 'See Result' : 'Next Question →';
+      nextBtn.addEventListener('click', () => { quizIdx++; renderQuiz(); });
+      card.appendChild(nextBtn);
+    });
+    area.appendChild(b);
+  });
+}
+function renderQuizResult(){
+  const card = document.getElementById('quizCard');
+  const pct = Math.round((quizScore / quizQuestions.length) * 100);
+  card.innerHTML = `
+    <div class="score-ring"><div class="big">${quizScore}/${quizQuestions.length}</div><div style="color:var(--text-mid); font-family:var(--font-mono); font-size:12px;">${pct}% correct</div></div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn ghost" id="retakeBtn">Retake Quiz</button>
+      <button class="btn" id="certBtn">Generate Certificate</button>
+    </div>
+    <div id="certArea"></div>
+  `;
+  document.getElementById('retakeBtn').addEventListener('click', () => { quizIdx = 0; quizScore = 0; renderQuiz(); });
+  document.getElementById('certBtn').addEventListener('click', () => {
+    const name = prompt('Enter your name for the certificate:') || 'Student';
+    document.getElementById('certArea').innerHTML = `
+      <div class="cert">
+        <div class="title">CyberShield Lab · Certificate of Completion</div>
+        <h2>Cyber Security Simulation — CA Final Advanced ITT</h2>
+        <div class="name">${name}</div>
+        <p style="font-size:13px; color:var(--text-mid); margin-top:10px;">has completed the CyberShield Lab assessment with a score of</p>
+        <p style="font-size:22px; font-weight:900; color:var(--cyan); margin-top:6px;">${quizScore} / ${quizQuestions.length} (${pct}%)</p>
+        <p style="font-size:11px; color:var(--text-lo); margin-top:16px; font-family:var(--font-mono);">Generated on ${new Date().toLocaleDateString()} · Created by Smit Parekh</p>
+      </div>
+      <div class="btn-row" style="justify-content:center;"><button class="btn ghost" id="printBtn">Print / Save as PDF</button></div>
+    `;
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+  });
+}
+renderQuiz();
+</script>
+</body>
+</html>
