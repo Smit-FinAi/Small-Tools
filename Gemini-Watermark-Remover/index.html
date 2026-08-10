@@ -2,857 +2,1211 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gemini Watermark Remover — by Smit Parekh</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gemini Watermark Remover v3.0 — by Smit Parekh</title>
+<meta name="description" content="Remove Gemini AI watermarks from any image. Live hover patch removal. 100% offline PWA.">
+<meta name="theme-color" content="#6366f1">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-/* ── CSS Variables & Reset ─────────────────────────────────── */
-:root {
-  --bg:        #0d1117;
-  --bg2:       #161b22;
-  --card:      #1c2230;
-  --border:    rgba(255,255,255,0.08);
-  --border2:   rgba(255,255,255,0.14);
-
-  /* Vibrant accent palette */
-  --indigo:    #6366f1;
-  --violet:    #8b5cf6;
-  --cyan:      #06b6d4;
-  --emerald:   #10b981;
-  --amber:     #f59e0b;
-  --rose:      #f43f5e;
-
-  /* Gradient combos */
-  --grad-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
-  --grad-warm:    linear-gradient(135deg, #f59e0b 0%, #f43f5e 100%);
-  --grad-cool:    linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  --grad-text:    linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 40%, #67e8f9 100%);
-
-  --text:      #e6edf3;
-  --text-muted:#8b949e;
-  --text-dim:  #6e7681;
-
-  --radius-sm: 8px;
-  --radius:    14px;
-  --radius-lg: 20px;
-  --shadow:    0 8px 32px rgba(0,0,0,0.4);
-  --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
-
-  --transition: .22s cubic-bezier(.4,0,.2,1);
+:root{
+  --bg:#0d1117;--bg2:#161b22;--card:#1c2230;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);
+  --indigo:#6366f1;--violet:#8b5cf6;--cyan:#06b6d4;--emerald:#10b981;--amber:#f59e0b;--rose:#f43f5e;
+  --grad:linear-gradient(135deg,#6366f1,#8b5cf6,#06b6d4);
+  --grad-cool:linear-gradient(135deg,#10b981,#06b6d4);
+  --grad-warm:linear-gradient(135deg,#f59e0b,#f43f5e);
+  --grad-text:linear-gradient(135deg,#a5b4fc,#c4b5fd,#67e8f9);
+  --text:#e6edf3;--muted:#8b949e;--dim:#6e7681;
+  --r:10px;--rl:16px;--t:.2s cubic-bezier(.4,0,.2,1);--sh:0 8px 32px rgba(0,0,0,.45);
 }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Roboto',system-ui,sans-serif;font-size:15px;line-height:1.65;color:var(--text);background:var(--bg);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 15% 0%,rgba(99,102,241,.18),transparent 60%),
+  radial-gradient(ellipse 60% 40% at 85% 5%,rgba(139,92,246,.13),transparent 55%),
+  radial-gradient(ellipse 50% 60% at 50% 100%,rgba(6,182,212,.09),transparent 60%);}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.page{position:relative;z-index:1;max-width:1020px;margin:0 auto;padding:0 18px 80px}
 
-html { scroll-behavior: smooth; }
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0 14px;border-bottom:1px solid var(--border);margin-bottom:36px}
+.topbar-logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;color:var(--muted)}
+.gem{width:27px;height:27px;border-radius:7px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:15px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.badge-pill{font-size:11px;font-weight:600;letter-spacing:.8px;padding:4px 11px;border-radius:20px;font-family:'Roboto Mono',monospace;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--dim)}
+#installBtn{display:none;background:var(--grad);border:none;color:#fff;font-family:'Roboto',sans-serif;font-weight:700;font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;transition:var(--t)}
+#installBtn.show{display:inline-flex;align-items:center;gap:6px}
 
-body {
-  font-family: 'Roboto', system-ui, sans-serif;
-  font-size: 15px;
-  line-height: 1.65;
-  color: var(--text);
-  background: var(--bg);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+/* HERO */
+.hero{text-align:center;padding:4px 0 38px}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--cyan);background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);padding:5px 14px;border-radius:20px;margin-bottom:20px}
+.eyebrow::before{content:'●';font-size:7px;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:clamp(1.9rem,5vw,3rem);font-weight:900;letter-spacing:-1.2px;line-height:1.1;margin-bottom:12px;background:var(--grad-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:.97rem;font-weight:300;color:var(--muted);max-width:490px;margin:0 auto 6px}
+.hero-sub strong{color:var(--text);font-weight:500}
+.hero-credit{font-size:.77rem;color:var(--dim);font-family:'Roboto Mono',monospace;margin-top:5px}
+.hero-credit span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700}
+.pill-row{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.pill{font-size:11px;font-weight:600;letter-spacing:.4px;padding:4px 11px;border-radius:20px}
+.pi{background:rgba(99,102,241,.14);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+.pc{background:rgba(6,182,212,.12);color:#67e8f9;border:1px solid rgba(6,182,212,.28)}
+.pe{background:rgba(16,185,129,.12);color:#6ee7b7;border:1px solid rgba(16,185,129,.28)}
+.pa{background:rgba(245,158,11,.12);color:#fcd34d;border:1px solid rgba(245,158,11,.28)}
+.pr{background:rgba(244,63,94,.12);color:#fda4af;border:1px solid rgba(244,63,94,.28)}
 
-/* ── Background mesh ───────────────────────────────────────── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 20% 0%,   rgba(99,102,241,.18) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 10%,  rgba(139,92,246,.14) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 60% at 50% 100%,  rgba(6,182,212,.10) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border2);border-radius:var(--rl);padding:28px;box-shadow:var(--sh);margin-bottom:44px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
 
-/* ── Layout ────────────────────────────────────────────────── */
-.page { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 0 20px 80px; }
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:22px;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:var(--rl);padding:5px}
+.tab{flex:1;text-align:center;padding:9px 8px;border-radius:var(--r);font-weight:600;font-size:.86rem;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:var(--t);font-family:'Roboto',sans-serif}
+.tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.tab.active{background:var(--grad);color:#fff;box-shadow:0 4px 14px rgba(99,102,241,.3)}
 
-/* ── Top bar ───────────────────────────────────────────────── */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 0 14px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 52px;
-}
-.topbar-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: .5px;
-  color: var(--text-muted);
-}
-.topbar-logo .dot {
-  width: 26px; height: 26px;
-  background: var(--grad-primary);
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-}
-.topbar-badge {
-  font-size: 11px; font-weight: 500; letter-spacing: .8px;
-  color: var(--text-dim);
-  background: rgba(255,255,255,.05);
-  border: 1px solid var(--border);
-  padding: 4px 10px; border-radius: 20px;
-  font-family: 'Roboto Mono', monospace;
-}
+/* PANELS */
+.panel{display:none}.panel.active{display:block}
 
-/* ── Hero ──────────────────────────────────────────────────── */
-.hero {
-  text-align: center;
-  padding: 10px 0 50px;
-}
-.hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--cyan);
-  background: rgba(6,182,212,.1);
-  border: 1px solid rgba(6,182,212,.25);
-  padding: 6px 14px;
-  border-radius: 20px;
-  margin-bottom: 24px;
-}
-.hero-eyebrow::before { content: '●'; font-size: 7px; animation: blink 2s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+/* DROP ZONE */
+.drop{border:2px dashed rgba(99,102,241,.3);border-radius:var(--r);padding:34px 22px;background:rgba(99,102,241,.04);cursor:pointer;transition:var(--t);text-align:center;outline:none}
+.drop:hover,.drop:focus,.drop.over{border-color:var(--indigo);background:rgba(99,102,241,.1);transform:translateY(-1px);box-shadow:0 0 0 4px rgba(99,102,241,.12)}
+.drop-icon{font-size:2rem;margin-bottom:9px;display:block}
+.drop h3{font-size:.97rem;font-weight:600;margin-bottom:5px}
+.drop p{color:var(--muted);font-size:.83rem;margin-bottom:4px}
+.drop-meta{color:var(--dim);font-size:.77rem;margin-bottom:12px;font-family:'Roboto Mono',monospace}
+.up-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 22px;background:var(--grad);border:none;border-radius:var(--r);color:#fff;font-weight:700;font-size:.86rem;cursor:pointer;font-family:'Roboto',sans-serif;transition:var(--t);box-shadow:0 4px 18px rgba(99,102,241,.3)}
+.up-btn:hover{opacity:.88;transform:translateY(-1px)}
 
-h1.hero-title {
-  font-size: clamp(2.2rem, 5vw, 3.4rem);
-  font-weight: 900;
-  letter-spacing: -1.5px;
-  line-height: 1.1;
-  margin-bottom: 18px;
-  background: var(--grad-text);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+/* STATUS */
+.status{margin-top:11px;min-height:16px;font-size:.83rem;color:var(--muted);white-space:pre-line}
+.status.err{color:#fb7185}.status.ok{color:#6ee7b7}
 
-.hero-sub {
-  font-size: 1.05rem;
-  font-weight: 300;
-  color: var(--text-muted);
-  max-width: 520px;
-  margin: 0 auto 8px;
-}
-.hero-sub strong { color: var(--text); font-weight: 500; }
+/* BUTTONS */
+.btn{appearance:none;border:1px solid var(--border2);background:rgba(255,255,255,.07);color:var(--text);border-radius:var(--r);padding:8px 13px;font-weight:600;cursor:pointer;font-family:'Roboto',sans-serif;font-size:.83rem;transition:var(--t)}
+.btn:hover:not(:disabled){background:rgba(255,255,255,.12)}.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-p{border:none;background:var(--grad);color:#fff;box-shadow:0 3px 14px rgba(99,102,241,.28)}
+.btn-p:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+.btn-g{border:none;background:var(--grad-cool);color:#fff}
+.btn-g:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+.btn-r{border-color:rgba(244,63,94,.3);color:#fda4af}
+.btn-r:hover:not(:disabled){background:rgba(244,63,94,.15)}
 
-.hero-credit {
-  font-size: .8rem;
-  color: var(--text-dim);
-  font-family: 'Roboto Mono', monospace;
-  letter-spacing: .5px;
-  margin-top: 6px;
-}
-.hero-credit span {
-  background: var(--grad-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 700;
-}
+/* CTRL BAR */
+.ctrl{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:11px 13px;background:rgba(0,0,0,.25);border-radius:var(--r);border:1px solid var(--border);margin-top:14px}
+.ctrl-l{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.lbl{font-size:.72rem;font-weight:700;color:var(--dim);letter-spacing:.5px;text-transform:uppercase}
+.sel-inp{appearance:none;background:rgba(0,0,0,.35);border:1px solid var(--border2);color:var(--text);border-radius:var(--r);padding:6px 9px;font-size:.82rem;font-weight:500;cursor:pointer;font-family:'Roboto',sans-serif}
+.fmt-g{display:inline-flex;align-items:center;gap:7px}
+.fmt-l{display:inline-flex;align-items:center;gap:4px;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer}
+.fmt-l input{width:13px;height:13px;accent-color:var(--indigo);cursor:pointer}
+.fmt-l input:checked+span{color:var(--text)}
+.prog{font-size:.82rem;font-weight:500;color:var(--muted);font-family:'Roboto Mono',monospace}
+.foot-act{display:flex;justify-content:flex-end;margin-top:13px}
 
-/* ── Pill badges ───────────────────────────────────────────── */
-.badges {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 22px;
+/* BATCH THUMB GRID */
+.grid{display:grid;grid-template-columns:1fr;gap:13px;margin-top:16px}
+@media(min-width:660px){.grid{grid-template-columns:1fr 1fr}}
+.tc{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:rgba(0,0,0,.2);transition:var(--t)}
+.tc:hover{border-color:rgba(99,102,241,.3)}
+.tc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.15)}
+.tc-name{font-weight:600;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-st{font-size:.67rem;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;background:rgba(255,255,255,.06);color:var(--muted)}
+.tc-st.done{background:rgba(16,185,129,.15);color:#6ee7b7}
+.tc-st.proc{background:rgba(99,102,241,.15);color:#a5b4fc}
+.tc-st.err{background:rgba(244,63,94,.15);color:#fda4af}
+.tc-body{padding:10px;display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:660px){.tc-body{grid-template-columns:1fr 1fr}}
+.tc-rl{font-size:.69rem;color:var(--dim);margin-bottom:4px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.tc-img{width:100%;height:auto;display:block;border-radius:7px;background:rgba(0,0,0,.3);border:1px solid var(--border)}
+.tc-sz{grid-column:1/-1;font-size:.71rem;color:var(--dim);font-family:'Roboto Mono',monospace}
+.tc-foot{display:flex;justify-content:flex-end;gap:7px;padding:9px 11px;border-top:1px solid var(--border)}
+
+/* ════════════════════════════════════
+   HOVER PATCH TOOL (the new Manual)
+════════════════════════════════════ */
+.patch-layout{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:740px){.patch-layout{grid-template-columns:240px 1fr}}
+
+/* Left sidebar controls */
+.patch-sidebar{display:flex;flex-direction:column;gap:14px}
+.sidebar-card{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.sidebar-title{font-size:.73rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--indigo);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.sidebar-title::before{content:'';display:inline-block;width:3px;height:12px;background:var(--grad);border-radius:2px}
+
+.slider-wrap{margin-bottom:14px}
+.slider-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.slider-lbl{font-size:.78rem;color:var(--muted);font-weight:500}
+.slider-val{font-size:.78rem;font-family:'Roboto Mono',monospace;color:#a5b4fc;font-weight:600;min-width:40px;text-align:right}
+input[type=range]{width:100%;height:4px;accent-color:var(--indigo);cursor:pointer;border-radius:2px}
+
+.shape-btns{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.shape-btn{padding:8px 6px;border-radius:var(--r);border:1px solid var(--border2);background:rgba(255,255,255,.05);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;font-family:'Roboto',sans-serif;transition:var(--t);text-align:center}
+.shape-btn:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.shape-btn.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(99,102,241,.3)}
+
+.map-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px}
+.map-btn{padding:7px 4px;border-radius:var(--r);border:1px solid var(--border2);background:rgba(255,255,255,.05);color:var(--muted);font-size:.75rem;font-weight:700;cursor:pointer;font-family:'Roboto Mono',monospace;transition:var(--t);text-align:center}
+.map-btn:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.map-btn.active{background:rgba(99,102,241,.25);color:#a5b4fc;border-color:rgba(99,102,241,.4)}
+
+.hint-box{background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);border-radius:var(--r);padding:12px;font-size:.78rem;color:var(--muted);line-height:1.7}
+.hint-box strong{color:#a5b4fc}
+.hint-step{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.hint-step:last-child{margin-bottom:0}
+.hint-num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(99,102,241,.25);color:#a5b4fc;font-size:.7rem;font-weight:700;flex-shrink:0;margin-top:1px}
+
+.action-btns{display:flex;flex-direction:column;gap:8px}
+
+/* Canvas area */
+.patch-canvas-area{display:flex;flex-direction:column;gap:10px}
+.canvas-topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.canvas-topbar-l{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.zoom-row{display:inline-flex;align-items:center;gap:5px}
+.zoom-btn{padding:4px 9px;font-size:.8rem;border-radius:6px;border:1px solid var(--border2);background:rgba(255,255,255,.07);color:var(--text);cursor:pointer;font-family:'Roboto',sans-serif;font-weight:600;transition:var(--t)}
+.zoom-btn:hover{background:rgba(255,255,255,.14)}
+.zoom-lbl{font-size:.76rem;font-family:'Roboto Mono',monospace;color:var(--muted);min-width:38px;text-align:center}
+.coords-pill{font-size:.72rem;font-family:'Roboto Mono',monospace;color:var(--dim);background:rgba(0,0,0,.3);border:1px solid var(--border);padding:3px 9px;border-radius:20px}
+
+.canvas-outer{
+  position:relative;overflow:auto;
+  background:repeating-conic-gradient(rgba(255,255,255,.035) 0% 25%,transparent 0% 50%) 0 0/22px 22px;
+  border-radius:var(--r);border:1px solid var(--border);
+  min-height:340px;cursor:none;
+  display:flex;align-items:center;justify-content:center;
 }
-.badge {
-  font-size: 11px; font-weight: 600; letter-spacing: .6px;
-  padding: 5px 12px; border-radius: 20px;
-}
-.badge-indigo { background: rgba(99,102,241,.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,.3); }
-.badge-cyan   { background: rgba(6,182,212,.12);  color: #67e8f9; border: 1px solid rgba(6,182,212,.28); }
-.badge-emerald{ background: rgba(16,185,129,.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,.28); }
-.badge-amber  { background: rgba(245,158,11,.12); color: #fcd34d; border: 1px solid rgba(245,158,11,.28); }
+.canvas-placeholder{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--dim);font-size:.88rem;padding:60px 20px;pointer-events:none}
+.canvas-placeholder span{font-size:2.2rem}
 
-/* ── Main tool card ────────────────────────────────────────── */
-.tool-card {
-  background: var(--card);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-lg);
-  padding: 36px;
-  box-shadow: var(--shadow-lg);
-  margin-bottom: 56px;
-  position: relative;
-  overflow: hidden;
-}
-.tool-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--grad-primary);
-}
+#patchCanvas{display:block;position:relative;z-index:1;border-radius:6px}
 
-/* ── Drop zone ─────────────────────────────────────────────── */
-.dropzone {
-  border: 2px dashed rgba(99,102,241,.3);
-  border-radius: var(--radius);
-  padding: 44px 28px;
-  background: rgba(99,102,241,.04);
-  cursor: pointer;
-  transition: var(--transition);
-  text-align: center;
-  outline: none;
-}
-.dropzone:hover, .dropzone:focus, .dropzone.over {
-  border-color: var(--indigo);
-  background: rgba(99,102,241,.1);
-  transform: translateY(-1px);
-  box-shadow: 0 0 0 4px rgba(99,102,241,.12);
-}
-.dropzone .icon { font-size: 2.4rem; margin-bottom: 12px; display: block; }
-.dropzone h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 6px; }
-.dropzone p { color: var(--text-muted); font-size: .88rem; margin-bottom: 4px; }
-.dropzone .meta { color: var(--text-dim); font-size: .8rem; margin-bottom: 14px; font-family: 'Roboto Mono', monospace; }
+/* The patch cursor overlay is drawn ON the canvas, not a DOM element */
 
-.upload-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 26px;
-  background: var(--grad-primary);
-  border: none; border-radius: var(--radius-sm);
-  color: #fff; font-weight: 700; font-size: .9rem;
-  cursor: pointer; font-family: 'Roboto', sans-serif;
-  transition: var(--transition);
-  box-shadow: 0 4px 20px rgba(99,102,241,.35);
-}
-.upload-btn:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,.45); }
+/* Bottom bar (under canvas) */
+.canvas-bottombar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 13px;background:rgba(0,0,0,.25);border-radius:var(--r);border:1px solid var(--border)}
+.mode-toggle{display:inline-flex;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;padding:3px}
+.mode-opt{padding:6px 11px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:var(--t);font-family:'Roboto',sans-serif}
+.mode-opt:hover{color:var(--text)}
+.mode-opt.active{background:var(--grad);color:#fff}
+.bottombar-r{display:flex;align-items:center;gap:8px}
+.preview-toggle{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;color:var(--muted);cursor:pointer;user-select:none}
+.preview-toggle input{accent-color:var(--indigo);cursor:pointer}
 
-/* ── Status ────────────────────────────────────────────────── */
-.status {
-  margin-top: 14px; min-height: 18px;
-  color: var(--text-muted); font-size: .88rem;
-  white-space: pre-line; text-align: left;
-  line-height: 1.5;
-}
-.status.err { color: #fb7185; }
+/* HISTORY */
+.hist-empty{text-align:center;padding:44px 20px;color:var(--dim);font-size:.88rem}
+.hist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:11px}
+.hist-card{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:rgba(0,0,0,.2);cursor:pointer;transition:var(--t)}
+.hist-card:hover{border-color:rgba(99,102,241,.4);transform:translateY(-2px);box-shadow:var(--sh)}
+.hist-card img{width:100%;height:110px;object-fit:cover;display:block}
+.hist-card-info{padding:8px 10px}
+.hist-card-name{font-size:.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-card-meta{font-size:.68rem;color:var(--dim);margin-top:2px}
 
-/* ── Controls bar ──────────────────────────────────────────── */
-.ctrl-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap;
-  padding: 14px 16px;
-  background: rgba(0,0,0,.25);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  margin-top: 18px;
-}
-.ctrl-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.ctrl-label { font-size: .77rem; font-weight: 600; color: var(--text-dim); letter-spacing: .5px; text-transform: uppercase; }
-.ctrl-prog { font-size: .88rem; font-weight: 500; color: var(--text-muted); font-family: 'Roboto Mono', monospace; }
+/* INFO */
+.sec-lbl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--indigo);border-bottom:2px solid var(--indigo);padding-bottom:4px;display:inline-block;margin-bottom:16px}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px;margin-bottom:40px}
+.feat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;transition:var(--t)}
+.feat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.feat:nth-child(1)::before{background:var(--grad)}
+.feat:nth-child(2)::before{background:var(--grad-cool)}
+.feat:nth-child(3)::before{background:var(--grad-warm)}
+.feat:nth-child(4)::before{background:linear-gradient(135deg,var(--violet),var(--rose))}
+.feat:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--sh)}
+.feat-icon{font-size:1.3rem;margin-bottom:9px;display:block}
+.feat h3{font-size:.9rem;font-weight:700;margin-bottom:6px}
+.feat p{font-size:.8rem;color:var(--muted);line-height:1.6}
+hr.div{border:0;height:1px;background:var(--border);margin:32px 0}
+.faq{display:grid;gap:9px}
+.faq-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;cursor:pointer;font-weight:600;font-size:.86rem;transition:var(--t);list-style:none;user-select:none}
+.faq-q:hover{background:rgba(255,255,255,.03)}
+.faq-q::after{content:'›';font-size:1.1rem;color:var(--dim);transition:transform .18s}
+details[open] .faq-q::after{transform:rotate(90deg)}
+.faq-a{padding:0 17px 13px;color:var(--muted);font-size:.83rem;line-height:1.7}
 
-select.ctrl-select {
-  appearance: none;
-  background: rgba(0,0,0,.35);
-  border: 1px solid var(--border2);
-  color: var(--text);
-  border-radius: var(--radius-sm);
-  padding: 7px 10px; font-size: .85rem; font-weight: 500;
-  cursor: pointer; font-family: 'Roboto', sans-serif;
-}
+/* FOOTER */
+.site-footer{border-top:1px solid var(--border);padding-top:30px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:start}
+@media(max-width:520px){.site-footer{grid-template-columns:1fr}}
+.footer-logo{font-size:.9rem;font-weight:700;background:var(--grad-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.footer-tag{font-size:.73rem;color:var(--dim);margin-top:4px}
+.footer-made{font-size:.73rem;color:var(--dim);font-family:'Roboto Mono',monospace;margin-top:3px}
+.footer-made a{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700;text-decoration:none}
+.footer-links{display:flex;gap:13px;justify-content:flex-end;margin-bottom:5px}
+.footer-links a{color:var(--dim);font-size:.73rem;text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+.footer-copy{font-size:.68rem;color:var(--dim);text-align:right}
 
-.fmt-group { display: inline-flex; align-items: center; gap: 10px; }
-.fmt-label {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: .85rem; font-weight: 500; color: var(--text-muted); cursor: pointer;
-}
-.fmt-label input { width: 14px; height: 14px; accent-color: var(--indigo); cursor: pointer; }
-.fmt-label input:checked + span { color: var(--text); }
-
-.ctrl-right { display: flex; gap: 8px; flex-wrap: wrap; }
-
-/* ── Buttons ───────────────────────────────────────────────── */
-.btn {
-  appearance: none;
-  border: 1px solid var(--border2);
-  background: rgba(255,255,255,.07);
-  color: var(--text); border-radius: var(--radius-sm);
-  padding: 9px 14px; font-weight: 600; cursor: pointer;
-  font-family: 'Roboto', sans-serif; font-size: .85rem;
-  transition: var(--transition);
-}
-.btn:hover { background: rgba(255,255,255,.12); }
-.btn:disabled { opacity: .38; cursor: not-allowed; }
-
-.btn-primary {
-  border: none;
-  background: var(--grad-primary);
-  color: #fff;
-  box-shadow: 0 3px 14px rgba(99,102,241,.3);
-}
-.btn-primary:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); box-shadow: 0 5px 20px rgba(99,102,241,.4); }
-
-.btn-dl {
-  border: none;
-  background: var(--grad-cool);
-  color: #fff;
-  box-shadow: 0 3px 12px rgba(16,185,129,.25);
-}
-.btn-dl:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
-
-.footer-act { margin-top: 18px; display: flex; justify-content: flex-end; }
-
-/* ── Thumbnail grid ────────────────────────────────────────── */
-.thumb-grid { margin-top: 20px; display: grid; grid-template-columns: 1fr; gap: 16px; }
-@media(min-width:700px) { .thumb-grid { grid-template-columns: 1fr 1fr; } }
-
-.tcard {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: rgba(0,0,0,.2);
-  transition: var(--transition);
-}
-.tcard:hover { border-color: rgba(99,102,241,.3); }
-
-.tcard-head {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(0,0,0,.15);
-}
-.tcard-name { font-weight: 600; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tcard-stat {
-  font-size: .7rem; font-weight: 700; padding: 3px 9px;
-  border-radius: 20px;
-  background: rgba(255,255,255,.06); color: var(--text-muted);
-  white-space: nowrap; flex-shrink: 0;
-}
-.tcard-stat.done  { background: rgba(16,185,129,.15); color: #6ee7b7; }
-.tcard-stat.proc  { background: rgba(99,102,241,.15); color: #a5b4fc; }
-.tcard-stat.err   { background: rgba(244,63,94,.15);  color: #fda4af; }
-
-.tcard-body {
-  padding: 12px;
-  display: grid; gap: 12px;
-  grid-template-columns: 1fr;
-}
-@media(min-width:700px) { .tcard-body { grid-template-columns: 1fr 1fr; align-items: start; } }
-
-.tcard-rlabel { font-size: .72rem; color: var(--text-dim); margin-bottom: 5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
-.tcard-szrow  { grid-column: 1/-1; font-size: .75rem; color: var(--text-dim); font-family: 'Roboto Mono', monospace; }
-
-.tcard-img {
-  width: 100%; height: auto; display: block;
-  border-radius: 8px;
-  background: rgba(0,0,0,.3);
-  border: 1px solid var(--border);
-}
-.tcard-img[src] { border-color: rgba(99,102,241,.2); }
-
-.tcard-foot {
-  display: flex; justify-content: flex-end; gap: 8px;
-  padding: 10px 12px;
-  border-top: 1px solid var(--border);
-}
-
-/* ── Info section ──────────────────────────────────────────── */
-.info { margin-bottom: 60px; }
-
-.section-label {
-  display: inline-block;
-  font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--indigo); margin-bottom: 20px;
-  border-bottom: 2px solid var(--indigo); padding-bottom: 4px;
-}
-
-.feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 16px; margin-bottom: 48px; }
-
-.feat-box {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 22px;
-  transition: var(--transition);
-  position: relative; overflow: hidden;
-}
-.feat-box::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-}
-.feat-box:nth-child(1)::before { background: var(--grad-primary); }
-.feat-box:nth-child(2)::before { background: var(--grad-cool); }
-.feat-box:nth-child(3)::before { background: var(--grad-warm); }
-.feat-box:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: var(--shadow); }
-
-.feat-icon { font-size: 1.5rem; margin-bottom: 12px; display: block; }
-.feat-box h3 { font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-.feat-box p  { font-size: .85rem; color: var(--text-muted); line-height: 1.6; }
-
-hr.divider { border: 0; height: 1px; background: var(--border); margin: 40px 0; }
-
-/* ── How it works ──────────────────────────────────────────── */
-.how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 20px; margin-bottom: 40px; }
-.step-box { text-align: center; padding: 20px 14px; }
-.step-num {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 38px; height: 38px; border-radius: 50%;
-  font-weight: 900; font-size: .95rem;
-  margin-bottom: 12px;
-}
-.step-box:nth-child(1) .step-num { background: rgba(99,102,241,.2); color: #a5b4fc; border: 2px solid rgba(99,102,241,.35); }
-.step-box:nth-child(2) .step-num { background: rgba(139,92,246,.2); color: #c4b5fd; border: 2px solid rgba(139,92,246,.35); }
-.step-box:nth-child(3) .step-num { background: rgba(6,182,212,.2);  color: #67e8f9; border: 2px solid rgba(6,182,212,.35); }
-.step-box:nth-child(4) .step-num { background: rgba(16,185,129,.2); color: #6ee7b7; border: 2px solid rgba(16,185,129,.35); }
-.step-box h4 { font-size: .88rem; font-weight: 700; margin-bottom: 6px; }
-.step-box p  { font-size: .8rem; color: var(--text-muted); }
-
-/* ── FAQ ───────────────────────────────────────────────────── */
-.faq { display: grid; gap: 12px; }
-.faq-item {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.faq-q {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px; cursor: pointer;
-  font-weight: 600; font-size: .9rem;
-  transition: var(--transition);
-  list-style: none; user-select: none;
-}
-.faq-q:hover { background: rgba(255,255,255,.03); }
-.faq-q::after { content: '›'; font-size: 1.1rem; color: var(--text-dim); transition: transform .2s; }
-details[open] .faq-q::after { transform: rotate(90deg); }
-.faq-a { padding: 0 20px 16px; color: var(--text-muted); font-size: .88rem; line-height: 1.7; }
-
-/* ── Footer ────────────────────────────────────────────────── */
-.site-footer {
-  margin-top: 60px;
-  border-top: 1px solid var(--border);
-  padding-top: 36px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 20px;
-  align-items: start;
-}
-@media(max-width:580px){ .site-footer { grid-template-columns: 1fr; } }
-
-.footer-brand { display: flex; flex-direction: column; gap: 6px; }
-.footer-logo {
-  font-size: .95rem; font-weight: 700;
-  background: var(--grad-text);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.footer-tagline { font-size: .78rem; color: var(--text-dim); }
-.footer-made {
-  font-size: .78rem; color: var(--text-dim);
-  font-family: 'Roboto Mono', monospace; margin-top: 4px;
-}
-.footer-made a {
-  background: var(--grad-primary);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  font-weight: 700; text-decoration: none;
-}
-.footer-right { text-align: right; }
-.footer-links { display: flex; gap: 16px; justify-content: flex-end; margin-bottom: 6px; }
-.footer-links a { color: var(--text-dim); font-size: .78rem; text-decoration: none; transition: color .2s; }
-.footer-links a:hover { color: var(--text); }
-.footer-copy { font-size: .73rem; color: var(--text-dim); }
-
-/* ── Utility ───────────────────────────────────────────────── */
-.hidden { display: none !important; }
-
-/* ── Scrollbar ─────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+.hidden{display:none!important}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.18)}
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- Top bar -->
-  <nav class="topbar">
-    <div class="topbar-logo">
-      <div class="dot">✦</div>
-      GeminiClean
+<nav class="topbar">
+  <div class="topbar-logo">
+    <div class="gem">✦</div> GeminiClean
+  </div>
+  <div class="topbar-right">
+    <div class="badge-pill">v3.0 · by Smit Parekh</div>
+    <button id="installBtn">⬇ Install App</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="eyebrow">Offline Watermark Remover — PWA</div>
+  <h1>Gemini Watermark<br>Remover v3.0</h1>
+  <p class="hero-sub">Hover the <strong>live removal patch</strong> over any watermark — see it disappear in real-time, then save.</p>
+  <div class="hero-credit">Created by <span>Smit Parekh</span></div>
+  <div class="pill-row">
+    <span class="pill pi">✦ Live Preview</span>
+    <span class="pill pc">🔒 100% Offline</span>
+    <span class="pill pe">⚡ Batch Auto</span>
+    <span class="pill pa">📦 ZIP Download</span>
+    <span class="pill pr">📱 PWA Ready</span>
+  </div>
+</header>
+
+<div class="card">
+  <div class="tabs">
+    <button class="tab active" data-tab="patch">🎯 Live Patch Removal</button>
+    <button class="tab" data-tab="batch">⚡ Batch Auto-Remove</button>
+    <button class="tab" data-tab="history">🗂 History</button>
+  </div>
+
+  <!-- ══════ LIVE PATCH PANEL ══════ -->
+  <div class="panel active" id="panel-patch">
+
+    <!-- Upload drop (hidden once image loaded) -->
+    <div id="pDrop" class="drop" role="button" tabindex="0">
+      <input type="file" id="pFi" accept="image/png,image/jpeg,image/webp" hidden>
+      <span class="drop-icon">🖼️</span>
+      <h3>Upload an Image</h3>
+      <p>Drag &amp; drop or click — then hover the removal patch over the watermark</p>
+      <div id="pFname" class="drop-meta">No file selected</div>
+      <button type="button" class="up-btn">⬆ Choose Image</button>
     </div>
-    <div class="topbar-badge">OFFLINE · v2.0 · by Smit Parekh</div>
-  </nav>
 
-  <!-- Hero -->
-  <header class="hero">
-    <div class="hero-eyebrow">Offline Watermark Remover</div>
-    <h1 class="hero-title">Gemini Watermark<br>Remover</h1>
-    <p class="hero-sub">
-      Remove the <strong>Gemini AI watermark</strong> from your images instantly —
-      no uploads, no servers, completely private.
-    </p>
-    <div class="hero-credit">Created by <span>Smit Parekh</span></div>
-    <div class="badges">
-      <span class="badge badge-indigo">⚡ Batch up to 10</span>
-      <span class="badge badge-cyan">🔒 100% Offline</span>
-      <span class="badge badge-emerald">PNG · JPEG · WebP</span>
-      <span class="badge badge-amber">ZIP Download</span>
-    </div>
-  </header>
+    <!-- Tool UI (hidden until image loaded) -->
+    <div id="pTool" class="hidden">
+      <div class="patch-layout">
 
-  <!-- Tool Card -->
-  <div class="tool-card">
-    <!-- Drop zone -->
-    <div class="dropzone" id="drop" role="button" tabindex="0" aria-label="Upload Gemini images">
-      <input type="file" id="fi" accept="image/png,image/jpeg,image/webp" multiple hidden>
-      <span class="icon">📂</span>
-      <h3>Drag &amp; Drop your Gemini Images</h3>
-      <p>Batch process up to 10 files</p>
-      <div id="fname" class="meta">No file selected</div>
-      <button type="button" class="upload-btn">⬆ Upload Images</button>
-    </div>
+        <!-- Sidebar -->
+        <div class="patch-sidebar">
 
-    <!-- Status -->
-    <div id="status" class="status" aria-live="polite"></div>
+          <div class="sidebar-card">
+            <div class="sidebar-title">Patch Size</div>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <span class="slider-lbl">Width</span>
+                <span class="slider-val" id="pWVal">96px</span>
+              </div>
+              <input type="range" id="pW" min="20" max="400" value="96" step="2">
+            </div>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <span class="slider-lbl">Height</span>
+                <span class="slider-val" id="pHVal">96px</span>
+              </div>
+              <input type="range" id="pH" min="20" max="400" value="96" step="2">
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <span class="lbl">Lock Aspect</span>
+              <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:.78rem;color:var(--muted)">
+                <input type="checkbox" id="pLock" checked style="accent-color:var(--indigo)"> Square
+              </label>
+            </div>
+            <div class="map-btns">
+              <button class="map-btn active" data-map="48">48px</button>
+              <button class="map-btn active" id="mapBtn96" data-map="96">96px</button>
+              <button class="map-btn" data-map="auto">Auto</button>
+            </div>
+            <p style="font-size:.7rem;color:var(--dim);margin-top:4px">Alpha map preset (affects blend)</p>
+          </div>
 
-    <!-- Controls bar -->
-    <div id="bar" class="ctrl-bar hidden">
-      <div class="ctrl-left">
-        <span id="prog" class="ctrl-prog">Processing 0 of 0…</span>
-        <span class="ctrl-label">Quality</span>
-        <select id="qual" class="ctrl-select">
-          <option value="1" selected>Original (100%)</option>
-          <option value="0.85">Medium (85%)</option>
-          <option value="0.70">Compressed (70%)</option>
-        </select>
-        <span class="ctrl-label">Format</span>
-        <div class="fmt-group">
-          <label class="fmt-label"><input type="radio" name="fmt" value="png" checked><span>PNG</span></label>
-          <label class="fmt-label"><input type="radio" name="fmt" value="jpeg"><span>JPEG</span></label>
-          <label class="fmt-label"><input type="radio" name="fmt" value="webp"><span>WebP</span></label>
+          <div class="sidebar-card">
+            <div class="sidebar-title">Blend Settings</div>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <span class="slider-lbl">Strength</span>
+                <span class="slider-val" id="pStrVal">100%</span>
+              </div>
+              <input type="range" id="pStr" min="10" max="100" value="100" step="5">
+            </div>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <span class="slider-lbl">Feather</span>
+                <span class="slider-val" id="pFeatVal">0px</span>
+              </div>
+              <input type="range" id="pFeat" min="0" max="30" value="0" step="1">
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-title">How To Use</div>
+            <div class="hint-box">
+              <div class="hint-step"><div class="hint-num">1</div><div>Move mouse over image — patch follows cursor</div></div>
+              <div class="hint-step"><div class="hint-num">2</div><div>Resize patch with sliders until it covers the watermark</div></div>
+              <div class="hint-step"><div class="hint-num">3</div><div>Click to <strong>stamp</strong> the removal — watermark disappears</div></div>
+              <div class="hint-step"><div class="hint-num">4</div><div>Repeat for any other watermarks, then Save</div></div>
+            </div>
+          </div>
+
+          <div class="action-btns">
+            <button id="pUndo" class="btn" disabled>↩ Undo Last Stamp</button>
+            <button id="pClear" class="btn btn-r" disabled>✕ Reset Image</button>
+            <button id="pSave" class="btn btn-g" disabled>⬇ Save Image</button>
+          </div>
+
+          <div style="padding:10px 13px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:var(--r)">
+            <span class="lbl" style="display:block;margin-bottom:8px">Output Format</span>
+            <div class="fmt-g" style="flex-direction:column;gap:6px;align-items:flex-start">
+              <label class="fmt-l"><input type="radio" name="pfmt" value="png" checked><span>PNG (lossless)</span></label>
+              <label class="fmt-l"><input type="radio" name="pfmt" value="jpeg"><span>JPEG</span></label>
+              <label class="fmt-l"><input type="radio" name="pfmt" value="webp"><span>WebP</span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas area -->
+        <div class="patch-canvas-area">
+          <div class="canvas-topbar">
+            <div class="canvas-topbar-l">
+              <div class="zoom-row">
+                <button class="zoom-btn" id="pZoomOut">−</button>
+                <span class="zoom-lbl" id="pZoomLbl">100%</span>
+                <button class="zoom-btn" id="pZoomIn">+</button>
+                <button class="zoom-btn" id="pZoomFit">Fit</button>
+              </div>
+              <span class="coords-pill" id="pCoords">x:— y:—</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="pStampCount" style="font-size:.75rem;color:var(--dim);font-family:'Roboto Mono',monospace">0 stamps applied</span>
+              <button class="btn" id="pNewImg" style="font-size:.78rem;padding:5px 10px">↩ New Image</button>
+            </div>
+          </div>
+
+          <div class="canvas-outer" id="pCanvasOuter">
+            <div class="canvas-placeholder" id="pPlaceholder">
+              <span>🎯</span>
+              <p>Upload an image to begin</p>
+            </div>
+            <canvas id="patchCanvas"></canvas>
+          </div>
+
+          <div class="canvas-bottombar">
+            <div class="mode-toggle">
+              <button class="mode-opt active" id="modeHover">👆 Hover &amp; Click</button>
+              <button class="mode-opt" id="modePaint">🖌 Paint (hold)</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <label class="preview-toggle">
+                <input type="checkbox" id="showOutline" checked> Show patch outline
+              </label>
+            </div>
+          </div>
+
+          <div id="pStatus" class="status"></div>
         </div>
       </div>
-      <div class="ctrl-right">
-        <button id="dlAll" class="btn btn-primary" type="button" disabled>⬇ Download All as ZIP</button>
-      </div>
-    </div>
-
-    <!-- Thumbnail grid -->
-    <div id="grid" class="thumb-grid hidden" aria-live="polite"></div>
-
-    <!-- Reset -->
-    <div class="footer-act">
-      <button id="reset" class="btn" type="button" disabled>↺ Reset / Upload New</button>
     </div>
   </div>
 
-  <!-- Info -->
-  <section class="info">
-    <div class="section-label">Features</div>
-    <div class="feat-grid">
-      <div class="feat-box">
-        <span class="feat-icon">⚡</span>
-        <h3>Batch Processing</h3>
-        <p>Process up to 10 Gemini images at once with concurrent processing for maximum speed.</p>
+  <!-- ══════ BATCH PANEL ══════ -->
+  <div class="panel" id="panel-batch">
+    <div class="drop" id="bDrop" role="button" tabindex="0">
+      <input type="file" id="bFi" accept="image/png,image/jpeg,image/webp" multiple hidden>
+      <span class="drop-icon">📂</span>
+      <h3>Drag &amp; Drop Gemini Images</h3>
+      <p>Auto-detects watermark position — batch process up to 10 files</p>
+      <div id="bFname" class="drop-meta">No file selected</div>
+      <button type="button" class="up-btn">⬆ Upload Images</button>
+    </div>
+    <div id="bStatus" class="status"></div>
+    <div id="bCtrl" class="ctrl hidden">
+      <div class="ctrl-l">
+        <span id="bProg" class="prog">0 of 0</span>
+        <span class="lbl">Quality</span>
+        <select id="bQual" class="sel-inp">
+          <option value="1" selected>Original</option>
+          <option value="0.85">Medium (85%)</option>
+          <option value="0.70">Compressed (70%)</option>
+        </select>
+        <span class="lbl">Format</span>
+        <div class="fmt-g">
+          <label class="fmt-l"><input type="radio" name="bfmt" value="png" checked><span>PNG</span></label>
+          <label class="fmt-l"><input type="radio" name="bfmt" value="jpeg"><span>JPEG</span></label>
+          <label class="fmt-l"><input type="radio" name="bfmt" value="webp"><span>WebP</span></label>
+        </div>
       </div>
-      <div class="feat-box">
-        <span class="feat-icon">🔒</span>
-        <h3>Fully Offline</h3>
-        <p>No server, no CDN, no uploads. This is a single HTML file — open it and use it anywhere.</p>
-      </div>
-      <div class="feat-box">
-        <span class="feat-icon">🎨</span>
-        <h3>Smart Algorithm</h3>
-        <p>Reverse Alpha Blending reconstructs original pixels beneath the semi-transparent watermark.</p>
+      <div style="display:flex;gap:7px">
+        <button id="bDlAll" class="btn btn-p" disabled>⬇ ZIP All</button>
       </div>
     </div>
+    <div id="bGrid" class="grid hidden"></div>
+    <div class="foot-act"><button id="bReset" class="btn" disabled>↺ Reset</button></div>
+  </div>
 
-    <hr class="divider">
-
-    <div class="section-label">How It Works</div>
-    <div class="how-grid">
-      <div class="step-box"><div class="step-num">1</div><h4>Upload</h4><p>Drag &amp; drop or browse your Gemini images (PNG, JPEG, WebP).</p></div>
-      <div class="step-box"><div class="step-num">2</div><h4>Detect</h4><p>The app detects watermark size (48px or 96px) based on image dimensions.</p></div>
-      <div class="step-box"><div class="step-num">3</div><h4>Remove</h4><p>Reverse Alpha Blending mathematically recovers the original pixel values.</p></div>
-      <div class="step-box"><div class="step-num">4</div><h4>Download</h4><p>Save individual images or all cleaned images as a ZIP in your chosen format.</p></div>
-    </div>
-
-    <hr class="divider">
-
-    <div class="section-label">FAQ</div>
-    <div class="faq">
-      <details class="faq-item">
-        <summary class="faq-q">Does this work completely offline?</summary>
-        <p class="faq-a">Yes — every asset is embedded inside this single HTML file. No internet connection is required after you download it. The watermark map images are baked in as base64 data.</p>
-      </details>
-      <details class="faq-item">
-        <summary class="faq-q">Are my images uploaded anywhere?</summary>
-        <p class="faq-a">Absolutely not. All processing happens 100% in your browser using the HTML5 Canvas API. Your images never leave your device.</p>
-      </details>
-      <details class="faq-item">
-        <summary class="faq-q">What image sizes does it support?</summary>
-        <p class="faq-a">Images larger than 1024×1024 pixels use the 96×96px watermark map with 64px margins. Smaller images use the 48×48px map with 32px margins. Both are handled automatically.</p>
-      </details>
-    </div>
-  </section>
-
+  <!-- ══════ HISTORY PANEL ══════ -->
+  <div class="panel" id="panel-history">
+    <div id="hEmpty" class="hist-empty"><p style="font-size:2rem;margin-bottom:8px">🗂️</p><p>No processed images yet.</p></div>
+    <div id="hGrid" class="hist-grid hidden"></div>
+    <div class="foot-act" style="margin-top:14px"><button id="hClear" class="btn btn-r hidden">🗑 Clear History</button></div>
+  </div>
 </div>
 
-<!-- Footer -->
+<!-- INFO -->
+<section style="margin-bottom:52px">
+  <div class="sec-lbl">What's New in v3.0</div>
+  <div class="feat-grid">
+    <div class="feat"><span class="feat-icon">✨</span><h3>Live Hover Patch</h3><p>See the watermark disappear in real-time as you position the removal patch — no guessing.</p></div>
+    <div class="feat"><span class="feat-icon">🎛️</span><h3>Resizable Patch</h3><p>Width, height, feather and strength sliders let you match any watermark size perfectly.</p></div>
+    <div class="feat"><span class="feat-icon">🖌️</span><h3>Paint Mode</h3><p>Hold and drag to continuously remove — great for logos spread across a larger area.</p></div>
+    <div class="feat"><span class="feat-icon">📱</span><h3>PWA — Install as App</h3><p>Install on Windows, Android, or iOS. Works 100% offline after the first load.</p></div>
+  </div>
+  <hr class="div">
+  <div class="sec-lbl">FAQ</div>
+  <div class="faq">
+    <details class="faq-item"><summary class="faq-q">How do I remove a watermark in a non-standard position?</summary><p class="faq-a">Use the Live Patch tab. Hover over the image — the patch follows your cursor and shows a live preview of the removal. Resize using the sliders until it perfectly covers the watermark, then click to stamp it.</p></details>
+    <details class="faq-item"><summary class="faq-q">What alpha map size should I pick?</summary><p class="faq-a">Try 96px first (default). If the result has halos or dark patches, try 48px. "Auto" selects based on image dimensions. You can also just resize the patch visually — the sliders are more important.</p></details>
+    <details class="faq-item"><summary class="faq-q">Are my images uploaded anywhere?</summary><p class="faq-a">Never. Everything runs in your browser. No server, no uploads, no network calls — 100% private.</p></details>
+    <details class="faq-item"><summary class="faq-q">How do I install this as a PWA?</summary><p class="faq-a">Host on GitHub Pages (HTTPS). Chrome on Windows/Android shows an "Install" button in the address bar. On iOS Safari, tap Share → Add to Home Screen.</p></details>
+  </div>
+</section>
+
+</div><!-- /page -->
+
 <footer class="page">
   <div class="site-footer">
-    <div class="footer-brand">
-      <div class="footer-logo">✦ GeminiClean</div>
-      <div class="footer-tagline">Offline Gemini Watermark Remover — Single File, Zero Dependencies</div>
-      <div class="footer-made">Crafted by <a href="#">Smit Parekh</a> &mdash; 2026</div>
+    <div>
+      <div class="footer-logo">✦ GeminiClean v3.0</div>
+      <div class="footer-tag">Offline Gemini Watermark Remover · PWA · Zero Dependencies</div>
+      <div class="footer-made">Crafted with ♥ by <a href="https://www.youtube.com/@TheParekhShow" target="_blank" rel="noopener">Smit Parekh</a> · 2026</div>
     </div>
-    <div class="footer-right">
+    <div>
       <div class="footer-links">
-        <a href="#">Privacy</a>
-        <a href="#">Terms</a>
-        <a href="#">Contact</a>
+        <a href="https://www.youtube.com/@TheParekhShow" target="_blank" rel="noopener">▶ YouTube</a>
+        <a href="https://smit-finai.github.io/Smit-Tools/" target="_blank" rel="noopener">GitHub</a>
       </div>
-      <div class="footer-copy">Not affiliated with Google or Gemini.</div>
+      <div class="footer-copy">Not affiliated with Google or Gemini AI.</div>
     </div>
   </div>
 </footer>
 
 <script>
-// ── Embedded watermark alpha maps (base64 PNG) ──────────────
-const BG48 = "data:image/png;base64,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";
-const BG96 = "data:image/png;base64,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";
+// ═══════════════════════════════════════════════
+//  EMBEDDED WATERMARK ALPHA MAPS (base64 PNG)
+// ═══════════════════════════════════════════════
+const BG48_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7QAAAGVElEQVR4nMVYvXIbNxD+FvKMWInXmd2dK7MTO7sj9QKWS7qy/Ab2o/gNmCp0JyZ9dHaldJcqTHfnSSF1R7kwlYmwKRYA93BHmkrseMcjgzgA++HbH2BBxhhmBiB/RYgo+hkGSFv/ZOY3b94w89u3b6HEL8JEYCYATCAi2JYiQ8xMDADGWsvMbfVagm6ZLxKGPXr0qN/vJ0mSpqn0RzuU//Wu9MoyPqxmtqmXJYwxxpiAQzBF4x8/fiyN4XDYoZLA5LfEhtg0+glMIGZY6wABMMbs4CaiR8brkYIDwGg00uuEMUTQ1MYqPBRRYZjZ+q42nxEsaYiV5VOapkmSSLvX62VZprUyM0DiQACIGLCAESIAEINAAAEOcQdD4a+2FJqmhDd/YEVkMpmEtrU2igCocNHW13swRBQYcl0enxbHpzEhKo0xSZJEgLIsC4Q5HJaJ2Qg7kKBjwMJyCDciBBcw7fjSO4tQapdi5vF43IZ+cnISdh9Y0At2RoZWFNtLsxr8N6CUTgCaHq3g+Pg4TVO1FACSaDLmgMhYC8sEQzCu3/mQjNEMSTvoDs4b+nXny5cvo4lBJpNJmKj9z81VrtNhikCgTsRRfAklmurxeKx9JZIsy548eeITKJgAQwzXJlhDTAwDgrXkxxCD2GfqgEPa4rnBOlApFUC/39fR1CmTyWQwGAQrR8TonMRNjjYpTmPSmUnC8ODgQHqSJDk7O9uNBkCv15tOp4eHh8SQgBICiCGu49YnSUJOiLGJcG2ydmdwnRcvXuwwlpYkSabTaZS1vyimc7R2Se16z58/f/jw4Z5LA8iy7NmzZ8J76CQ25F2UGsEAJjxo5194q0fn9unp6fHx8f5oRCQ1nJ+fbxtA3HAjAmCMCaGuAQWgh4eH0+k0y7LGvPiU3CVXV1fz+by+WQkCJYaImKzL6SEN6uMpjBVMg8FgOp3GfnNPQADqup79MLv59AlWn75E/vAlf20ibmWg0Pn06dPJZNLr9e6nfLu8//Ahv/gFAEdcWEsgZnYpR3uM9KRpOplMGmb6SlLX9Ww2q29WyjH8+SI+pD0GQJIkJycn/8J/I4mWjaQoijzPb25uJJsjmAwqprIsG4/HbVZ2L/1fpCiKoijKqgTRBlCWZcPhcDQafUVfuZfUdb1cLpfL5cePf9Lr16/3zLz/g9T1quNy+F2FiYjSNB0Oh8Ph8HtRtV6vi6JYLpdVVbmb8t3dnSAbjUbRNfmbSlmWeZ6XHytEUQafEo0xR0dHUdjvG2X3Sd/Fb0We56t6BX8l2mTq6BCVnqOjo7Ozs29hRGGlqqrOr40CIKqeiGg8Hn/xcri/rG/XeZ7/evnrjjGbC3V05YC/BSRJ8urVq36/3zX7Hjaq63o+n19fX/upUqe5VxFok7UBtQ+T6XQ6GAz2Vd6Ssizn8/nt7a3ay1ZAYbMN520XkKenpx0B2E2SLOo+FEWxWPwMgMnC3/adejZMYLLS42r7oH4LGodpsVgURdHQuIcURbFYLDYlVKg9sCk5wpWNiHym9pUAEQGG6EAqSxhilRQWi0VZVmrz23yI5cPV1dX5TwsmWGYrb2TW36OJGjdXhryKxEeHvjR2Fgzz+bu6XnVgaHEmXhytEK0W1aUADJPjAL6CtPZv5rsGSvUKtv7r8/zdj+v1uoOUpsxms7qunT6+g1/TvTQCxE6XR2kBqxjyZo6K66gsAXB1fZ3neQdJSvI8X61WpNaMWCFuKNrkGuGGmMm95fhpvPkn/f6lAgAuLy/LstyGpq7r9+8d4rAr443qaln/ehHt1siv3dvt2B/RDpJms5lGE62gEy9az0XGcQCK3DL4DTPr0pPZEjPAZVlusoCSoihWqzpCHy7ODRXhbUTJly9oDr4fKDaV9NZJUrszPOjsI0a/FzfwNt4eHH+BSyICqK7rqqo0u0VRrFYridyN87L3pBYf7qvq3wqc3DMldJmiK06pgi8uLqQjAAorRG+p+zLUxks+z7rOkOzlIUy8yrAcQFVV3a4/ywBPmJsVMcTM3l/h9xDlLga4I1PDGaD7UNBPuCKBleUfy2gd+DOrPWubGHJJyD+L+LCTjEXEgH//2uSxhu1/Xzocy+VSL+2cUhrqLVZ/jTYL0IMtQEklT3/iWCutzUljDDNXVSVHRFWW7SOtccHag6V/AF1/slVRyOkZAAAAAElFTkSuQmCC';
+const BG96_SRC = 'data:image/png;base64,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';
 
-// ── Algorithm ───────────────────────────────────────────────
-const ALPHA_THRESH = 0.002, MAX_ALPHA = 0.99, LOGO_VAL = 255;
+// ═══════════════════════════════════════════════
+//  ALGORITHM  — Reverse Alpha Blending
+//  watermarked = α·logo + (1−α)·original
+//  → original  = (watermarked − α·255) / (1−α)
+// ═══════════════════════════════════════════════
+const ALPHA_THRESH = 0.002, MAX_A = 0.99, LOGO = 255;
 
-function detectCfg(w,h){ return (w>1024&&h>1024)?{sz:96,mr:64,mb:64}:{sz:48,mr:32,mb:32}; }
-function wmPos(w,h,c){ return {x:w-c.mr-c.sz, y:h-c.mb-c.sz, w:c.sz, h:c.sz}; }
-
-function buildMap(img,sz){
-  const cv=document.createElement("canvas"); cv.width=cv.height=sz;
-  const cx=cv.getContext("2d",{willReadFrequently:true});
-  cx.drawImage(img,0,0);
-  const d=cx.getImageData(0,0,sz,sz).data;
-  const m=new Float32Array(sz*sz);
-  for(let i=0;i<m.length;i++){ const b=i*4; m[i]=Math.max(d[b],d[b+1],d[b+2])/255; }
-  return m;
+function buildMap(img, sz) {
+  const cv = mk('canvas'); cv.width = cv.height = sz;
+  const cx = cv.getContext('2d', { willReadFrequently: true });
+  cx.drawImage(img, 0, 0);
+  const px = cx.getImageData(0, 0, sz, sz).data;
+  const m  = new Float32Array(sz * sz);
+  for (let i = 0; i < m.length; i++) {
+    const b = i * 4;
+    m[i] = Math.max(px[b], px[b+1], px[b+2]) / 255;
+  }
+  return { data: m, w: sz, h: sz };
 }
 
-function applyRemoval(id,map,pos){
-  for(let r=0;r<pos.h;r++) for(let c=0;c<pos.w;c++){
-    const ii=((pos.y+r)*id.width+(pos.x+c))*4;
-    let a=map[r*pos.w+c];
-    if(a<ALPHA_THRESH) continue;
-    a=Math.min(a,MAX_ALPHA);
-    const inv=1-a;
-    for(let k=0;k<3;k++){
-      const orig=(id.data[ii+k]-a*LOGO_VAL)/inv;
-      id.data[ii+k]=Math.max(0,Math.min(255,Math.round(orig)));
+// Resample a map to a new size (nearest-neighbour)
+function resampleMap(map, tw, th) {
+  const out = new Float32Array(tw * th);
+  for (let r = 0; r < th; r++) {
+    for (let c = 0; c < tw; c++) {
+      const sr = Math.min(Math.round(r / th * map.h), map.h - 1);
+      const sc = Math.min(Math.round(c / tw * map.w), map.w - 1);
+      out[r * tw + c] = map.data[sr * map.w + sc];
+    }
+  }
+  return { data: out, w: tw, h: th };
+}
+
+/**
+ * Core removal — writes directly into an ImageData's buffer.
+ * map: { data: Float32Array, w, h }   — alpha values 0..1
+ * rx,ry,rw,rh: region in image-pixel coords
+ * strength: 0..1 multiplier on the correction
+ * feather: px radius to soften edges (0 = sharp)
+ */
+function applyPatch(imageData, map, rx, ry, rw, rh, strength, feather) {
+  const IW = imageData.width;
+  // Clamp region to image bounds
+  const x0 = Math.max(0, Math.round(rx));
+  const y0 = Math.max(0, Math.round(ry));
+  const x1 = Math.min(IW,           Math.round(rx + rw));
+  const y1 = Math.min(imageData.height, Math.round(ry + rh));
+  const aw = x1 - x0, ah = y1 - y0;
+  if (aw <= 0 || ah <= 0) return;
+
+  // Resample map to actual patch size
+  const rm = resampleMap(map, aw, ah);
+
+  for (let row = 0; row < ah; row++) {
+    for (let col = 0; col < aw; col++) {
+      let alpha = rm.data[row * aw + col];
+      if (alpha < ALPHA_THRESH) continue;
+      alpha = Math.min(alpha, MAX_A);
+
+      // Feather falloff
+      let falloff = 1;
+      if (feather > 0) {
+        const fx = Math.min(col, aw - 1 - col) / feather;
+        const fy = Math.min(row, ah - 1 - row) / feather;
+        falloff = Math.min(1, fx) * Math.min(1, fy);
+      }
+
+      const eff = alpha * strength * falloff;
+      if (eff < ALPHA_THRESH) continue;
+      const effAlpha = Math.min(eff, MAX_A);
+      const inv = 1 - effAlpha;
+
+      const ii = ((y0 + row) * IW + (x0 + col)) * 4;
+      for (let k = 0; k < 3; k++) {
+        const orig = (imageData.data[ii + k] - effAlpha * LOGO) / inv;
+        imageData.data[ii + k] = Math.max(0, Math.min(255, Math.round(orig)));
+      }
     }
   }
 }
 
-// ── Load maps from embedded data URIs ───────────────────────
-let m48=null, m96=null;
-async function loadImg(src){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=src; }); }
-async function ensureMaps(){
-  if(m48&&m96) return;
-  const [i48,i96]=await Promise.all([loadImg(BG48),loadImg(BG96)]);
-  m48=buildMap(i48,48); m96=buildMap(i96,96);
+// ═══════════════════════════════════════════════
+//  LOAD ALPHA MAPS ONCE
+// ═══════════════════════════════════════════════
+let maps = { 48: null, 96: null };
+const loadImg = src => new Promise((res, rej) => {
+  const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src;
+});
+async function ensureMaps() {
+  if (maps[48] && maps[96]) return;
+  const [i48, i96] = await Promise.all([loadImg(BG48_SRC), loadImg(BG96_SRC)]);
+  maps[48] = buildMap(i48, 48);
+  maps[96] = buildMap(i96, 96);
 }
 
-// ── Lightweight uncompressed ZIP builder ────────────────────
-function crc32(buf){
-  const t=new Uint8Array(buf),tbl=crc32._t||(crc32._t=(()=>{
-    const T=new Uint32Array(256);
-    for(let i=0;i<256;i++){let v=i;for(let j=0;j<8;j++)v=v&1?(0xEDB88320^(v>>>1)):v>>>1;T[i]=v;}
-    return T;
+// ═══════════════════════════════════════════════
+//  LIGHTWEIGHT ZIP
+// ═══════════════════════════════════════════════
+function crc32(buf) {
+  const t = new Uint8Array(buf);
+  const T = crc32._t || (crc32._t = (() => {
+    const A = new Uint32Array(256);
+    for (let i = 0; i < 256; i++) { let v = i; for (let j = 0; j < 8; j++) v = v & 1 ? 0xEDB88320 ^ (v >>> 1) : v >>> 1; A[i] = v; }
+    return A;
   })());
-  let c=0xFFFFFFFF;
-  for(const b of t) c=tbl[(c^b)&0xFF]^(c>>>8);
-  return (c^0xFFFFFFFF)>>>0;
+  let c = 0xFFFFFFFF;
+  for (const b of t) c = T[(c ^ b) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
 }
-const u16=(n)=>[(n&0xFF),(n>>8)&0xFF];
-const u32=(n)=>[(n>>>0)&0xFF,(n>>>8)&0xFF,(n>>>16)&0xFF,(n>>>24)&0xFF];
-
-function buildZip(files){
-  const enc=new TextEncoder(), parts=[], central=[];
-  let off=0;
-  for(const {name,data} of files){
-    const nb=enc.encode(name), crc=crc32(data), sz=data.length;
-    const lfh=new Uint8Array([0x50,0x4B,3,4,20,0,0,0,0,0,0,0,0,0,...u32(crc),...u32(sz),...u32(sz),...u16(nb.length),0,0,...nb]);
-    const cde=new Uint8Array([0x50,0x4B,1,2,20,0,20,0,0,0,0,0,0,0,0,0,...u32(crc),...u32(sz),...u32(sz),...u16(nb.length),0,0,0,0,0,0,0,0,0,0,...u32(off),...nb]);
-    central.push(cde); off+=lfh.length+sz; parts.push(lfh,data);
+const u16 = n => [(n & 0xFF), (n >> 8) & 0xFF];
+const u32 = n => [(n >>> 0) & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF];
+function buildZip(files) {
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  for (const { name, data } of files) {
+    const nb = enc.encode(name), crc = crc32(data), sz = data.length;
+    const lh = new Uint8Array([0x50,0x4B,3,4,20,0,0,0,0,0,0,0,0,0,...u32(crc),...u32(sz),...u32(sz),...u16(nb.length),0,0,...nb]);
+    const cd = new Uint8Array([0x50,0x4B,1,2,20,0,20,0,0,0,0,0,0,0,0,0,...u32(crc),...u32(sz),...u32(sz),...u16(nb.length),0,0,0,0,0,0,0,0,0,0,...u32(off),...nb]);
+    central.push(cd); off += lh.length + sz; parts.push(lh, data);
   }
-  const cdSz=central.reduce((s,c)=>s+c.length,0);
-  const eocd=new Uint8Array([0x50,0x4B,5,6,0,0,0,0,...u16(files.length),...u16(files.length),...u32(cdSz),...u32(off),0,0]);
-  const all=[...parts,...central,eocd];
-  const tot=all.reduce((s,a)=>s+a.length,0);
-  const out=new Uint8Array(tot); let pos=0;
-  for(const a of all){ out.set(a,pos); pos+=a.length; }
+  const cdSz = central.reduce((s, c) => s + c.length, 0);
+  const eocd = new Uint8Array([0x50,0x4B,5,6,0,0,0,0,...u16(files.length),...u16(files.length),...u32(cdSz),...u32(off),0,0]);
+  const all = [...parts, ...central, eocd];
+  const tot = all.reduce((s, a) => s + a.length, 0);
+  const out = new Uint8Array(tot); let pos = 0;
+  for (const a of all) { out.set(a, pos); pos += a.length; }
   return out;
 }
 
-// ── Helpers ─────────────────────────────────────────────────
-const h2=b=>{ if(!isFinite(b)||b<0)return""; const u=["B","KB","MB","GB"]; let i=0,n=b; while(n>=1024&&i<3){n/=1024;i++;} return n.toFixed(i?1:0)+u[i]; };
-const safeName=n=>n.replace(/\.[^.]+$/,"").replace(/[^\w\-]+/g,"_").slice(0,80)||"image";
-const getFmt=()=>(document.querySelector('input[name="fmt"]:checked')||{value:"png"}).value;
-const getQ=()=>{ const q=+document.getElementById("qual").value; return isFinite(q)?Math.max(0,Math.min(1,q)):1; };
-const setFmt=t=>{ const v=/jpeg/.test(t)?"jpeg":/webp/.test(t)?"webp":"png"; const r=document.querySelector(`input[name="fmt"][value="${v}"]`); if(r) r.checked=true; };
+// ═══════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════
+const mk   = t  => document.createElement(t);
+const $    = id => document.getElementById(id);
+const h2   = b  => { if (!isFinite(b) || b < 0) return ''; const u = ['B','KB','MB','GB']; let i=0,n=b; while(n>=1024&&i<3){n/=1024;i++;} return n.toFixed(i?1:0)+u[i]; };
+const sn   = n  => n.replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_').slice(0, 80) || 'image';
 
-async function toBlob(cv,mime,q){
-  if(mime!=="image/png"){
-    const off=document.createElement("canvas"); off.width=cv.width; off.height=cv.height;
-    const cx=off.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,off.width,off.height); cx.drawImage(cv,0,0);
-    return new Promise(r=>off.toBlob(r,mime,q));
+function dlBlob(blob, name) {
+  const u = URL.createObjectURL(blob), a = mk('a');
+  a.href = u; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(u), 1500);
+}
+async function canvasToBlob(cv, fmt, q) {
+  const mime = fmt === 'jpeg' ? 'image/jpeg' : fmt === 'webp' ? 'image/webp' : 'image/png';
+  if (mime !== 'image/png') {
+    const off = mk('canvas'); off.width = cv.width; off.height = cv.height;
+    const cx = off.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0,0,off.width,off.height); cx.drawImage(cv,0,0);
+    return new Promise(r => off.toBlob(r, mime, q));
   }
-  return new Promise(r=>cv.toBlob(r,"image/png"));
+  return new Promise(r => cv.toBlob(r, 'image/png'));
 }
 
-// ── State ───────────────────────────────────────────────────
-const $=id=>document.getElementById(id);
-let items=[], done=0, failed=0;
+// ═══════════════════════════════════════════════
+//  HISTORY
+// ═══════════════════════════════════════════════
+let hist = [];
+function addHist(name, blob, ext) {
+  const url = URL.createObjectURL(blob);
+  hist.unshift({ name, blob, ext, url, ts: Date.now() });
+  if (hist.length > 40) { URL.revokeObjectURL(hist.pop().url); }
+}
+function renderHist() {
+  const g = $('hGrid'), e = $('hEmpty'), c = $('hClear');
+  if (!hist.length) { g.classList.add('hidden'); e.classList.remove('hidden'); c.classList.add('hidden'); return; }
+  g.classList.remove('hidden'); e.classList.add('hidden'); c.classList.remove('hidden');
+  g.innerHTML = '';
+  hist.forEach(item => {
+    const d = mk('div'); d.className = 'hist-card';
+    d.innerHTML = `<img src="${item.url}" alt="${item.name}">
+      <div class="hist-card-info">
+        <div class="hist-card-name">${item.name}</div>
+        <div class="hist-card-meta">${new Date(item.ts).toLocaleTimeString()} · ${h2(item.blob.size)}</div>
+        <button class="btn btn-g" style="margin-top:6px;font-size:.72rem;padding:4px 9px;width:100%">⬇ Save</button>
+      </div>`;
+    d.querySelector('button').onclick = () => dlBlob(item.blob, `${sn(item.name)}.${item.ext}`);
+    g.appendChild(d);
+  });
+}
+$('hClear').onclick = () => { hist.forEach(i => URL.revokeObjectURL(i.url)); hist = []; renderHist(); };
 
-function setStatus(t,err=false){ const e=$("status"); e.textContent=t; e.className="status"+(err?" err":""); }
-function setProg(ph="Processing"){ $("prog").textContent=`${ph} ${done+failed} of ${items.length}…`; }
-function setIStat(item,t,cls=""){ const e=$(`ts-${item.id}`); if(!e)return; e.textContent=t; e.className="tcard-stat"+(cls?" "+cls:""); }
-function updZip(){ const ok=items.some(i=>i.status==="ok"&&i.blob); $("dlAll").disabled=!ok; }
+// ═══════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $('panel-' + tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'history') renderHist();
+  };
+});
 
-function resetUI(){
-  items.forEach(i=>{ if(i.url) URL.revokeObjectURL(i.url); });
-  $("fi").value=""; $("fname").textContent="No file selected";
-  $("bar").classList.add("hidden"); $("grid").classList.add("hidden");
-  $("grid").innerHTML=""; $("dlAll").disabled=true; $("reset").disabled=true;
-  setStatus(""); items=[]; done=0; failed=0;
+// ═══════════════════════════════════════════════
+//  LIVE PATCH TOOL
+// ═══════════════════════════════════════════════
+const canvas = $('patchCanvas');
+const ctx    = canvas.getContext('2d', { willReadFrequently: true });
+
+// State
+let origImage    = null;   // original Image element
+let cleanImgData = null;   // ImageData of current "committed" state
+let scale        = 1;
+let stampCount   = 0;
+let undoStack    = [];     // array of ImageData snapshots (up to 20)
+let isPainting   = false;
+let mouseIn      = false;
+let mx = 0, my = 0;       // current mouse pos in CSS pixels relative to canvas
+let paintMode    = false;  // false=hover+click, true=paint(hold)
+let rafId        = null;
+
+// Controls
+const getPW     = () => parseInt($('pW').value);
+const getPH     = () => parseInt($('pH').value);
+const getStr    = () => parseInt($('pStr').value) / 100;
+const getFeat   = () => parseInt($('pFeat').value);
+const getOutline= () => $('showOutline').checked;
+const getPFmt   = () => (document.querySelector('input[name="pfmt"]:checked') || { value: 'png' }).value;
+
+function getActiveMap(pw, ph) {
+  const sel = document.querySelector('.map-btn.active');
+  const key = sel ? sel.dataset.map : '96';
+  if (key === '48') return maps[48] || maps[96];
+  if (key === '96') return maps[96] || maps[48];
+  // auto: pick based on image size
+  if (origImage) {
+    return (origImage.width > 1024 && origImage.height > 1024) ? maps[96] : maps[48];
+  }
+  return maps[96];
 }
 
-function makeCard(item){
-  const d=$("grid"), div=document.createElement("div");
-  div.className="tcard"; div.id=`card-${item.id}`;
-  div.innerHTML=`
-    <div class="tcard-head">
-      <div class="tcard-name" title="${item.name}">${item.name}</div>
-      <div class="tcard-stat" id="ts-${item.id}">Queued</div>
+// Convert mouse event → image pixel coords
+function evToImg(e) {
+  const r = canvas.getBoundingClientRect();
+  const cx = (e.clientX - r.left);
+  const cy = (e.clientY - r.top);
+  return { x: cx / scale, y: cy / scale };
+}
+
+// ── Draw loop ──
+function drawFrame() {
+  if (!origImage || !cleanImgData) return;
+
+  const dw = Math.round(origImage.width * scale);
+  const dh = Math.round(origImage.height * scale);
+
+  // Always reset canvas to committed state
+  if (canvas.width !== dw || canvas.height !== dh) {
+    canvas.width = dw; canvas.height = dh;
+  }
+
+  // Draw committed state at display scale
+  const tmp = mk('canvas'); tmp.width = origImage.width; tmp.height = origImage.height;
+  tmp.getContext('2d').putImageData(cleanImgData, 0, 0);
+  ctx.clearRect(0, 0, dw, dh);
+  ctx.drawImage(tmp, 0, 0, dw, dh);
+
+  if (!mouseIn) return;
+
+  const pw = getPW(), ph = getPH();
+  const ix = mx / scale, iy = my / scale;
+  const rx = ix - pw / 2, ry = iy - ph / 2;
+
+  // --- Live preview: show what the removal will look like ---
+  // Grab pixels from committed state, apply removal, blit at display scale
+  const previewW = Math.min(pw, origImage.width  - Math.max(0, Math.round(rx)));
+  const previewH = Math.min(ph, origImage.height - Math.max(0, Math.round(ry)));
+  if (previewW > 0 && previewH > 0) {
+    // Clone just the patch region from committed data
+    const patchCV = mk('canvas'); patchCV.width = origImage.width; patchCV.height = origImage.height;
+    const patchCtx = patchCV.getContext('2d', { willReadFrequently: true });
+    patchCtx.putImageData(cleanImgData, 0, 0);
+    const patchID = patchCtx.getImageData(0, 0, origImage.width, origImage.height);
+
+    const map = getActiveMap(pw, ph);
+    if (map) {
+      applyPatch(patchID, map, rx, ry, pw, ph, getStr(), getFeat());
+    }
+    patchCtx.putImageData(patchID, 0, 0);
+
+    // Draw processed patch region over committed base
+    ctx.drawImage(
+      patchCV,
+      Math.max(0, Math.round(rx)), Math.max(0, Math.round(ry)),
+      Math.min(pw, origImage.width),  Math.min(ph, origImage.height),
+      Math.max(0, Math.round(rx * scale)), Math.max(0, Math.round(ry * scale)),
+      Math.min(pw, origImage.width) * scale, Math.min(ph, origImage.height) * scale
+    );
+  }
+
+  // --- Draw patch outline ---
+  if (getOutline()) {
+    const sx = Math.round(rx * scale), sy = Math.round(ry * scale);
+    const sw = Math.round(pw * scale), sh = Math.round(ph * scale);
+
+    ctx.save();
+    // Outer dashed border
+    ctx.strokeStyle = 'rgba(99,102,241,0.9)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 3]);
+    ctx.strokeRect(sx + 0.5, sy + 0.5, sw, sh);
+
+    // Inner subtle fill tint
+    ctx.fillStyle = 'rgba(99,102,241,0.08)';
+    ctx.fillRect(sx, sy, sw, sh);
+
+    // Corner handles
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#6366f1';
+    const hs = 5;
+    [[sx,sy],[sx+sw,sy],[sx,sy+sh],[sx+sw,sy+sh]].forEach(([hx,hy]) => {
+      ctx.beginPath(); ctx.arc(hx, hy, hs, 0, Math.PI*2); ctx.fill();
+    });
+
+    // Size label
+    ctx.fillStyle = 'rgba(99,102,241,0.85)';
+    ctx.font = 'bold 11px Roboto Mono, monospace';
+    ctx.fillText(`${pw}×${ph}`, sx + 4, sy - 4);
+
+    ctx.restore();
+  }
+}
+
+function schedDraw() {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(drawFrame);
+}
+
+// ── Commit a stamp ──
+function stampAt(ix, iy) {
+  if (!cleanImgData || !maps[96]) return;
+  const pw = getPW(), ph = getPH();
+  const rx = ix - pw / 2, ry = iy - ph / 2;
+  const map = getActiveMap(pw, ph);
+  if (!map) return;
+
+  // Push undo
+  const snap = new ImageData(new Uint8ClampedArray(cleanImgData.data), cleanImgData.width, cleanImgData.height);
+  undoStack.push(snap);
+  if (undoStack.length > 20) undoStack.shift();
+  $('pUndo').disabled = false;
+
+  applyPatch(cleanImgData, map, rx, ry, pw, ph, getStr(), getFeat());
+  stampCount++;
+  $('pStampCount').textContent = `${stampCount} stamp${stampCount !== 1 ? 's' : ''} applied`;
+  $('pSave').disabled = false;
+  $('pClear').disabled = false;
+  schedDraw();
+}
+
+// ── Mouse events on canvas ──
+const outer = $('pCanvasOuter');
+
+outer.addEventListener('mousemove', e => {
+  mouseIn = true;
+  const r = canvas.getBoundingClientRect();
+  mx = e.clientX - r.left;
+  my = e.clientY - r.top;
+  $('pCoords').textContent = `x:${Math.round(mx/scale)}  y:${Math.round(my/scale)}`;
+  if (paintMode && isPainting) {
+    const { x, y } = evToImg(e);
+    stampAt(x, y);
+  }
+  schedDraw();
+});
+
+outer.addEventListener('mouseleave', () => { mouseIn = false; isPainting = false; schedDraw(); });
+outer.addEventListener('mouseenter', () => { mouseIn = true; });
+
+canvas.addEventListener('mousedown', e => {
+  if (!origImage) return;
+  isPainting = true;
+  const { x, y } = evToImg(e);
+  stampAt(x, y);
+});
+
+canvas.addEventListener('mouseup', () => { isPainting = false; });
+
+// Touch support
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const r = canvas.getBoundingClientRect();
+  mx = t.clientX - r.left; my = t.clientY - r.top;
+  $('pCoords').textContent = `x:${Math.round(mx/scale)}  y:${Math.round(my/scale)}`;
+  if (paintMode && isPainting) {
+    stampAt(mx / scale, my / scale);
+  }
+  schedDraw();
+}, { passive: false });
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  isPainting = true;
+  const t = e.touches[0];
+  const r = canvas.getBoundingClientRect();
+  mx = t.clientX - r.left; my = t.clientY - r.top;
+  stampAt(mx / scale, my / scale);
+  schedDraw();
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => { isPainting = false; });
+
+// ── Slider bindings ──
+$('pW').oninput = () => {
+  const v = getPW();
+  $('pWVal').textContent = v + 'px';
+  if ($('pLock').checked) { $('pH').value = v; $('pHVal').textContent = v + 'px'; }
+  schedDraw();
+};
+$('pH').oninput = () => { $('pHVal').textContent = getPH() + 'px'; schedDraw(); };
+$('pStr').oninput = () => { $('pStrVal').textContent = getStr() * 100 + '%'; schedDraw(); };
+$('pFeat').oninput = () => { $('pFeatVal').textContent = getFeat() + 'px'; schedDraw(); };
+$('showOutline').onchange = schedDraw;
+
+// Map buttons
+document.querySelectorAll('.map-btn').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.map-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    schedDraw();
+  };
+});
+
+// Mode buttons
+$('modeHover').onclick = () => {
+  paintMode = false;
+  $('modeHover').classList.add('active');
+  $('modePaint').classList.remove('active');
+};
+$('modePaint').onclick = () => {
+  paintMode = true;
+  $('modePaint').classList.add('active');
+  $('modeHover').classList.remove('active');
+};
+
+// ── Undo ──
+$('pUndo').onclick = () => {
+  if (!undoStack.length) return;
+  cleanImgData = undoStack.pop();
+  if (!undoStack.length) $('pUndo').disabled = true;
+  stampCount = Math.max(0, stampCount - 1);
+  $('pStampCount').textContent = `${stampCount} stamp${stampCount !== 1 ? 's' : ''} applied`;
+  if (!stampCount) $('pSave').disabled = true;
+  schedDraw();
+};
+
+// ── Reset image ──
+$('pClear').onclick = () => {
+  if (!origImage) return;
+  const tmp = mk('canvas'); tmp.width = origImage.width; tmp.height = origImage.height;
+  tmp.getContext('2d').drawImage(origImage, 0, 0);
+  cleanImgData = tmp.getContext('2d', {willReadFrequently:true}).getImageData(0, 0, tmp.width, tmp.height);
+  undoStack = []; stampCount = 0;
+  $('pUndo').disabled = true;
+  $('pSave').disabled = true;
+  $('pClear').disabled = true;
+  $('pStampCount').textContent = '0 stamps applied';
+  schedDraw();
+};
+
+// ── Save ──
+$('pSave').onclick = async () => {
+  if (!cleanImgData) return;
+  const tmp = mk('canvas'); tmp.width = cleanImgData.width; tmp.height = cleanImgData.height;
+  tmp.getContext('2d').putImageData(cleanImgData, 0, 0);
+  const fmt = getPFmt();
+  const q = 0.92;
+  const blob = await canvasToBlob(tmp, fmt, q);
+  const ext = fmt === 'jpeg' ? 'jpg' : fmt;
+  const name = $('pFname').textContent.replace('No file selected', 'manual_result');
+  dlBlob(blob, `unwatermarked_${sn(name)}.${ext}`);
+  addHist(name, blob, ext);
+  $('pStatus').textContent = 'Saved! ✓'; $('pStatus').className = 'status ok';
+};
+
+// ── New image ──
+$('pNewImg').onclick = () => {
+  origImage = null; cleanImgData = null; undoStack = []; stampCount = 0;
+  mouseIn = false; scale = 1;
+  $('pTool').classList.add('hidden');
+  $('pDrop').classList.remove('hidden');
+  $('pFname').textContent = 'No file selected';
+  $('pFi').value = '';
+  $('pStatus').textContent = ''; $('pStatus').className = 'status';
+  $('pPlaceholder').classList.remove('hidden');
+  canvas.style.display = 'none';
+  $('pUndo').disabled = true; $('pSave').disabled = true; $('pClear').disabled = true;
+  $('pStampCount').textContent = '0 stamps applied';
+};
+
+// ── Zoom ──
+function setScale(z) {
+  scale = Math.max(0.05, Math.min(10, z));
+  $('pZoomLbl').textContent = Math.round(scale * 100) + '%';
+  schedDraw();
+}
+function fitScale() {
+  if (!origImage) return;
+  const outerEl = $('pCanvasOuter');
+  const mw = outerEl.clientWidth  - 24;
+  const mh = Math.max(360, window.innerHeight * 0.58);
+  setScale(Math.min(mw / origImage.width, mh / origImage.height, 1));
+}
+$('pZoomIn').onclick  = () => setScale(scale * 1.2);
+$('pZoomOut').onclick = () => setScale(scale / 1.2);
+$('pZoomFit').onclick = () => fitScale();
+
+// ── Load image ──
+async function loadPatchImage(file) {
+  $('pStatus').textContent = 'Loading…'; $('pStatus').className = 'status';
+  try {
+    await ensureMaps();
+    const url = await new Promise((res, rej) => {
+      const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file);
+    });
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+    origImage = img;
+    const tmp = mk('canvas'); tmp.width = img.width; tmp.height = img.height;
+    const tmpCtx = tmp.getContext('2d', {willReadFrequently:true});
+    tmpCtx.drawImage(img, 0, 0);
+    cleanImgData = tmpCtx.getImageData(0, 0, img.width, img.height);
+    undoStack = []; stampCount = 0;
+    $('pDrop').classList.add('hidden');
+    $('pTool').classList.remove('hidden');
+    $('pPlaceholder').classList.add('hidden');
+    canvas.style.display = 'block';
+    // Auto-set patch to reasonable default based on image size
+    const defSz = (img.width > 1024 || img.height > 1024) ? 96 : 48;
+    $('pW').value = defSz; $('pH').value = defSz;
+    $('pWVal').textContent = defSz + 'px'; $('pHVal').textContent = defSz + 'px';
+    fitScale();
+    $('pStatus').textContent = `Ready — ${img.width}×${img.height}px · Hover over the watermark and click to remove`;
+    $('pStatus').className = 'status ok';
+  } catch(e) {
+    console.error(e);
+    $('pStatus').textContent = 'Failed to load image: ' + e.message;
+    $('pStatus').className = 'status err';
+  }
+}
+
+// Drop / file input for patch tool
+const pDrop = $('pDrop'), pFi = $('pFi');
+pDrop.addEventListener('click', () => pFi.click());
+pDrop.addEventListener('dragover', e => { e.preventDefault(); pDrop.classList.add('over'); });
+pDrop.addEventListener('dragleave', () => pDrop.classList.remove('over'));
+pDrop.addEventListener('drop', e => {
+  e.preventDefault(); pDrop.classList.remove('over');
+  const f = [...(e.dataTransfer?.files || [])].find(f => /image\/(png|jpeg|webp)/.test(f.type));
+  if (f) { $('pFname').textContent = f.name; loadPatchImage(f); }
+});
+pFi.addEventListener('change', () => {
+  const f = pFi.files?.[0]; if (!f) return;
+  $('pFname').textContent = f.name; loadPatchImage(f);
+});
+
+// ═══════════════════════════════════════════════
+//  BATCH MODE
+// ═══════════════════════════════════════════════
+let bItems = [], bDone = 0, bFail = 0;
+const bSetSt  = (t, cls='') => { const e=$('bStatus'); e.textContent=t; e.className='status'+(cls?' '+cls:''); };
+const bSetProg= (ph='Processing') => { $('bProg').textContent=`${ph} ${bDone+bFail} of ${bItems.length}`; };
+const bSetISt = (item,t,cls='') => { const e=$(`bs-${item.id}`); if(!e)return; e.textContent=t; e.className='tc-st'+(cls?' '+cls:''); };
+const bUpdZip = () => { $('bDlAll').disabled = !bItems.some(i=>i.status==='ok'&&i.blob); };
+
+function bReset() {
+  bItems.forEach(i => { if (i.url) URL.revokeObjectURL(i.url); });
+  $('bFi').value=''; $('bFname').textContent='No file selected';
+  $('bCtrl').classList.add('hidden'); $('bGrid').classList.add('hidden');
+  $('bGrid').innerHTML=''; $('bDlAll').disabled=true; $('bReset').disabled=true;
+  bSetSt(''); bItems=[]; bDone=0; bFail=0;
+}
+
+function bMakeCard(item) {
+  const d=$('bGrid'), div=mk('div'); div.className='tc'; div.id=`bc-${item.id}`;
+  div.innerHTML=`<div class="tc-head"><div class="tc-name" title="${item.name}">${item.name}</div><div class="tc-st" id="bs-${item.id}">Queued</div></div>
+    <div class="tc-body">
+      <div><div class="tc-rl">Original</div><img class="tc-img" id="bo-${item.id}" alt="orig"></div>
+      <div><div class="tc-rl">Result</div><img class="tc-img" id="br-${item.id}" alt="result"></div>
+      <div class="tc-sz" id="bsz-${item.id}"></div>
     </div>
-    <div class="tcard-body">
-      <div><div class="tcard-rlabel">Original</div><img class="tcard-img" id="oi-${item.id}" alt="original"></div>
-      <div><div class="tcard-rlabel">Result</div><img class="tcard-img" id="ri-${item.id}" alt="result"></div>
-      <div class="tcard-szrow" id="sz-${item.id}"></div>
-    </div>
-    <div class="tcard-foot">
-      <button class="btn btn-dl" id="dl-${item.id}" type="button" disabled>⬇ Download</button>
-    </div>`;
+    <div class="tc-foot"><button class="btn btn-g" id="bdl-${item.id}" disabled>⬇ Save</button></div>`;
   d.appendChild(div);
 }
 
-async function procItem(item){
-  try{
-    setIStat(item,"Loading…","proc");
-    const img=item.origImg||(await new Promise((res,rej)=>{
-      const r=new FileReader();
-      r.onload=()=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=r.result; };
+async function bProcItem(item) {
+  try {
+    bSetISt(item,'Loading…','proc');
+    const img = item.origImg || await new Promise((res,rej) => {
+      const r = new FileReader();
+      r.onload = () => { const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=r.result; };
       r.onerror=rej; r.readAsDataURL(item.file);
-    }));
-    item.origImg=img;
-    const oi=$(`oi-${item.id}`); if(oi) oi.src=img.src;
-    setIStat(item,"Removing…","proc");
-    const cv=document.createElement("canvas"); cv.width=img.width; cv.height=img.height;
-    const cx=cv.getContext("2d",{willReadFrequently:true});
+    });
+    item.origImg = img;
+    const oi = $(`bo-${item.id}`); if(oi) oi.src=img.src;
+    bSetISt(item,'Removing…','proc');
+    const cv=mk('canvas'); cv.width=img.width; cv.height=img.height;
+    const cx=cv.getContext('2d',{willReadFrequently:true});
     cx.drawImage(img,0,0);
     const id=cx.getImageData(0,0,cv.width,cv.height);
-    const cfg=detectCfg(cv.width,cv.height);
-    const pos=wmPos(cv.width,cv.height,cfg);
-    applyRemoval(id,cfg.sz===96?m96:m48,pos);
+    const big = (img.width>1024&&img.height>1024);
+    const map = big ? maps[96] : maps[48];
+    const sz  = big ? 96 : 48;
+    const mr  = big ? 64 : 32;
+    const pos = { x:img.width-mr-sz, y:img.height-mr-sz, w:sz, h:sz };
+    applyPatch(id, map, pos.x, pos.y, pos.w, pos.h, 1, 0);
     cx.putImageData(id,0,0);
-    const fmt=getFmt(), q=getQ();
-    const mime=fmt==="jpeg"?"image/jpeg":fmt==="webp"?"image/webp":"image/png";
-    const ext=fmt==="jpeg"?"jpg":fmt;
-    const blob=await toBlob(cv,mime,q);
-    if(!blob) throw new Error("Export failed");
+    const fmt = (document.querySelector('input[name="bfmt"]:checked')||{value:'png'}).value;
+    const q   = parseFloat($('bQual').value)||1;
+    const mime= fmt==='jpeg'?'image/jpeg':fmt==='webp'?'image/webp':'image/png';
+    const ext = fmt==='jpeg'?'jpg':fmt;
+    const blob= await canvasToBlob(cv,fmt,q);
+    if(!blob) throw new Error('Export failed');
     if(item.url) URL.revokeObjectURL(item.url);
     item.blob=blob; item.url=URL.createObjectURL(blob); item.ext=ext;
-    const ri=$(`ri-${item.id}`); if(ri) ri.src=item.url;
-    const sz=$(`sz-${item.id}`);
-    if(sz) sz.textContent=`Original: ${h2(item.file.size)} → Result: ${h2(blob.size)}`;
-    item.status="ok"; done++;
-    setIStat(item,"Done ✓","done");
-    const dlb=$(`dl-${item.id}`);
-    if(dlb){ dlb.disabled=false; dlb.textContent=`⬇ ${ext.toUpperCase()}`; dlb.onclick=()=>dlBlob(blob,`unwatermarked_${safeName(item.name)}.${ext}`); }
-  }catch(e){
-    console.error(e); item.status="err"; failed++;
-    setIStat(item,"Failed","err");
-    setStatus("Processing failed. See browser console for details.",true);
-  }finally{ setProg(); updZip(); }
+    const ri=$(`br-${item.id}`); if(ri) ri.src=item.url;
+    const szEl=$(`bsz-${item.id}`); if(szEl) szEl.textContent=`${h2(item.file.size)} → ${h2(blob.size)}`;
+    item.status='ok'; bDone++;
+    bSetISt(item,'Done ✓','done');
+    const dlb=$(`bdl-${item.id}`);
+    if(dlb){dlb.disabled=false;dlb.textContent=`⬇ ${ext.toUpperCase()}`;dlb.onclick=()=>dlBlob(blob,`unwatermarked_${sn(item.name)}.${ext}`);}
+    addHist(item.name,blob,ext);
+  } catch(e) {
+    console.error(e); item.status='err'; bFail++;
+    bSetISt(item,'Failed','err');
+    bSetSt('Processing failed — check console.','err');
+  } finally { bSetProg(); bUpdZip(); }
 }
 
-function dlBlob(blob,name){ const u=URL.createObjectURL(blob),a=document.createElement("a"); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1500); }
-
-async function handleFiles(files){
-  const imgs=files.filter(f=>f&&/image\/(png|jpeg|webp)/.test(f.type));
-  if(!imgs.length){ setStatus("Please upload PNG, JPG or WebP images.",true); return; }
-  if(imgs.length>10){ setStatus("Maximum 10 images at a time.",true); return; }
-  resetUI();
-  items=imgs.map((f,i)=>({id:`${Date.now()}_${i}`,file:f,name:f.name,status:"queued",origImg:null,blob:null,url:null,ext:"png"}));
-  $("fname").textContent=`${items.length} image(s) selected`;
-  $("grid").classList.remove("hidden"); $("bar").classList.remove("hidden");
-  $("reset").disabled=false; done=0; failed=0; setProg();
-  setFmt(imgs[0].type);
-  items.forEach(makeCard);
-  try{ await ensureMaps(); }
-  catch(e){ setStatus("Failed to load watermark maps: "+e.message,true); return; }
+async function bHandleFiles(files) {
+  const imgs = files.filter(f=>f&&/image\/(png|jpeg|webp)/.test(f.type));
+  if (!imgs.length) { bSetSt('Please upload PNG, JPG or WebP images.','err'); return; }
+  if (imgs.length > 10) { bSetSt('Maximum 10 images at a time.','err'); return; }
+  bReset();
+  bItems = imgs.map((f,i) => ({id:`${Date.now()}_${i}`,file:f,name:f.name,status:'queued',origImg:null,blob:null,url:null}));
+  $('bFname').textContent = `${bItems.length} image(s) selected`;
+  $('bGrid').classList.remove('hidden'); $('bCtrl').classList.remove('hidden');
+  $('bReset').disabled=false; bDone=0; bFail=0; bSetProg();
+  bItems.forEach(bMakeCard);
+  try { await ensureMaps(); } catch(e) { bSetSt('Failed to load maps.','err'); return; }
   let cur=0;
-  const worker=async()=>{ while(cur<items.length) await procItem(items[cur++]); };
-  await Promise.all([worker(),worker()]);
-  setProg("Done"); updZip();
+  const worker = async () => { while(cur<bItems.length) await bProcItem(bItems[cur++]); };
+  await Promise.all([worker(), worker()]);
+  bSetProg('Done'); bUpdZip();
 }
 
-async function reprocess(){
-  if(!items.length) return;
-  $("dlAll").disabled=true; done=0; failed=0; setProg("Re-processing");
-  items.forEach(i=>{
-    i.status="queued";
-    if(i.url) URL.revokeObjectURL(i.url);
-    i.url=null; i.blob=null;
-    const ri=$(`ri-${i.id}`); if(ri) ri.removeAttribute("src");
-    const dlb=$(`dl-${i.id}`); if(dlb) dlb.disabled=true;
-    setIStat(i,"Queued");
+async function bReprocess() {
+  if(!bItems.length) return;
+  $('bDlAll').disabled=true; bDone=0; bFail=0; bSetProg('Re-processing');
+  bItems.forEach(i => {
+    i.status='queued'; if(i.url) URL.revokeObjectURL(i.url); i.url=null; i.blob=null;
+    const ri=$(`br-${i.id}`); if(ri) ri.removeAttribute('src');
+    const dlb=$(`bdl-${i.id}`); if(dlb) dlb.disabled=true;
+    bSetISt(i,'Queued');
   });
   let cur=0;
-  const worker=async()=>{ while(cur<items.length) await procItem(items[cur++]); };
-  await Promise.all([worker(),worker()]);
-  setProg("Done"); updZip();
+  const worker = async () => { while(cur<bItems.length) await bProcItem(bItems[cur++]); };
+  await Promise.all([worker(), worker()]);
+  bSetProg('Done'); bUpdZip();
 }
 
-async function downloadZip(){
-  const ok=items.filter(i=>i.status==="ok"&&i.blob);
-  if(!ok.length) return;
-  $("dlAll").disabled=true; setProg("Zipping…");
-  try{
-    const fs=await Promise.all(ok.map(async i=>({name:`unwatermarked_${safeName(i.name)}.${i.ext}`,data:new Uint8Array(await i.blob.arrayBuffer())})));
-    dlBlob(new Blob([buildZip(fs)],{type:"application/zip"}),`unwatermarked_${Date.now()}.zip`);
-    setStatus("ZIP ready! ✓");
-  }catch(e){ console.error(e); setStatus("ZIP creation failed.",true); }
-  finally{ updZip(); setProg("Done"); }
+async function bDownloadZip() {
+  const ok = bItems.filter(i=>i.status==='ok'&&i.blob); if(!ok.length) return;
+  $('bDlAll').disabled=true; bSetProg('Zipping…');
+  try {
+    const fs = await Promise.all(ok.map(async i=>({name:`unwatermarked_${sn(i.name)}.${i.ext}`,data:new Uint8Array(await i.blob.arrayBuffer())})));
+    dlBlob(new Blob([buildZip(fs)],{type:'application/zip'}),`unwatermarked_${Date.now()}.zip`);
+    bSetSt('ZIP ready! ✓','ok');
+  } catch(e) { console.error(e); bSetSt('ZIP failed.','err'); }
+  finally { bUpdZip(); bSetProg('Done'); }
 }
 
-// ── Events ──────────────────────────────────────────────────
-const drop=$("drop"), fi=$("fi");
-drop.addEventListener("click",()=>fi.click());
-drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over");});
-drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
-drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");handleFiles(Array.from(e.dataTransfer?.files||[]));});
-drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fi.click();}});
-fi.addEventListener("change",()=>handleFiles(Array.from(fi.files||[])));
-$("reset").addEventListener("click",resetUI);
-$("dlAll").addEventListener("click",downloadZip);
-$("qual").addEventListener("change",reprocess);
-document.querySelectorAll('input[name="fmt"]').forEach(r=>r.addEventListener("change",reprocess));
+const bDropEl=$('bDrop'),bFiEl=$('bFi');
+bDropEl.addEventListener('click',()=>bFiEl.click());
+bDropEl.addEventListener('dragover',e=>{e.preventDefault();bDropEl.classList.add('over');});
+bDropEl.addEventListener('dragleave',()=>bDropEl.classList.remove('over'));
+bDropEl.addEventListener('drop',e=>{e.preventDefault();bDropEl.classList.remove('over');bHandleFiles([...(e.dataTransfer?.files||[])]);});
+bFiEl.addEventListener('change',()=>bHandleFiles([...bFiEl.files||[]]));
+$('bReset').addEventListener('click',bReset);
+$('bDlAll').addEventListener('click',bDownloadZip);
+$('bQual').addEventListener('change',bReprocess);
+document.querySelectorAll('input[name="bfmt"]').forEach(r=>r.addEventListener('change',bReprocess));
+
+// ═══════════════════════════════════════════════
+//  PWA
+// ═══════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+let deferredPWA = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPWA = e; $('installBtn').classList.add('show');
+});
+$('installBtn').addEventListener('click', async () => {
+  if (!deferredPWA) return;
+  deferredPWA.prompt();
+  const { outcome } = await deferredPWA.userChoice;
+  if (outcome === 'accepted') { $('installBtn').classList.remove('show'); deferredPWA = null; }
+});
+window.addEventListener('appinstalled', () => $('installBtn').classList.remove('show'));
 </script>
 </body>
 </html>
