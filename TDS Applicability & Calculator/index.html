@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smit TDS Calculator & Applicability Tool — FY 2025-26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@400;500&family=Roboto:wght@300;400;500;600&family=Roboto:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #9a93c5;
+    --surface: #FFFFFF;
+    --surface2: #F0EEE8;
+    --border: #E2DED6;
+    --border2: #C8C4BC;
+    --text: #1A1A18;
+    --text2: #5A5850;
+    --text3: #8A8678;
+    --accent: #3e51b0;
+    --accent2: #2E6B8A;
+    --gold: #FFFFED ;
+    --gold-light: #FFF8E7;
+    --gold-border: #E8D090;
+    --green: #1A6B3A;
+    --green-light: #F0FAF4;
+    --green-border: #A8D8B8;
+    --red: #8B1A1A;
+    --red-light: #FDF2F2;
+    --red-border: #E8AAAA;
+    --blue: #1A3A6B;
+    --blue-light: #F0F4FA;
+    --blue-border: #A8B8D8;
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--accent);
+    color: white;
+    padding: 0;
+    border-bottom: 3px solid var(--gold);
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 24px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .header-logo {
+    width: 44px;
+    height: 44px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.5px;
+  }
+  .header-badge {
+    margin-left: auto;
+    background: var(--gold);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+  }
+
+  /* PROGRESS */
+  .progress-bar-wrap {
+    background: var(--accent);
+    padding: 0 24px 16px;
+  }
+  .progress-bar-inner { max-width: 900px; margin: 0 auto; }
+  .progress-steps {
+    display: flex;
+    gap: 4px;
+  }
+  .ps {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    transition: background 0.3s;
+  }
+  .ps.done { background: var(--gold); }
+  .ps.active { background: rgba(255,255,255,0.7); }
+  .progress-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 6px;
+    text-align: right;
+  }
+
+  /* MAIN */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+
+  /* STEP CARD */
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  .step-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .step-question {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .step-hint {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 20px;
+  }
+
+  /* OPTIONS GRID */
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 8px;
+  }
+  .option-btn {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    color: var(--text);
+    transition: all 0.15s;
+    line-height: 1.35;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .option-btn:hover {
+    border-color: var(--accent2);
+    background: var(--blue-light);
+    color: var(--blue);
+  }
+  .option-btn.selected {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: white;
+  }
+  .option-btn .opt-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    opacity: 0.7;
+  }
+
+  /* FORM FIELDS */
+  .field-group { display: flex; flex-direction: column; gap: 16px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:600px) { .field-row { grid-template-columns: 1fr; } }
+  label { font-size: 13px; font-weight: 500; color: var(--text2); }
+  input[type=number], input[type=text], input[type=date], select {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface2);
+    transition: border 0.15s;
+    width: 100%;
+  }
+  input[type=number]:focus, input[type=text]:focus, input[type=date]:focus, select:focus {
+    outline: none;
+    border-color: var(--accent2);
+    background: white;
+  }
+  .input-prefix {
+    position: relative;
+  }
+  .input-prefix input { padding-left: 28px; }
+  .input-prefix::before {
+    content: '₹';
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: var(--text3);
+    pointer-events: none;
+  }
+
+  /* RADIO TOGGLE */
+  .toggle-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .toggle-btn {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    padding: 7px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+  .toggle-btn:hover { border-color: var(--accent2); color: var(--accent); }
+  .toggle-btn.active { background: var(--accent); border-color: var(--accent); color: white; font-weight: 500; }
+
+  /* NAV BUTTONS */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    gap: 12px;
+  }
+  .btn-back {
+    background: transparent;
+    border: 1.5px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-back:hover { border-color: var(--text2); color: var(--text); }
+  .btn-next {
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    padding: 11px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+  .btn-next:hover { background: var(--accent2); }
+  .btn-next:disabled { background: var(--border2); cursor: not-allowed; }
+
+  .btn-calculate {
+    background: var(--gold);
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px 32px;
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+  .btn-calculate:hover { background: #c9940c; }
+
+  /* RESULT */
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .result-verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 100px;
+    padding: 6px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .verdict-yes { background: var(--red-light); color: var(--red); border: 1px solid var(--red-border); }
+  .verdict-no { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media(max-width:600px){ .result-grid { grid-template-columns: 1fr; } }
+
+  .result-block {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+  }
+  .rb-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text3);
+    font-weight: 500;
+    margin-bottom: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .rb-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .rb-value.highlight { color: var(--red); }
+  .rb-value.green { color: var(--green); }
+  .rb-value.gold { color: var(--gold); }
+  .rb-value.blue { color: var(--blue); }
+  .rb-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  .result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin-bottom: 20px;
+  }
+  .result-table th {
+    text-align: left;
+    padding: 9px 12px;
+    background: var(--accent);
+    color: rgba(255,255,255,0.85);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .result-table th:first-child { border-radius: 6px 0 0 6px; }
+  .result-table th:last-child { border-radius: 0 6px 6px 0; }
+  .result-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .result-table tr:last-child td { border-bottom: none; }
+  .result-table tr:nth-child(even) td { background: var(--surface2); }
+  .result-table td:first-child { color: var(--text2); font-size: 13px; }
+  .result-table td:last-child { font-weight: 500; }
+
+  .notes-box {
+    background: var(--gold-light);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .notes-box h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--gold);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 10px;
+  }
+  .notes-box ul { padding-left: 18px; }
+  .notes-box li { font-size: 13px; color: var(--text2); margin-bottom: 5px; line-height: 1.5; }
+
+  .warning-box {
+    background: var(--red-light);
+    border: 1px solid var(--red-border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--red);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1.5px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 9px 18px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: white;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .btn-action:hover { border-color: var(--accent2); color: var(--accent2); }
+  .btn-action.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn-action.primary:hover { background: var(--accent2); }
+
+  /* DISCLAIMER */
+  .disclaimer {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 24px;
+    line-height: 1.6;
+  }
+  .disclaimer strong { color: var(--text2); }
+
+  /* SECTION TAG */
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--blue-light);
+    color: var(--blue);
+    border: 1px solid var(--blue-border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+  }
+  .section-tag.new { background: var(--green-light); color: var(--green); border-color: var(--green-border); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .text-center { text-align: center; }
+  .hidden { display: none !important; }
+
+  @media print {
+    .header { background: #1A3A4A !important; -webkit-print-color-adjust: exact; }
+    .action-row { display: none; }
+    body { background: white; }
+  }
+  @media(max-width:480px){
+    .options-grid { grid-template-columns: 1fr 1fr; }
+    .header-badge { display: none; }
+    .result-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-logo">TDS</div>
+    <div>
+      <div class="header-title">Smit TDS Applicability &amp; Calculator</div>
+      <div class="header-sub">Income Tax Act, 2025 &nbsp;·&nbsp; FY 2025-26 &nbsp;·&nbsp; AY 2026-27</div>
+    </div>
+    <div class="header-badge">ITA 2025 Ready</div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-inner">
+      <div class="progress-steps" id="progressSteps"></div>
+      <div class="progress-label" id="progressLabel">Step 1 of 4</div>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="mainContent"></div>
+
+<script>
+// ============================================================
+// MASTER TDS DATABASE — FY 2025-26 / Income Tax Act 2025
+// ============================================================
+const TDS_MASTER = {
+  contractor: {
+    label: "Contractor / Sub-contractor",
+    oldSection: "194C",
+    newSection: "393(1) Sl.6(i).D(a)/(b)",
+    paymentCodes: { individual_huf: "1023", others: "1024" },
+    singleThreshold: 30000,
+    aggregateThreshold: 100000,
+    rates: { individual_huf: 1, others: 2 },
+    nonPanRate: 20,
+    notes: ["TDS applicable if single payment > ₹30,000 OR aggregate > ₹1,00,000 in FY","No TDS on payments to transporters who furnish valid PAN","15G/15H not applicable","Excludes GST if shown separately in invoice"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: true,
+    transporterExemption: true
+  },
+  professional: {
+    label: "Professional / Technical Service",
+    oldSection: "194J",
+    newSection: "393(1) Sl.6(i).G",
+    paymentCodes: { professional: "1052", technical: "1053" },
+    singleThreshold: 50000,
+    aggregateThreshold: 50000,
+    rates: { professional: 10, technical: 2, royalty: 10 },
+    nonPanRate: 20,
+    notes: ["Professional fees (doctors, lawyers, CAs, architects) @ 10%","Technical services @ 2% (w.e.f. 1-Apr-2020)","Royalty @ 10%","Threshold ₹50,000 applies to each category separately","15G/15H not applicable for companies"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: true
+  },
+  commission: {
+    label: "Commission / Brokerage",
+    oldSection: "194H",
+    newSection: "393(1) Sl.6(i).F",
+    paymentCodes: { all: "1006" },
+    singleThreshold: 15000,
+    aggregateThreshold: 15000,
+    rates: { all: 5 },
+    nonPanRate: 20,
+    notes: ["Threshold ₹15,000 p.a.","Not applicable on insurance commission (separate section 194D)","GST excludable if shown separately"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: true
+  },
+  insurance_commission: {
+    label: "Insurance Commission",
+    oldSection: "194D",
+    newSection: "393(1) Sl.6(i).E",
+    paymentCodes: { individual_huf: "1093", company: "1094" },
+    singleThreshold: 15000,
+    aggregateThreshold: 15000,
+    rates: { individual_huf: 5, company: 10 },
+    nonPanRate: 20,
+    notes: ["Applicable on commission paid by insurance company","Threshold ₹15,000 p.a."],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: false
+  },
+  rent_land_building: {
+    label: "Rent — Land/Building/Furniture",
+    oldSection: "194I(a)",
+    newSection: "393(1) Sl.6(i).H(a)",
+    paymentCodes: { all: "1008" },
+    singleThreshold: 0,
+    aggregateThreshold: 240000,
+    rates: { all: 10 },
+    nonPanRate: 20,
+    notes: ["Threshold ₹2,40,000 per annum","Monthly threshold ₹20,000","15G/15H applicable for individuals/HUF","No TDS if landlord provides lower deduction cert","GST not deductible from rent for TDS purpose"],
+    form15Applicable: true,
+    lowerCertApplicable: true,
+    gstExcludable: false
+  },
+  rent_plant_machinery: {
+    label: "Rent — Plant/Machinery/Equipment",
+    oldSection: "194I(b)",
+    newSection: "393(1) Sl.6(i).H(b)",
+    paymentCodes: { all: "1009" },
+    singleThreshold: 0,
+    aggregateThreshold: 240000,
+    rates: { all: 2 },
+    nonPanRate: 20,
+    notes: ["Rate 2% for plant, machinery, or equipment","Threshold ₹2,40,000 per annum","GST excludable if shown separately"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: true
+  },
+  rent_individual: {
+    label: "Rent by Individual/HUF (>₹50,000/month)",
+    oldSection: "194IB",
+    newSection: "393(1) Sl.6(i).I",
+    paymentCodes: { all: "1061" },
+    singleThreshold: 50000,
+    aggregateThreshold: 0,
+    rates: { all: 5 },
+    nonPanRate: 20,
+    notes: ["Applicable when Individual/HUF pays rent > ₹50,000/month","Deducted at the time of credit or payment, whichever earlier, for last month of tenancy or March","Not applicable if deductor is liable to audit u/s 44AB (use 194I instead)"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: false
+  },
+  interest_bank: {
+    label: "Interest — Bank/Post Office/Cooperative",
+    oldSection: "194A",
+    newSection: "393(1) Sl.6(i).B",
+    paymentCodes: { bank: "1022", others: "1021" },
+    singleThreshold: 0,
+    aggregateThreshold: 50000,
+    aggregateThresholdSenior: 100000,
+    rates: { all: 10 },
+    nonPanRate: 20,
+    notes: ["Threshold ₹50,000 p.a. from banks/co-op banks/post office","Senior citizens (60+): enhanced threshold ₹1,00,000","15G/15H applicable for individuals/HUF where tax liability is nil","Interest on EPF exempt if membership > 5 years","No TDS on interest credited to NRE/FCNR accounts"],
+    form15Applicable: true,
+    lowerCertApplicable: true,
+    gstExcludable: false
+  },
+  interest_others: {
+    label: "Interest — Others (Company Deposits etc.)",
+    oldSection: "194A",
+    newSection: "393(1) Sl.6(i).B",
+    paymentCodes: { all: "1021" },
+    singleThreshold: 5000,
+    aggregateThreshold: 5000,
+    rates: { all: 10 },
+    nonPanRate: 20,
+    notes: ["Threshold ₹5,000 for interest other than bank interest","15G/15H applicable","TDS on gross interest, no deduction allowed"],
+    form15Applicable: true,
+    lowerCertApplicable: true,
+    gstExcludable: false
+  },
+  salary: {
+    label: "Salary / Remuneration to Employees",
+    oldSection: "192",
+    newSection: "393(1) Sl.6(i).A",
+    paymentCodes: { all: "1002" },
+    singleThreshold: 0,
+    aggregateThreshold: 0,
+    rates: { all: "Slab Rate" },
+    nonPanRate: 30,
+    notes: ["TDS as per applicable income tax slab rate","No fixed threshold — deduct if estimated annual income exceeds basic exemption limit","Include all perquisites, allowances, HRA, etc.","Relief under Section 89 available for arrears","New Tax Regime default from FY 2024-25"],
+    form15Applicable: false,
+    lowerCertApplicable: false,
+    gstExcludable: false,
+    specialLogic: "salary"
+  },
+  director: {
+    label: "Director Remuneration (Non-salary)",
+    oldSection: "194J",
+    newSection: "393(1) Sl.6(i).G",
+    paymentCodes: { all: "1052" },
+    singleThreshold: 0,
+    aggregateThreshold: 0,
+    rates: { all: 10 },
+    nonPanRate: 20,
+    notes: ["No threshold limit — TDS on every rupee paid","Applicable on sitting fees, commission to directors (other than salary)","Cannot be covered by 15G/15H"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: false
+  },
+  goods_purchase: {
+    label: "Purchase of Goods (TDS u/s 194Q)",
+    oldSection: "194Q",
+    newSection: "393(1) Sl.6(i).N",
+    paymentCodes: { all: "1031" },
+    singleThreshold: 0,
+    aggregateThreshold: 5000000,
+    rates: { all: 0.1 },
+    nonPanRate: 5,
+    notes: ["Applicable if buyer's turnover > ₹10 crore in preceding FY","TDS @ 0.1% on purchase value exceeding ₹50 lakhs","Not applicable if TCS u/s 206C(1H) applicable to seller","PAN mandatory — non-PAN rate @ 5%","Not applicable on import of goods","GST excluded if shown separately"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: true
+  },
+  ecommerce: {
+    label: "E-commerce Participant",
+    oldSection: "194O",
+    newSection: "393(1) Sl.6(i).M",
+    paymentCodes: { all: "1007" },
+    singleThreshold: 0,
+    aggregateThreshold: 500000,
+    rates: { all: 1 },
+    nonPanRate: 5,
+    notes: ["E-commerce operator deducts TDS @ 1% on gross amount paid to participant","Threshold ₹5 lakh for individual/HUF participants","No threshold for companies","15G/15H not applicable","Effective from 1-Oct-2020"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: false
+  },
+  dividend: {
+    label: "Dividend",
+    oldSection: "194",
+    newSection: "393(1) Sl.6(i).O",
+    paymentCodes: { all: "1017" },
+    singleThreshold: 0,
+    aggregateThreshold: 5000,
+    rates: { all: 10 },
+    nonPanRate: 20,
+    notes: ["Threshold ₹5,000 per shareholder per FY","15G/15H applicable for individuals/HUF","Not applicable on deemed dividend u/s 2(22)(e)"],
+    form15Applicable: true,
+    lowerCertApplicable: true,
+    gstExcludable: false
+  },
+  winnings: {
+    label: "Lottery / Game Show / Crossword Winnings",
+    oldSection: "194B",
+    newSection: "393(1) Sl.6(i).C",
+    paymentCodes: { all: "1019" },
+    singleThreshold: 10000,
+    aggregateThreshold: 10000,
+    rates: { all: 30 },
+    nonPanRate: 30,
+    notes: ["TDS @ 30% on winnings exceeding ₹10,000 in a single transaction","No deduction for TDS — always on gross","15G/15H not applicable","Online gaming covered separately u/s 194BA"],
+    form15Applicable: false,
+    lowerCertApplicable: false,
+    gstExcludable: false
+  },
+  online_gaming: {
+    label: "Online Gaming Winnings",
+    oldSection: "194BA",
+    newSection: "393(1) Sl.6(i).C2",
+    paymentCodes: { all: "1018" },
+    singleThreshold: 0,
+    aggregateThreshold: 0,
+    rates: { all: 30 },
+    nonPanRate: 30,
+    notes: ["Effective 1-Apr-2023","TDS on net winnings at time of withdrawal OR end of FY","No threshold limit","15G/15H not applicable"],
+    form15Applicable: false,
+    lowerCertApplicable: false,
+    gstExcludable: false
+  },
+  payment_transfer_immovable: {
+    label: "Payment on Transfer of Immovable Property",
+    oldSection: "194IA",
+    newSection: "393(1) Sl.6(i).J",
+    paymentCodes: { all: "1062" },
+    singleThreshold: 5000000,
+    aggregateThreshold: 5000000,
+    rates: { all: 1 },
+    nonPanRate: 20,
+    notes: ["TDS @ 1% if sale consideration > ₹50 lakh","Buyer must deduct at time of payment/credit","No TAN required — PAN of buyer and seller suffice (Form 26QB)","Stamp duty value to be compared if higher","Not applicable on compulsory acquisition"],
+    form15Applicable: false,
+    lowerCertApplicable: false,
+    gstExcludable: false
+  },
+  nri_payment: {
+    label: "Payment to Non-Resident (Remittance)",
+    oldSection: "195",
+    newSection: "393(1) Sl.6(ii).A",
+    paymentCodes: { all: "6001" },
+    singleThreshold: 0,
+    aggregateThreshold: 0,
+    rates: { all: "DTAA/Treaty Rate" },
+    nonPanRate: 20,
+    notes: ["TDS applicable on all payments to NR unless DTAA benefit claimed","Form 15CA/15CB mandatory for remittances above threshold","Lower withholding rate if DTAA applies and Form 10F + Tax Residency Certificate submitted","No threshold — deduct on every payment","Section 195 covers income chargeable to tax in India","Consult Authorised Dealer before remittance"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: false,
+    specialLogic: "nri"
+  },
+  partner_interest: {
+    label: "Partner Salary / Remuneration / Interest / Bonus",
+    oldSection: "194T",
+    newSection: "393(1) Sl.6(i).T",
+    paymentCodes: { all: "1067" },
+    singleThreshold: 0,
+    aggregateThreshold: 20000,
+    rates: { all: 10 },
+    nonPanRate: 20,
+    notes: [
+      "Section 194T effective from 1-Apr-2025 — TDS now applicable on partner remuneration",
+      "TDS @ 10% on salary, remuneration, interest, bonus, or commission paid by a firm/LLP to its partners",
+      "Threshold: ₹20,000 aggregate per partner per financial year",
+      "Applies to both Partnership Firms and LLPs",
+      "Partner's share of PROFIT remains exempt — section 194T covers only remuneration/interest/bonus/salary/commission",
+      "Deduct at the time of credit to partner's capital/current account or actual payment, whichever is earlier",
+      "Lower deduction certificate u/s 197 can be obtained by the partner from AO",
+      "Form 15G/15H not applicable for this section",
+      "PAN mandatory — non-PAN attracts higher TDS @ 20% u/s 206AA"
+    ],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: false
+  },
+  transport: {
+    label: "Transporter (Goods Transport)",
+    oldSection: "194C",
+    newSection: "393(1) Sl.6(i).D(a)/(b)",
+    paymentCodes: { individual_huf: "1023", others: "1024" },
+    singleThreshold: 30000,
+    aggregateThreshold: 100000,
+    rates: { individual_huf: 1, others: 2 },
+    nonPanRate: 20,
+    notes: ["No TDS if transporter furnishes valid PAN and owns ≤10 goods vehicles","If PAN furnished by transporter owning ≤10 vehicles: TDS @ NIL","Otherwise standard contractor rates apply","Declaration required each year from transporter"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: true,
+    specialLogic: "transporter"
+  },
+  labour_contractor: {
+    label: "Labour Contractor",
+    oldSection: "194C",
+    newSection: "393(1) Sl.6(i).D(a)/(b)",
+    paymentCodes: { individual_huf: "1023", others: "1024" },
+    singleThreshold: 30000,
+    aggregateThreshold: 100000,
+    rates: { individual_huf: 1, others: 2 },
+    nonPanRate: 20,
+    notes: ["Same as contractor provisions","Ensure that labour supply is not misclassified as salary","Where workers are employees of deductee, TDS u/s 192 (salary) may also apply in some cases"],
+    form15Applicable: false,
+    lowerCertApplicable: true,
+    gstExcludable: false
+  }
+};
+
+// Due date logic
+function getDueDate(paymentDate, paymentType) {
+  const d = paymentDate ? new Date(paymentDate) : new Date();
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear();
+  let dueMonth = month + 1, dueYear = year;
+  if (dueMonth > 12) { dueMonth = 1; dueYear++; }
+
+  // Immovable property (194IA / Form 26QB) — 30th of next month
+  if (paymentType === 'payment_transfer_immovable') {
+    if (month === 3) return `30 April ${dueYear} (for March)`;
+    const monthName = new Date(`${dueYear}-${String(dueMonth).padStart(2,'0')}-01`).toLocaleDateString('en-IN',{month:'long'});
+    return `30 ${monthName} ${dueYear}`;
+  }
+
+  // All others — 7th of next month; March → 30th April
+  if (month === 3) return `30 April ${dueYear} (for March)`;
+  const monthName = new Date(`${dueYear}-${String(dueMonth).padStart(2,'0')}-01`).toLocaleDateString('en-IN',{month:'long'});
+  return `7 ${monthName} ${dueYear}`;
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  step: 1,
+  paymentType: null,
+  deducteeStatus: null,
+  currentPayment: '',
+  aggregatePayment: '',
+  panAvailable: null,
+  lowerCert: null,
+  form15Submitted: null,
+  gstIncluded: null,
+  gstAmount: '',
+  paymentDate: '',
+  isResident: null,
+  panInoperative: null,
+  transporterPan: null,
+  professionalSubType: null,
+  deductorTurnover: null,
+  isSeniorCitizen: null
+};
+
+const TOTAL_STEPS = 4;
+
+// ============================================================
+// RENDER ENGINE
+// ============================================================
+function renderProgress() {
+  const steps = document.getElementById('progressSteps');
+  const label = document.getElementById('progressLabel');
+  steps.innerHTML = '';
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const div = document.createElement('div');
+    div.className = 'ps' + (i < state.step ? ' done' : i === state.step ? ' active' : '');
+    steps.appendChild(div);
+  }
+  label.textContent = `Step ${state.step} of ${TOTAL_STEPS}`;
+}
+
+function render() {
+  renderProgress();
+  const main = document.getElementById('mainContent');
+  if (state.step === 1) main.innerHTML = renderStep1();
+  else if (state.step === 2) main.innerHTML = renderStep2();
+  else if (state.step === 3) main.innerHTML = renderStep3();
+  else if (state.step === 4) main.innerHTML = renderResult();
+  attachEvents();
+}
+
+// ============================================================
+// STEP 1 — PAYMENT TYPE
+// ============================================================
+const PAYMENT_OPTIONS = [
+  { key: 'contractor', label: 'Contractor / Sub-contractor', icon: '🏗' },
+  { key: 'labour_contractor', label: 'Labour Contractor', icon: '👷' },
+  { key: 'transport', label: 'Transporter (Goods)', icon: '🚛' },
+  { key: 'professional', label: 'Professional / Consultant', icon: '⚖' },
+  { key: 'commission', label: 'Commission / Brokerage', icon: '🤝' },
+  { key: 'insurance_commission', label: 'Insurance Commission', icon: '🛡' },
+  { key: 'rent_land_building', label: 'Rent — Land/Building', icon: '🏢' },
+  { key: 'rent_plant_machinery', label: 'Rent — Plant/Machinery', icon: '⚙' },
+  { key: 'interest_bank', label: 'Interest — Bank/Post Office', icon: '🏦' },
+  { key: 'interest_others', label: 'Interest — Others', icon: '💰' },
+  { key: 'salary', label: 'Salary / Employee', icon: '👔' },
+  { key: 'director', label: 'Director Fees/Commission', icon: '🎯' },
+  { key: 'goods_purchase', label: 'Purchase of Goods (194Q)', icon: '📦' },
+  { key: 'payment_transfer_immovable', label: 'Immovable Property Purchase', icon: '🏘' },
+  { key: 'partner_interest', label: 'Partner Salary / Remuneration / Interest (194T)', icon: '🫱' },
+  { key: 'nri_payment', label: 'Payment to Non-Resident', icon: '✈' },
+];
+
+function renderStep1() {
+  const opts = PAYMENT_OPTIONS.map(o => `
+    <button class="option-btn${state.paymentType===o.key?' selected':''}" onclick="selectPaymentType('${o.key}')">
+      <span class="opt-icon">${o.icon}</span>
+      <span>${o.label}</span>
+    </button>
+  `).join('');
+  return `
+    <div class="step-card">
+      <div class="step-number">Step 1 of ${TOTAL_STEPS}</div>
+      <div class="step-question">I am making payment to whom?</div>
+      <div class="step-hint">Select the nature of payment or the type of payee</div>
+      <div class="options-grid">${opts}</div>
+      <div class="nav-row">
+        <span style="font-size:12px;color:var(--text3)">Select a payment type to continue</span>
+        <button class="btn-next" id="btnNext1" ${!state.paymentType?'disabled':''} onclick="goStep(2)">Continue →</button>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <strong>Disclaimer:</strong> This tool is created by Claude Sonnet 4.7 model. This tool provides guidance based on provisions of the Income Tax Act, 2025 and related rules for FY 2025-26. It is for informational purposes only and does not constitute professional tax advice. Always consult a Chartered Accountant or tax professional for specific matters. Created by Smit Parekh (Faculty at ICAI for It, Advance IT, AURA & AICA)
+    </div>`;
+}
+
+// ============================================================
+// STEP 2 — DEDUCTEE STATUS (context-filtered per payment type)
+// ============================================================
+const ALL_DEDUCTEE_OPTIONS = [
+  { key: 'individual',       label: 'Individual' },
+  { key: 'huf',              label: 'HUF' },
+  { key: 'partnership',      label: 'Partnership Firm' },
+  { key: 'llp',              label: 'LLP' },
+  { key: 'domestic_company', label: 'Domestic Company' },
+  { key: 'foreign_company',  label: 'Foreign Company' },
+  { key: 'trust',            label: 'Trust / NGO' },
+  { key: 'cooperative',      label: 'Cooperative Society' },
+  { key: 'aop_boi',          label: 'AOP / BOI' },
+  { key: 'government',       label: 'Govt / Local Authority' },
+  { key: 'nri_individual',   label: 'NRI Individual' },
+  { key: 'nri_entity',       label: 'NRI Entity / Foreign Co.' },
+];
+
+// Define which deductee types are valid for each payment category
+const DEDUCTEE_MAP = {
+  contractor:               ['individual','huf','partnership','llp','domestic_company','trust','cooperative','aop_boi'],
+  labour_contractor:        ['individual','huf','partnership','llp','domestic_company','trust','cooperative','aop_boi'],
+  transport:                ['individual','huf','partnership','llp','domestic_company','trust','cooperative','aop_boi'],
+  professional:             ['individual','huf','partnership','llp','domestic_company','trust','cooperative','aop_boi'],
+  commission:               ['individual','huf','partnership','llp','domestic_company','trust','cooperative','aop_boi'],
+  insurance_commission:     ['individual','huf','domestic_company'],
+  rent_land_building:       ['individual','huf','partnership','llp','domestic_company','trust','cooperative','aop_boi'],
+  rent_plant_machinery:     ['individual','huf','partnership','llp','domestic_company','trust','cooperative','aop_boi'],
+  interest_bank:            ['individual','huf'],
+  interest_others:          ['individual','huf','partnership','llp','domestic_company','trust','cooperative','aop_boi'],
+  salary:                   ['individual'],
+  director:                 ['individual'],
+  goods_purchase:           ['individual','huf','partnership','llp','domestic_company','trust','cooperative','aop_boi'],
+  payment_transfer_immovable: ['individual','huf','partnership','llp','domestic_company','trust','cooperative','aop_boi'],
+  partner_interest:         ['individual','huf'],
+  nri_payment:              ['nri_individual','nri_entity','foreign_company'],
+};
+
+function getDeducteeOptions(paymentType) {
+  const allowed = DEDUCTEE_MAP[paymentType] || ALL_DEDUCTEE_OPTIONS.map(o => o.key);
+  return ALL_DEDUCTEE_OPTIONS.filter(o => allowed.includes(o.key));
+}
+
+function renderStep2() {
+  // Reset deductee if it's no longer valid for this payment type
+  const validKeys = getDeducteeOptions(state.paymentType).map(o => o.key);
+  if (state.deducteeStatus && !validKeys.includes(state.deducteeStatus)) {
+    state.deducteeStatus = null;
+  }
+
+  const deducteeOpts = getDeducteeOptions(state.paymentType);
+  const opts = deducteeOpts.map(o => `
+    <button class="option-btn${state.deducteeStatus===o.key?' selected':''}" onclick="selectDeductee('${o.key}')">
+      ${o.label}
+    </button>
+  `).join('');
+
+  // Extra questions for specific payment types
+  let extra = '';
+  if (state.paymentType === 'professional') {
+    extra = `
+      <div style="margin-top:18px">
+        <div class="step-question" style="font-size:16px;margin-bottom:8px">Type of professional service</div>
+        <div class="toggle-group">
+          ${['Professional Services (10%)','Technical Services (2%)','Royalty (10%)','Director Fees (10%)'].map((l,i) => {
+            const keys = ['professional','technical','royalty','director_fee'];
+            return `<button class="toggle-btn${state.professionalSubType===keys[i]?' active':''}" onclick="setState('professionalSubType','${keys[i]}')">${l}</button>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+  if (state.paymentType === 'transport') {
+    extra = `
+      <div style="margin-top:18px">
+        <div class="step-question" style="font-size:16px;margin-bottom:8px">Has transporter furnished PAN and owns ≤10 vehicles?</div>
+        <div class="toggle-group">
+          <button class="toggle-btn${state.transporterPan===true?' active':''}" onclick="setState('transporterPan',true)">Yes — PAN furnished, ≤10 vehicles</button>
+          <button class="toggle-btn${state.transporterPan===false?' active':''}" onclick="setState('transporterPan',false)">No / Not sure</button>
+        </div>
+      </div>`;
+  }
+  if (state.paymentType === 'interest_bank') {
+    extra = `
+      <div style="margin-top:18px">
+        <div class="step-question" style="font-size:16px;margin-bottom:8px">Is the payee a Senior Citizen (60+ years)?</div>
+        <div class="toggle-group">
+          <button class="toggle-btn${state.isSeniorCitizen===true?' active':''}" onclick="setState('isSeniorCitizen',true)">Yes</button>
+          <button class="toggle-btn${state.isSeniorCitizen===false?' active':''}" onclick="setState('isSeniorCitizen',false)">No</button>
+        </div>
+      </div>`;
+  }
+
+  const hint = deducteeOpts.length < ALL_DEDUCTEE_OPTIONS.length
+    ? `Only applicable payee types are shown for <strong>${PAYMENT_OPTIONS.find(o=>o.key===state.paymentType)?.label}</strong>`
+    : 'The TDS rate may differ based on payee category';
+
+  return `
+    <div class="step-card">
+      <div class="step-number">Step 2 of ${TOTAL_STEPS}</div>
+      <div class="step-question">What is the status (type) of the payee?</div>
+      <div class="step-hint">${hint}</div>
+      <div class="options-grid">${opts}</div>
+      ${extra}
+      <div class="nav-row">
+        <button class="btn-back" onclick="goStep(1)">← Back</button>
+        <button class="btn-next" id="btnNext2" ${!state.deducteeStatus?'disabled':''} onclick="goStep(3)">Continue →</button>
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// STEP 3 — PAYMENT DETAILS
+// ============================================================
+// Reads field values from DOM before re-rendering (to preserve typed input)
+function syncStep3Fields() {
+  const cp = document.getElementById('fCurrentPayment');
+  const ap = document.getElementById('fAggregatePayment');
+  const gst = document.getElementById('fGstAmount');
+  const pd = document.getElementById('fPaymentDate');
+  if (cp) state.currentPayment = cp.value;
+  if (ap) state.aggregatePayment = ap.value;
+  if (gst) state.gstAmount = gst.value;
+  if (pd) state.paymentDate = pd.value;
+}
+
+function setStateStep3(key, val) {
+  syncStep3Fields(); // preserve typed amounts before re-render
+  state[key] = val;
+  render();
+}
+
+function renderStep3() {
+  const master = TDS_MASTER[state.paymentType];
+  const showGst = master.gstExcludable;
+  const show15GH = master.form15Applicable;
+
+  return `
+    <div class="step-card">
+      <div class="step-number">Step 3 of ${TOTAL_STEPS}</div>
+      <div class="step-question">Payment &amp; compliance details</div>
+      <div class="step-hint">Enter amounts and answer compliance questions to determine TDS</div>
+      <div class="field-group">
+        <div class="field-row">
+          <div class="field">
+            <label>Current payment amount (₹)</label>
+            <div class="input-prefix">
+              <input type="number" id="fCurrentPayment" value="${state.currentPayment}" placeholder="e.g. 55000" min="0">
+            </div>
+          </div>
+          <div class="field">
+            <label>Aggregate payments this FY including current (₹)</label>
+            <div class="input-prefix">
+              <input type="number" id="fAggregatePayment" value="${state.aggregatePayment}" placeholder="e.g. 125000" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>PAN of payee available?</label>
+            <div class="toggle-group">
+              <button class="toggle-btn${state.panAvailable===true?' active':''}" onclick="setStateStep3('panAvailable',true)">Yes</button>
+              <button class="toggle-btn${state.panAvailable===false?' active':''}" onclick="setStateStep3('panAvailable',false)">No / Not furnished</button>
+            </div>
+          </div>
+          ${state.panAvailable===true ? `
+          <div class="field">
+            <label>Is PAN valid/operative? (not inoperative/invalid)</label>
+            <div class="toggle-group">
+              <button class="toggle-btn${state.panInoperative===false?' active':''}" onclick="setStateStep3('panInoperative',false)">Yes — valid &amp; operative</button>
+              <button class="toggle-btn${state.panInoperative===true?' active':''}" onclick="setStateStep3('panInoperative',true)">No — inoperative/invalid</button>
+            </div>
+          </div>` : ''}
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Lower deduction certificate (u/s 197) available?</label>
+            <div class="toggle-group">
+              <button class="toggle-btn${state.lowerCert===true?' active':''}" onclick="setStateStep3('lowerCert',true)">Yes</button>
+              <button class="toggle-btn${state.lowerCert===false?' active':''}" onclick="setStateStep3('lowerCert',false)">No</button>
+            </div>
+          </div>
+          ${show15GH ? `
+          <div class="field">
+            <label>Declaration in Form 15G/15H submitted?</label>
+            <div class="toggle-group">
+              <button class="toggle-btn${state.form15Submitted===true?' active':''}" onclick="setStateStep3('form15Submitted',true)">Yes</button>
+              <button class="toggle-btn${state.form15Submitted===false?' active':''}" onclick="setStateStep3('form15Submitted',false)">No</button>
+            </div>
+          </div>` : ''}
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Date of payment / credit (whichever earlier)</label>
+            <input type="date" id="fPaymentDate" value="${state.paymentDate}">
+          </div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="goStep(2)">← Back</button>
+        <button class="btn-calculate" onclick="calculateAndShow()">Calculate TDS →</button>
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// STEP 4 — RESULT (LOGIC ENGINE)
+// ============================================================
+function renderResult() {
+  const master = TDS_MASTER[state.paymentType];
+  if (!master) return '<p>Error: payment type not found</p>';
+
+  const currentAmt = parseFloat(state.currentPayment) || 0;
+  const aggregateAmt = parseFloat(state.aggregatePayment) || currentAmt;
+  const gstAmt = (state.gstIncluded === 'yes') ? (parseFloat(state.gstAmount) || 0) : 0;
+  const taxableAmt = currentAmt - gstAmt;
+  const deducteeStatus = state.deducteeStatus || '';
+  const isIndHuf = ['individual','huf','nri_individual'].includes(deducteeStatus);
+  const panAvail = state.panAvailable;
+  const panInop = state.panInoperative;
+  const lowerCert = state.lowerCert;
+  const form15 = state.form15Submitted;
+  const paymentDate = state.paymentDate;
+
+  // ---- SPECIAL: Exempt cases ----
+  if (master.specialLogic === 'exempt') {
+    return renderExemptResult(master, currentAmt);
+  }
+
+  // ---- SPECIAL: NRI ----
+  if (master.specialLogic === 'nri') {
+    return renderNriResult(master, currentAmt, taxableAmt, paymentDate);
+  }
+
+  // ---- SPECIAL: Transporter with PAN ----
+  if (master.specialLogic === 'transporter' && state.transporterPan === true) {
+    return renderTransporterExempt(master, currentAmt);
+  }
+
+  // ---- THRESHOLD CHECK ----
+  let tdsApplicable = false;
+  let thresholdReason = '';
+
+  if (master.specialLogic === 'salary') {
+    tdsApplicable = true;
+    thresholdReason = 'TDS on salary has no threshold — deduct if annual income exceeds basic exemption limit.';
+  } else if (master.singleThreshold === 0 && master.aggregateThreshold === 0) {
+    tdsApplicable = currentAmt > 0;
+    thresholdReason = 'No threshold limit — TDS applicable on every payment.';
+  } else {
+    const aggThreshold = (state.isSeniorCitizen && master.aggregateThresholdSenior)
+      ? master.aggregateThresholdSenior
+      : master.aggregateThreshold;
+    const singleMet = master.singleThreshold > 0 && currentAmt > master.singleThreshold;
+    const aggMet = aggThreshold > 0 && aggregateAmt > aggThreshold;
+    tdsApplicable = singleMet || aggMet;
+    if (singleMet) thresholdReason = `Single payment ₹${fmt(currentAmt)} exceeds threshold ₹${fmt(master.singleThreshold)}.`;
+    else if (aggMet) thresholdReason = `Aggregate ₹${fmt(aggregateAmt)} exceeds annual threshold ₹${fmt(aggThreshold)}.`;
+    else {
+      thresholdReason = `Neither single payment (₹${fmt(currentAmt)} vs limit ₹${fmt(master.singleThreshold || master.aggregateThreshold)}) nor aggregate (₹${fmt(aggregateAmt)} vs ₹${fmt(aggThreshold)}) exceeded threshold.`;
+    }
+  }
+
+  // Override: 15G/15H submitted
+  if (form15 === true && master.form15Applicable && tdsApplicable) {
+    return renderForm15Result(master, currentAmt, taxableAmt, aggregateAmt, thresholdReason, paymentDate);
+  }
+
+  // ---- RATE DETERMINATION ----
+  let applicableRate = 0;
+  let rateNote = '';
+  let paymentCode = '';
+
+  if (!tdsApplicable) {
+    // No TDS
+  } else if (lowerCert === true) {
+    applicableRate = 0; // placeholder, actual from cert
+    rateNote = 'Lower deduction certificate rate applies (as per certificate u/s 197)';
+    paymentCode = isIndHuf ? (master.paymentCodes.individual_huf || Object.values(master.paymentCodes)[0]) : (master.paymentCodes.others || Object.values(master.paymentCodes)[0]);
+  } else if (!panAvail || panInop === true) {
+    applicableRate = master.nonPanRate;
+    rateNote = panInop ? 'PAN inoperative — higher TDS u/s 206AA @ ' + master.nonPanRate + '%' : 'No PAN — higher TDS u/s 206AA @ ' + master.nonPanRate + '%';
+    paymentCode = isIndHuf ? (master.paymentCodes.individual_huf || Object.values(master.paymentCodes)[0]) : (master.paymentCodes.others || Object.values(master.paymentCodes)[0]);
+  } else {
+    // Normal rate
+    if (master.specialLogic === 'salary') {
+      applicableRate = null; // Slab
+      rateNote = 'Applicable income tax slab rate';
+    } else if (state.paymentType === 'professional') {
+      const subType = state.professionalSubType || 'professional';
+      applicableRate = master.rates[subType] || master.rates.professional;
+      rateNote = `Rate for ${subType} services`;
+    } else if (isIndHuf && master.rates.individual_huf !== undefined) {
+      applicableRate = master.rates.individual_huf;
+      paymentCode = master.paymentCodes.individual_huf || Object.values(master.paymentCodes)[0];
+    } else if (master.rates.all !== undefined) {
+      applicableRate = master.rates.all;
+      paymentCode = master.paymentCodes.all || Object.values(master.paymentCodes)[0];
+    } else {
+      applicableRate = master.rates.others;
+      paymentCode = master.paymentCodes.others || Object.values(master.paymentCodes)[0];
+    }
+    if (!paymentCode) {
+      paymentCode = isIndHuf ? (master.paymentCodes.individual_huf || Object.values(master.paymentCodes)[0]) : (master.paymentCodes.others || Object.values(master.paymentCodes)[0]);
+    }
+  }
+
+  // ---- TDS AMOUNT ----
+  let tdsAmount = 0;
+  let tdsAmountStr = '';
+  if (tdsApplicable && applicableRate !== null && !lowerCert) {
+    tdsAmount = Math.round(taxableAmt * applicableRate / 100);
+    tdsAmountStr = '₹' + fmt(tdsAmount);
+  } else if (lowerCert) {
+    tdsAmountStr = 'As per certificate';
+  } else if (master.specialLogic === 'salary') {
+    tdsAmountStr = 'As per slab computation';
+  } else {
+    tdsAmountStr = '₹0';
+  }
+
+  const dueDate = getDueDate(paymentDate, state.paymentType);
+  const dueDateNote = state.paymentType === 'payment_transfer_immovable'
+    ? '30th of following month (via Form 26QB online)'
+    : '7th of following month (30 Apr for March deductions)';
+  const paymentLabel = PAYMENT_OPTIONS.find(o=>o.key===state.paymentType)?.label || master.label;
+  const deducteeLabel = ALL_DEDUCTEE_OPTIONS.find(o=>o.key===deducteeStatus)?.label || deducteeStatus;
+
+  // ---- RENDER ----
+  const verdictHtml = tdsApplicable
+    ? `<span class="result-verdict verdict-yes">⚠ TDS Applicable</span>`
+    : `<span class="result-verdict verdict-no">✓ TDS Not Applicable</span>`;
+
+  const warnings = [];
+  if (!panAvail) warnings.push('PAN not available — higher TDS rate u/s 206AA applies (minimum 20%).');
+  if (panInop) warnings.push('PAN is inoperative — treated as PAN not available. Higher TDS @ ' + master.nonPanRate + '% applies.');
+
+  let highlightRate = applicableRate !== null ? (applicableRate + '%') : 'Slab Rate';
+  if (lowerCert) highlightRate = 'Lower Cert Rate';
+
+  const paymentCodeDisplay = paymentCode || (isIndHuf ? master.paymentCodes.individual_huf : master.paymentCodes.others) || Object.values(master.paymentCodes||{})[0] || 'N/A';
+
+  return `
+    <div class="step-card">
+      <div class="step-number">Result — TDS Analysis</div>
+      <div class="result-header">
+        <div>
+          <div class="step-question" style="font-size:21px;margin-bottom:8px">${paymentLabel}</div>
+          ${verdictHtml}
+        </div>
+      </div>
+
+      ${warnings.length ? `<div class="warning-box">⚠ ${warnings.join(' ')}</div>` : ''}
+
+      <div class="result-grid">
+        <div class="result-block">
+          <div class="rb-label">TDS Applicable</div>
+          <div class="rb-value ${tdsApplicable?'highlight':'green'}">${tdsApplicable ? 'YES' : 'NO'}</div>
+          <div class="rb-sub">${thresholdReason}</div>
+        </div>
+        <div class="result-block">
+          <div class="rb-label">Applicable Rate</div>
+          <div class="rb-value ${tdsApplicable?'highlight':'green'}">${tdsApplicable ? highlightRate : 'NIL'}</div>
+          <div class="rb-sub">${rateNote}</div>
+        </div>
+        <div class="result-block">
+          <div class="rb-label">TDS Amount</div>
+          <div class="rb-value gold">${tdsApplicable ? tdsAmountStr : '—'}</div>
+          <div class="rb-sub">${gstAmt>0 ? 'On taxable amount ₹'+fmt(taxableAmt)+' (GST ₹'+fmt(gstAmt)+' excluded)' : 'On payment amount ₹'+fmt(currentAmt)}</div>
+        </div>
+        <div class="result-block">
+          <div class="rb-label">Due Date of Deposit</div>
+          <div class="rb-value blue">${dueDate}</div>
+          <div class="rb-sub">${dueDateNote}</div>
+        </div>
+      </div>
+
+      <table class="result-table">
+        <thead><tr><th>Particulars</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td>Nature of Payment</td><td>${paymentLabel}</td></tr>
+          <tr><td>Deductee Type</td><td>${deducteeLabel}</td></tr>
+          <tr><td>Old Section (IT Act 1961)</td><td><span class="section-tag">${master.oldSection}</span></td></tr>
+          <tr><td>New Section (ITA 2025)</td><td><span class="section-tag new">${master.newSection}</span></td></tr>
+          <tr><td>Challan No. (Old)</td><td><strong>281</strong></td></tr>
+          <tr><td>Payment Code (New)</td><td><strong>${paymentCodeDisplay}</strong></td></tr>
+          <tr><td>Single Payment Threshold</td><td>${master.singleThreshold > 0 ? '₹'+fmt(master.singleThreshold) : 'No limit'}</td></tr>
+          <tr><td>Annual Aggregate Threshold</td><td>${master.aggregateThreshold > 0 ? '₹'+fmt(master.aggregateThreshold) : 'No limit'}</td></tr>
+          <tr><td>Current Payment</td><td>₹${fmt(currentAmt)}</td></tr>
+          <tr><td>Taxable Amount (excl. GST)</td><td>₹${fmt(taxableAmt)}</td></tr>
+          <tr><td>Aggregate FY Payments</td><td>₹${fmt(aggregateAmt)}</td></tr>
+          <tr><td>Standard TDS Rate</td><td>${isIndHuf && master.rates.individual_huf !== undefined ? master.rates.individual_huf+'%' : (master.rates.all || master.rates.others || master.rates.professional)+'%'}</td></tr>
+          <tr><td>Non-PAN / 206AA Rate</td><td>${master.nonPanRate}%</td></tr>
+          <tr><td>PAN Available</td><td>${panAvail === true ? '✓ Yes' : panAvail === false ? '✗ No' : 'Not specified'}</td></tr>
+          <tr><td>PAN Operative</td><td>${panInop === false ? '✓ Valid' : panInop === true ? '✗ Inoperative' : 'Not checked'}</td></tr>
+          <tr><td>Lower Deduction Cert.</td><td>${lowerCert===true?'Yes — cert rate applies':lowerCert===false?'No':'Not specified'}</td></tr>
+          <tr><td>Form 15G/15H</td><td>${master.form15Applicable ? (form15===true?'Submitted — see note':form15===false?'Not submitted':'Not specified') : 'Not applicable for this section'}</td></tr>
+          <tr><td>GST Excludable</td><td>${master.gstExcludable ? 'Yes (if shown separately)' : 'No — TDS on gross'}</td></tr>
+          <tr><td>Lower Deduction Cert. Applicable</td><td>${master.lowerCertApplicable ? 'Yes' : 'No'}</td></tr>
+        </tbody>
+      </table>
+
+      <div class="notes-box">
+        <h4>Important Notes &amp; Compliance Remarks</h4>
+        <ul>${master.notes.map(n=>`<li>${n}</li>`).join('')}</ul>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-action" onclick="window.print()">🖨 Print</button>
+        <button class="btn-action" onclick="copyToClipboard()">📋 Copy Summary</button>
+        <button class="btn-action" onclick="shareWhatsApp()">💬 Share via WhatsApp</button>
+        <button class="btn-action" onclick="resetCalc()">↺ New Calculation</button>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <strong>Disclaimer:</strong> This tool is prepared based on provisions of the Income Tax Act, 2025, Income Tax Rules, and applicable CBDT circulars/notifications as of FY 2025-26. Provisions are subject to change. This does not substitute professional advice. Consult a qualified tax practitioner for compliance matters.
+    </div>`;
+}
+
+function renderExemptResult(master, currentAmt) {
+  const paymentLabel = PAYMENT_OPTIONS.find(o=>o.key===state.paymentType)?.label || master.label;
+  return `
+    <div class="step-card">
+      <div class="step-number">Result — TDS Analysis</div>
+      <div class="result-header">
+        <div>
+          <div class="step-question" style="font-size:21px;margin-bottom:8px">${paymentLabel}</div>
+          <span class="result-verdict verdict-no">✓ TDS Not Applicable</span>
+        </div>
+      </div>
+      <div class="result-grid">
+        <div class="result-block">
+          <div class="rb-label">TDS Applicable</div>
+          <div class="rb-value green">NO</div>
+          <div class="rb-sub">This category is exempt from TDS</div>
+        </div>
+        <div class="result-block">
+          <div class="rb-label">TDS Amount</div>
+          <div class="rb-value green">NIL</div>
+        </div>
+      </div>
+      <div class="notes-box">
+        <h4>Reason for Exemption</h4>
+        <ul>${master.notes.map(n=>`<li>${n}</li>`).join('')}</ul>
+      </div>
+      <div class="action-row">
+        <button class="btn-action" onclick="resetCalc()">↺ New Calculation</button>
+      </div>
+    </div>`;
+}
+
+function renderNriResult(master, currentAmt, taxableAmt, paymentDate) {
+  const dueDate = getDueDate(paymentDate, state.paymentType);
+  return `
+    <div class="step-card">
+      <div class="step-number">Result — NRI / Foreign Remittance</div>
+      <div class="step-question" style="margin-bottom:12px">Payment to Non-Resident</div>
+      <span class="result-verdict verdict-yes" style="margin-bottom:20px;display:inline-flex">⚠ TDS Applicable — Rate depends on DTAA</span>
+      <div class="result-grid" style="margin-top:16px">
+        <div class="result-block">
+          <div class="rb-label">Old Section</div>
+          <div class="rb-value"><span class="section-tag">195</span></div>
+        </div>
+        <div class="result-block">
+          <div class="rb-label">New Section (ITA 2025)</div>
+          <div class="rb-value"><span class="section-tag new">393(1) Sl.6(ii).A</span></div>
+        </div>
+        <div class="result-block">
+          <div class="rb-label">Payment Amount</div>
+          <div class="rb-value gold">₹${fmt(currentAmt)}</div>
+        </div>
+        <div class="result-block">
+          <div class="rb-label">Due Date</div>
+          <div class="rb-value blue">${dueDate}</div>
+        </div>
+      </div>
+      <div class="notes-box">
+        <h4>NRI Compliance Requirements</h4>
+        <ul>${master.notes.map(n=>`<li>${n}</li>`).join('')}</ul>
+        <ul>
+          <li><strong>Form 15CA:</strong> Required for most foreign remittances above ₹5 lakh</li>
+          <li><strong>Form 15CB:</strong> CA certificate required before 15CA in most cases</li>
+          <li><strong>Standard rate u/s 195:</strong> 20% (non-treaty countries) or DTAA rate with TRC + Form 10F</li>
+          <li><strong>Surcharge &amp; Health/Education Cess:</strong> Applicable on NRI TDS rates</li>
+        </ul>
+      </div>
+      <div class="action-row">
+        <button class="btn-action" onclick="resetCalc()">↺ New Calculation</button>
+      </div>
+    </div>`;
+}
+
+function renderTransporterExempt(master, currentAmt) {
+  return `
+    <div class="step-card">
+      <div class="step-number">Result — Transporter with PAN</div>
+      <div class="step-question" style="margin-bottom:12px">Goods Transport Agent</div>
+      <span class="result-verdict verdict-no" style="margin-bottom:20px;display:inline-flex">✓ TDS Not Applicable — Transporter exemption</span>
+      <div class="notes-box" style="margin-top:16px">
+        <h4>Transporter Exemption Conditions</h4>
+        <ul>
+          <li>Transporter has furnished valid PAN to the deductor</li>
+          <li>Transporter owns or operates 10 or fewer goods vehicles</li>
+          <li>Annual declaration required from transporter</li>
+          <li>Keep PAN copy and declaration on record for 7 years</li>
+          <li>If transporter fails to provide PAN next year, TDS applies immediately</li>
+        </ul>
+      </div>
+      <div class="action-row">
+        <button class="btn-action" onclick="resetCalc()">↺ New Calculation</button>
+      </div>
+    </div>`;
+}
+
+function renderForm15Result(master, currentAmt, taxableAmt, aggregateAmt, thresholdReason, paymentDate) {
+  const paymentLabel = PAYMENT_OPTIONS.find(o=>o.key===state.paymentType)?.label || master.label;
+  const dueDate = getDueDate(paymentDate, state.paymentType);
+  return `
+    <div class="step-card">
+      <div class="step-number">Result — Form 15G/15H Submitted</div>
+      <div class="step-question" style="margin-bottom:12px">${paymentLabel}</div>
+      <span class="result-verdict verdict-no" style="margin-bottom:20px;display:inline-flex">✓ TDS Not Required — 15G/15H on record</span>
+      <div class="notes-box" style="margin-top:16px">
+        <h4>15G/15H Compliance Checklist</h4>
+        <ul>
+          <li>Form 15G (individuals below 60) or 15H (senior citizens 60+) must be filed by payee</li>
+          <li>Payee declares total income below taxable limit and tax liability is nil</li>
+          <li>Declaration valid for the financial year — new form needed each year</li>
+          <li>Deductor must submit Form 15G/15H to TRACES portal quarterly</li>
+          <li>Deductor must retain original declarations for 7 years</li>
+          <li>Penalty u/s 271C if declaration found to be false</li>
+          <li>Not applicable for companies, firms, or LLPs</li>
+        </ul>
+      </div>
+      <div class="action-row">
+        <button class="btn-action" onclick="resetCalc()">↺ New Calculation</button>
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function fmt(n) {
+  return Number(n).toLocaleString('en-IN');
+}
+
+function setState(key, val) {
+  state[key] = val;
+  render();
+}
+
+function selectPaymentType(key) {
+  state.paymentType = key;
+  document.getElementById('btnNext1') && (document.getElementById('btnNext1').disabled = false);
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+
+function selectDeductee(key) {
+  state.deducteeStatus = key;
+  document.getElementById('btnNext2') && (document.getElementById('btnNext2').disabled = false);
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+
+function goStep(n) {
+  if (n === 2 && !state.paymentType) return;
+  if (n === 3 && !state.deducteeStatus) return;
+  if (state.step === 3) syncStep3Fields();
+  state.step = n;
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function calculateAndShow() {
+  syncStep3Fields();
+  state.step = 4;
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function resetCalc() {
+  state = { step:1, paymentType:null, deducteeStatus:null, currentPayment:'', aggregatePayment:'', panAvailable:null, lowerCert:null, form15Submitted:null, gstIncluded:null, gstAmount:'', paymentDate:'', isResident:null, panInoperative:null, transporterPan:null, professionalSubType:null, deductorTurnover:null, isSeniorCitizen:null };
+  render();
+}
+
+function attachEvents() {
+  // nothing extra needed — inline onclick works
+}
+
+function copyToClipboard() {
+  const master = TDS_MASTER[state.paymentType];
+  if (!master) return;
+  const paymentLabel = PAYMENT_OPTIONS.find(o=>o.key===state.paymentType)?.label || master.label;
+  const currentAmt = parseFloat(state.currentPayment)||0;
+  const text = `TDS APPLICABILITY SUMMARY — FY 2025-26\n\nNature of Payment: ${paymentLabel}\nOld Section: ${master.oldSection}\nNew Section (ITA 2025): ${master.newSection}\nPayment Amount: ₹${fmt(currentAmt)}\n\nFor full details, use the TDS Calculator tool.`;
+  navigator.clipboard && navigator.clipboard.writeText(text).then(()=>alert('Summary copied to clipboard!'));
+}
+
+function shareWhatsApp() {
+  const master = TDS_MASTER[state.paymentType];
+  if (!master) return;
+  const paymentLabel = PAYMENT_OPTIONS.find(o=>o.key===state.paymentType)?.label || master.label;
+  const currentAmt = parseFloat(state.currentPayment)||0;
+  const msg = `*TDS SUMMARY — FY 2025-26*\nNature: ${paymentLabel}\nOld Section: ${master.oldSection}\nNew Section (ITA 2025): ${master.newSection}\nAmount: ₹${fmt(currentAmt)}\n\n_Generated via TDS Calculator_`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ---- INIT ----
+render();
+</script>
+</body>
+</html>
