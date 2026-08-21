@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Smit IPO Ready Checker</title>
+<meta name="description" content="SEBI ICDR & SME Exchange IPO eligibility, restated financials, proforma applicability and Basis of Issue Price calculator.">
+<meta name="theme-color" content="#0B2545">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IPO Ready">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500;600;700;800&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F7FA; --surface:#FFFFFF; --surface-2:#EEF2F6; --border:#D9E2EA;
+  --text:#132538; --text-dim:#5A6B7D; --primary:#0B2545; --primary-2:#123A6B;
+  --accent:#B8860B; --accent-2:#D9A62A; --success:#1F7A4D; --success-bg:#E7F5EC;
+  --danger:#B3261E; --danger-bg:#FBEAE9; --warn:#8A5A00; --warn-bg:#FBF1DC;
+  --shadow:0 1px 2px rgba(11,37,69,.06),0 4px 14px rgba(11,37,69,.06);
+  --radius:10px; --mono:'Roboto Mono',monospace;
+}
+[data-theme="dark"]{
+  --bg:#0B121F; --surface:#121B2C; --surface-2:#182338; --border:#28374F;
+  --text:#E7EDF5; --text-dim:#93A3B8; --primary:#7FA8DE; --primary-2:#A9C6EE;
+  --accent:#E0B84C; --accent-2:#F0CE73; --success:#3FBE7F; --success-bg:#123023;
+  --danger:#F0645C; --danger-bg:#331616; --warn:#E0B84C; --warn-bg:#332A10;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Roboto',system-ui,sans-serif; background:var(--bg); color:var(--text);
+  transition:background .25s ease, color .25s ease; -webkit-font-smoothing:antialiased;
+  padding-bottom:60px;
+}
+h1,h2,h3,.display{font-family:'Roboto Slab',serif;}
+a{color:var(--primary-2);}
+::selection{background:var(--accent); color:#111;}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:50; background:var(--primary); color:#fff;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 20px; box-shadow:var(--shadow);
+}
+[data-theme="dark"] .topbar{background:#0D1729;}
+.brand{display:flex; align-items:center; gap:12px; min-width:0;}
+.brand-seal{
+  width:42px;height:42px;border-radius:9px; flex:0 0 auto;
+  background:linear-gradient(145deg,var(--accent-2),var(--accent));
+  display:flex;align-items:center;justify-content:center;font-family:'Roboto Slab';
+  font-weight:800; color:#1a1200; font-size:15px; letter-spacing:.5px;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.35);
+}
+.brand-text{min-width:0;}
+.brand-text h1{margin:0; font-size:18px; line-height:1.15; letter-spacing:.2px;}
+.brand-text .subtitle{
+  margin:2px 0 0; font-size:11.5px; color:rgba(255,255,255,.78); letter-spacing:.3px;
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.brand-text .subtitle a{color:#fff; text-decoration:underline; text-decoration-color:rgba(255,255,255,.4);}
+.top-actions{display:flex; align-items:center; gap:8px; flex:0 0 auto;}
+.icon-btn{
+  border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#fff;
+  border-radius:8px; padding:9px 12px; cursor:pointer; font-size:13px; font-family:inherit;
+  display:flex; align-items:center; gap:6px; transition:background .15s;
+}
+.icon-btn:hover{background:rgba(255,255,255,.18);}
+#installBtn{display:none;}
+
+/* ---------- Layout ---------- */
+.shell{max-width:1180px; margin:0 auto; padding:18px 16px 40px;}
+.tabs{
+  display:flex; gap:6px; overflow-x:auto; padding:4px; background:var(--surface);
+  border:1px solid var(--border); border-radius:12px; margin-bottom:18px; box-shadow:var(--shadow);
+  scrollbar-width:thin;
+}
+.tab-btn{
+  flex:1 1 auto; white-space:nowrap; border:none; background:transparent; color:var(--text-dim);
+  font-family:inherit; font-size:13.5px; font-weight:500; padding:12px 14px; border-radius:9px;
+  cursor:pointer; transition:.15s; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.tab-btn .num{
+  font-family:var(--mono); font-size:11px; width:20px; height:20px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; background:var(--surface-2); flex:0 0 auto;
+}
+.tab-btn.active{background:var(--primary); color:#fff;}
+.tab-btn.active .num{background:var(--accent); color:#1a1200;}
+.tab-btn:not(.active):hover{background:var(--surface-2); color:var(--text);}
+
+.panel{display:none; animation:fade .25s ease;}
+.panel.active{display:block;}
+@keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px; margin-bottom:16px; box-shadow:var(--shadow);
+}
+.card h2{margin:0 0 4px; font-size:19px; display:flex; align-items:center; gap:10px;}
+.card h2 .tag{
+  font-family:var(--mono); font-size:11px; color:var(--primary-2); background:var(--surface-2);
+  border:1px solid var(--border); padding:3px 8px; border-radius:20px; font-weight:500;
+}
+.card .lead{color:var(--text-dim); font-size:13.5px; margin:6px 0 16px; line-height:1.55;}
+.section-divider{margin:26px 0 14px; display:flex; align-items:center; gap:10px; color:var(--text-dim); font-size:12px; text-transform:uppercase; letter-spacing:.6px; font-weight:600;}
+.section-divider::after{content:""; flex:1; height:1px; background:var(--border);}
+
+/* checklist */
+.rule{
+  border:1px solid var(--border); border-radius:9px; padding:12px 14px; margin-bottom:10px;
+  background:var(--surface-2);
+}
+.rule-head{display:flex; gap:10px; align-items:flex-start;}
+.rule-head input[type=checkbox]{width:19px; height:19px; margin-top:2px; accent-color:var(--primary); flex:0 0 auto; cursor:pointer;}
+.rule-head label{font-size:13.5px; line-height:1.55; cursor:pointer;}
+.rule-cite{display:block; margin-top:3px; font-family:var(--mono); font-size:11px; color:var(--accent);}
+.rule.select-row .rule-head{align-items:center;}
+.rule select, .rule input[type=number], .rule input[type=text]{
+  font-family:inherit; background:var(--surface); border:1px solid var(--border); color:var(--text);
+  border-radius:7px; padding:8px 10px; font-size:13px;
+}
+.mini-row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px;}
+.mini-row label{font-size:12.5px; color:var(--text-dim); display:flex; align-items:center; gap:6px;}
+.mini-row input{width:140px;}
+
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+@media(max-width:720px){.grid2{grid-template-columns:1fr;}}
+
+/* result banner */
+.result-banner{
+  border-radius:9px; padding:16px; margin-top:6px; display:flex; gap:14px; align-items:flex-start;
+  border:1px solid var(--border);
+}
+.result-banner.ok{background:var(--success-bg); border-color:var(--success);}
+.result-banner.bad{background:var(--danger-bg); border-color:var(--danger);}
+.result-banner.warn{background:var(--warn-bg); border-color:var(--warn);}
+.result-banner .ic{font-size:22px; line-height:1;}
+.result-banner b{display:block; margin-bottom:4px; font-size:14.5px;}
+.result-banner p{margin:0; font-size:13px; color:var(--text-dim); line-height:1.5;}
+.result-banner ul{margin:8px 0 0; padding-left:18px; font-size:12.8px; color:var(--text-dim);}
+
+/* buttons */
+.btn{
+  font-family:inherit; border:none; background:var(--primary); color:#fff; padding:11px 18px;
+  border-radius:8px; font-size:13.5px; font-weight:500; cursor:pointer; transition:.15s; display:inline-flex; gap:8px; align-items:center;
+}
+.btn:hover{background:var(--primary-2);}
+.btn.ghost{background:transparent; color:var(--primary-2); border:1px solid var(--border);}
+.btn.ghost:hover{background:var(--surface-2);}
+.btn.gold{background:var(--accent); color:#1a1200;}
+.btn.gold:hover{background:var(--accent-2);}
+
+/* tables */
+.table-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:9px;}
+table{width:100%; border-collapse:collapse; font-size:13px; min-width:640px;}
+th,td{padding:9px 12px; border-bottom:1px solid var(--border); text-align:left; white-space:nowrap;}
+thead th{background:var(--surface-2); font-weight:600; position:sticky; top:0;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--surface-2);}
+td input{width:110px; font-family:var(--mono); font-size:12.5px; background:var(--surface); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:6px 8px;}
+th.metric-col, td.metric-col{position:sticky; left:0; background:var(--surface); min-width:220px; white-space:normal; font-weight:500; z-index:2;}
+thead th.metric-col{background:var(--surface-2); z-index:3;}
+.out-cell{font-family:var(--mono); font-weight:600; color:var(--primary-2);}
+.remove-peer{background:var(--danger); color:#fff; border:none; border-radius:6px; padding:5px 8px; cursor:pointer; font-size:11px;}
+
+.ratio-group{margin-bottom:22px;}
+.ratio-group h3{font-size:14.5px; margin:0 0 8px; display:flex; align-items:center; gap:8px;}
+.ratio-group h3 .dot{width:8px; height:8px; border-radius:50%;}
+.badge{font-size:10.5px; font-family:var(--mono); background:var(--surface-2); border:1px solid var(--border); padding:2px 7px; border-radius:20px; color:var(--text-dim);}
+
+.footer{
+  text-align:center; padding:26px 16px 10px; color:var(--text-dim); font-size:12.5px; line-height:1.8;
+}
+.footer .name{color:var(--text); font-weight:600; font-family:'Roboto Slab';}
+.footer a{color:var(--accent); text-decoration:none; font-weight:500;}
+.footer a:hover{text-decoration:underline;}
+
+.disclaimer{
+  font-size:11.8px; color:var(--text-dim); background:var(--surface-2); border:1px dashed var(--border);
+  border-radius:8px; padding:10px 12px; margin-top:16px; line-height:1.6;
+}
+.readiness-wrap{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:6px;}
+.gauge{width:74px; height:74px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:0 0 auto; font-family:var(--mono); font-weight:700; font-size:16px; color:#fff; background:conic-gradient(var(--success) 0deg, var(--success) 0deg, var(--border) 0deg);}
+.field-note{font-size:11.5px; color:var(--text-dim); margin-top:4px;}
+label.block{display:block; font-size:12.5px; color:var(--text-dim); margin-bottom:5px; font-weight:500;}
+select.wide, input.wide{width:100%;}
+.two-col-inputs{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+@media(max-width:640px){.two-col-inputs{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-seal">SIC</div>
+    <div class="brand-text">
+      <h1>Smit IPO Ready Checker</h1>
+      <div class="subtitle">Created by Smit Parekh · <a href="https://www.youtube.com/@TheParekhShow" target="_blank" rel="noopener">youtube.com/@TheParekhShow</a></div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" id="installBtn" onclick="triggerInstall()">⬇ Install App</button>
+    <button class="icon-btn" onclick="toggleTheme()"><span id="themeIcon">🌙</span><span id="themeLabel">Night</span></button>
+  </div>
+</div>
+
+<div class="shell">
+
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="t1"><span class="num">1</span> Eligibility (SEBI + Exchange)</button>
+    <button class="tab-btn" data-tab="t2"><span class="num">2</span> Restated Financials & Proforma</button>
+    <button class="tab-btn" data-tab="t3"><span class="num">3</span> Basis of Issue Price</button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PANEL 1 : ELIGIBILITY -->
+  <!-- ============================================================ -->
+  <div class="panel active" id="t1">
+
+    <div class="card">
+      <h2>Entities not eligible for an SME IPO <span class="tag">Regulation 228, ICDR 2018</span></h2>
+      <p class="lead">Tick every statement that is <b>TRUE</b> for the issuer. Any tick here is a disqualifying event — the issuer cannot make an SME initial public offer while it applies.</p>
+      <div id="reg228"></div>
+    </div>
+
+    <div class="card">
+      <h2>Eligibility requirements for an initial public offer <span class="tag">Regulation 229</span></h2>
+      <p class="lead">Regulation 229 gates eligibility on post-issue paid-up capital and requires the issuer to satisfy the track record / other conditions of the SME exchange chosen. Enter the numbers below.</p>
+      <div class="two-col-inputs">
+        <div>
+          <label class="block">Post-issue paid-up equity capital (₹ Crore)</label>
+          <input type="number" class="wide" id="postIssueCapital" placeholder="e.g. 8.5" oninput="evalReg229()">
+        </div>
+        <div>
+          <label class="block">Was the issuer earlier a proprietorship / partnership / LLP?</label>
+          <select class="wide" id="entityConversion" onchange="evalReg229()">
+            <option value="no">No — always a company</option>
+            <option value="yes">Yes — converted to a company</option>
+          </select>
+        </div>
+      </div>
+      <div id="reg229Result" class="result-banner" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>General conditions for the offer <span class="tag">Regulation 230</span></h2>
+      <p class="lead">Regulation 230 requires the issuer to have taken the following steps before / at the time of filing. Tick what is already <b>complete</b>.</p>
+      <div id="reg230"></div>
+    </div>
+
+    <div class="card">
+      <h2>Exchange-specific eligibility <span class="tag">BSE SME &amp; NSE Emerge</span></h2>
+      <p class="lead">SEBI does not prescribe turnover/profit thresholds for SME IPOs — these are layered on by the exchanges. Choose the platform and fill in the figures; unmet items are flagged in red.</p>
+      <div class="mini-row" style="margin-bottom:14px;">
+        <label><input type="radio" name="exch" value="bse" checked onchange="renderExchange()"> BSE SME</label>
+        <label><input type="radio" name="exch" value="nse" onchange="renderExchange()"> NSE Emerge</label>
+      </div>
+      <div id="exchangeInputs"></div>
+      <div id="exchangeResult"></div>
+    </div>
+
+    <div class="card">
+      <div class="readiness-wrap">
+        <div class="gauge" id="gauge">–</div>
+        <div>
+          <b style="font-size:15px;">Overall IPO-readiness snapshot</b>
+          <p class="lead" style="margin:4px 0 0;">Auto-computed from Regulation 228/229/230 and the selected exchange checklist above. This is a directional screen, not a legal opinion.</p>
+        </div>
+      </div>
+      <div class="disclaimer">This checker reflects SEBI (ICDR) Regulations, 2018 (Chapter IX — Regulations 228–268) and publicly available BSE SME / NSE Emerge listing criteria as generally in force. Exchange circulars are amended frequently (e.g. NSE Emerge FCFE computation revised April 2026); always cross-check the live SEBI/BSE/NSE circulars and consult your Merchant Banker before relying on this output.</div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PANEL 2 : RESTATED FINANCIALS & PROFORMA -->
+  <!-- ============================================================ -->
+  <div class="panel" id="t2">
+
+    <div class="card">
+      <h2>Restated Financial Information — framework</h2>
+      <p class="lead">
+        The last three years' audited financial statements must be converted into <b>Restated Financial Information</b> under Indian GAAP / the Companies Act, 2013 and the SEBI (ICDR) Regulations, 2018, prepared in accordance with:
+      </p>
+      <ul style="font-size:13px; line-height:1.9; color:var(--text-dim); margin:0 0 4px;">
+        <li>Section 26 of Part I of Chapter III, Companies Act, 2013;</li>
+        <li>Paragraph (A) of Clause 11(I), Part A, Schedule VI of the SEBI (ICDR) Regulations, 2018; and</li>
+        <li>ICAI Guidance Note on "Reports in Company Prospectuses (Revised 2019)", as amended.</li>
+      </ul>
+
+      <div class="section-divider">Conversion checklist — audited → restated</div>
+      <div id="restatedChecklist"></div>
+
+      <div class="section-divider">Working sheet — audited to restated bridge (per year)</div>
+      <div class="table-wrap">
+        <table id="bridgeTable">
+          <thead><tr>
+            <th class="metric-col">Adjustment</th><th>FY1 (oldest)</th><th>FY2</th><th>FY3 (latest)</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="field-note">Enter net ₹ Lakh impact of each adjustment (use negative for a reduction). The restated PAT bridges automatically below.</p>
+      <div class="table-wrap" style="margin-top:10px;">
+        <table>
+          <thead><tr><th class="metric-col">Summary</th><th>FY1</th><th>FY2</th><th>FY3</th></tr></thead>
+          <tbody>
+            <tr><td class="metric-col">Audited PAT (₹ Lakh)</td>
+              <td><input type="number" id="auditedPAT_0" oninput="computeBridge()"></td>
+              <td><input type="number" id="auditedPAT_1" oninput="computeBridge()"></td>
+              <td><input type="number" id="auditedPAT_2" oninput="computeBridge()"></td></tr>
+            <tr><td class="metric-col">Net restatement adjustments</td>
+              <td class="out-cell" id="bridgeAdj_0">0.00</td>
+              <td class="out-cell" id="bridgeAdj_1">0.00</td>
+              <td class="out-cell" id="bridgeAdj_2">0.00</td></tr>
+            <tr><td class="metric-col"><b>Restated PAT (₹ Lakh)</b></td>
+              <td class="out-cell" id="restatedPAT_0">0.00</td>
+              <td class="out-cell" id="restatedPAT_1">0.00</td>
+              <td class="out-cell" id="restatedPAT_2">0.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Proforma Financial Information — applicability test</h2>
+      <p class="lead">Proforma financial statements are triggered when a corporate event has significantly changed the issuer's size/structure and that event is not, or is only partly, reflected in the restated financials for the full disclosure periods. Answer the questions below.</p>
+      <div id="proformaQs"></div>
+      <div id="proformaResult" class="result-banner" style="margin-top:10px;"></div>
+
+      <div id="proformaTemplate" style="display:none;">
+        <div class="section-divider">Proforma preparation template (if applicable)</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th class="metric-col">Particulars (₹ Lakh)</th><th>Restated (pre-event)</th><th>Acquired/Divested entity adjustment</th><th>Proforma combined</th></tr></thead>
+            <tbody>
+              <tr><td class="metric-col">Revenue from operations</td><td><input type="number" id="pf_rev_a" oninput="computeProforma()"></td><td><input type="number" id="pf_rev_b" oninput="computeProforma()"></td><td class="out-cell" id="pf_rev_c">0.00</td></tr>
+              <tr><td class="metric-col">Total assets</td><td><input type="number" id="pf_ta_a" oninput="computeProforma()"></td><td><input type="number" id="pf_ta_b" oninput="computeProforma()"></td><td class="out-cell" id="pf_ta_c">0.00</td></tr>
+              <tr><td class="metric-col">Net worth</td><td><input type="number" id="pf_nw_a" oninput="computeProforma()"></td><td><input type="number" id="pf_nw_b" oninput="computeProforma()"></td><td class="out-cell" id="pf_nw_c">0.00</td></tr>
+              <tr><td class="metric-col">Profit after tax</td><td><input type="number" id="pf_pat_a" oninput="computeProforma()"></td><td><input type="number" id="pf_pat_b" oninput="computeProforma()"></td><td class="out-cell" id="pf_pat_c">0.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="field-note">Proforma statements should be presented alongside restated financials with a compilation report from the statutory / peer-review auditor, adjusted only for factually supportable, directly attributable effects of the transaction (no forward-looking synergies).</p>
+      </div>
+      <div class="disclaimer">This module is a structuring aid. The final determination of proforma applicability, materiality thresholds and the compilation itself must be made by the issuer's statutory auditor / peer-reviewed practitioner in line with the ICAI Guidance Note and the specific SEBI ICDR clause in force on the date of filing.</div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PANEL 3 : BASIS OF ISSUE PRICE -->
+  <!-- ============================================================ -->
+  <div class="panel" id="t3">
+
+    <div class="card">
+      <h2>Issuer financial inputs</h2>
+      <p class="lead">Enter figures in ₹ Lakh (shares in absolute numbers) for the last 3 audited/restated years and the stub period, if any. All ratios below recompute live.</p>
+      <div class="table-wrap">
+        <table id="mainInputTable"></table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>(a) &amp; (b) EPS and P/E ratio</h2>
+      <div class="table-wrap"><table id="epsPeTable"></table></div>
+      <label class="block" style="margin-top:14px;">Proposed issue / cap price (₹ per share)</label>
+      <input type="number" id="issuePrice" style="max-width:220px;" oninput="renderEpsPe();renderNav();renderPeer()">
+      <p class="field-note">Weighted average EPS uses the standard 3:2:1 weight convention (latest year weighted highest). Stub period EPS is shown as reported, not annualised or blended into the weighted average, per common RHP practice.</p>
+    </div>
+
+    <div class="card">
+      <h2>(c) Industry peer group P/E &amp; comparable listed peers</h2>
+      <div class="table-wrap"><table id="peerTable"></table></div>
+      <button class="btn ghost" onclick="addPeerRow()" style="margin-top:10px;">+ Add peer company</button>
+      <div class="table-wrap" style="margin-top:14px;">
+        <table>
+          <thead><tr><th>Highest peer P/E</th><th>Lowest peer P/E</th><th>Average peer P/E (industry composite)</th><th>Issuer P/E (latest year)</th></tr></thead>
+          <tbody><tr>
+            <td class="out-cell" id="peerHigh">–</td>
+            <td class="out-cell" id="peerLow">–</td>
+            <td class="out-cell" id="peerAvg">–</td>
+            <td class="out-cell" id="peerIssuer">–</td>
+          </tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>(d) Return on Net Worth (RoNW)</h2>
+      <div class="table-wrap"><table id="ronwTable"></table></div>
+    </div>
+
+    <div class="card">
+      <h2>(e) Net Asset Value (NAV) per equity share</h2>
+      <div class="table-wrap"><table id="navTable"></table></div>
+    </div>
+
+    <div class="card">
+      <h2>(f) Accounting ratios — Liquidity, Solvency, Efficiency, Profitability &amp; Market/Valuation</h2>
+      <p class="lead">Additional line items below feed these ratios; the core P&amp;L / balance-sheet figures are picked up automatically from the issuer input table above.</p>
+      <div class="table-wrap"><table id="extraInputTable"></table></div>
+
+      <div class="section-divider">Computed ratios</div>
+      <div id="ratioOutput"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="display name">Smit IPO Ready Checker</div>
+    <div>Created by Smit Parekh</div>
+    <div>YouTube: <a href="https://www.youtube.com/@TheParekhShow" target="_blank" rel="noopener">www.youtube.com/@TheParekhShow</a></div>
+    <div style="margin-top:6px; opacity:.75;">For structuring &amp; educational use only — not a substitute for advice from your Merchant Banker, Statutory Auditor or Legal Counsel.</div>
+  </div>
+</div>
+
+<script>
+/* ===================== THEME ===================== */
+function applyTheme(mode){
+  document.documentElement.setAttribute('data-theme', mode);
+  document.getElementById('themeIcon').textContent = mode==='dark' ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = mode==='dark' ? 'Day' : 'Night';
+  window.__theme = mode;
+}
+function toggleTheme(){ applyTheme(window.__theme==='dark' ? 'light' : 'dark'); }
+(function initTheme(){
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(prefersDark ? 'dark' : 'light');
+})();
+
+/* ===================== TABS ===================== */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+/* ===================== PWA: manifest + service worker (self-contained) ===================== */
+(function setupPWA(){
+  const icon = (size)=>{
+    const c = document.createElement('canvas'); c.width=size; c.height=size;
+    const ctx = c.getContext('2d');
+    const g = ctx.createLinearGradient(0,0,size,size);
+    g.addColorStop(0,'#123A6B'); g.addColorStop(1,'#0B2545');
+    ctx.fillStyle=g; ctx.fillRect(0,0,size,size);
+    ctx.strokeStyle='#D9A62A'; ctx.lineWidth=size*0.045; ctx.strokeRect(size*0.06,size*0.06,size*0.88,size*0.88);
+    ctx.fillStyle='#D9A62A'; ctx.font='bold '+(size*0.34)+'px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('SIC', size/2, size*0.56);
+    return c.toDataURL('image/png');
+  };
+  const manifest = {
+    name:"Smit IPO Ready Checker", short_name:"IPO Ready",
+    description:"SEBI ICDR & SME exchange IPO eligibility, restated financials and Basis of Issue Price toolkit.",
+    start_url:".", scope:".", display:"standalone", background_color:"#0B2545", theme_color:"#0B2545",
+    icons:[{src:icon(192),sizes:"192x192",type:"image/png"},{src:icon(512),sizes:"512x512",type:"image/png"}]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const link = document.createElement('link'); link.rel='manifest'; link.href=URL.createObjectURL(blob);
+  document.head.appendChild(link);
+
+  const swCode = `
+    const CACHE='smit-ipo-ready-v1';
+    self.addEventListener('install', e=>{ self.skipWaiting(); });
+    self.addEventListener('activate', e=>{ self.clients.claim(); });
+    self.addEventListener('fetch', e=>{
+      e.respondWith(
+        caches.open(CACHE).then(async cache=>{
+          try{
+            const res = await fetch(e.request);
+            if(e.request.method==='GET'){ cache.put(e.request, res.clone()); }
+            return res;
+          }catch(err){
+            const cached = await cache.match(e.request);
+            return cached || Response.error();
+          }
+        })
+      );
+    });
+  `;
+  if('serviceWorker' in navigator){
+    try{
+      const swBlob = new Blob([swCode], {type:'application/javascript'});
+      navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+    }catch(e){}
+  }
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault(); deferredPrompt=e;
+    document.getElementById('installBtn').style.display='inline-flex';
+  });
+  window.triggerInstall = async ()=>{
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt=null;
+    document.getElementById('installBtn').style.display='none';
+  };
+})();
+</script>
+
+<!-- feature scripts loaded next -->
+<script>
+/* =====================================================================
+   SMIT IPO READY CHECKER — application logic
+   ===================================================================== */
+const PERIODS = ['FY1 (oldest)','FY2','FY3 (latest)','Stub Period'];
+const fmt = (n, d=2)=> (isFinite(n) ? n.toLocaleString('en-IN',{maximumFractionDigits:d,minimumFractionDigits:d}) : '–');
+const num = (id)=>{ const el=document.getElementById(id); const v=el?parseFloat(el.value):NaN; return isFinite(v)?v:0; };
+const hasVal = (id)=>{ const el=document.getElementById(id); return el && el.value!==''; };
+
+/* ================= REGULATION 228 — disqualifications ================= */
+const reg228Items = [
+ {t:"The issuer, its promoter, director, selling shareholder, or promoter group is currently debarred from accessing the capital market by SEBI.", c:"Reg 228(a)"},
+ {t:"Any promoter or director of the issuer is also a promoter/director of another company debarred from accessing the capital market by SEBI.", c:"Reg 228(b)"},
+ {t:"The issuer or any of its promoters/directors is declared a wilful defaulter or a fraudulent borrower by any bank / financial institution.", c:"Reg 228(c)"},
+ {t:"Any promoter or director of the issuer is a fugitive economic offender under the Fugitive Economic Offenders Act, 2018.", c:"Reg 228(d)"},
+ {t:"There are outstanding convertible securities or any other right that would entitle a person to receive equity shares of the issuer, not proposed to be converted / exercised prior to filing.", c:"Reg 228 read with Reg 5(2)"},
+];
+function renderChecklist(containerId, items, storeArr){
+  const box = document.getElementById(containerId);
+  box.innerHTML = items.map((it,i)=>`
+    <div class="rule">
+      <div class="rule-head">
+        <input type="checkbox" id="${containerId}_${i}" onchange="onChecklistChange()">
+        <label for="${containerId}_${i}">${it.t}<span class="rule-cite">${it.c}</span></label>
+      </div>
+    </div>`).join('');
+}
+
+/* ================= REGULATION 230 — general conditions ================= */
+const reg230Items = [
+ {t:"Application made to one (or more, with a designated exchange selected) SME exchange for in-principle approval to list the specified securities.", c:"Reg 230(1)(a)"},
+ {t:"Agreement executed with a depository (NSDL / CDSL) for dematerialisation of existing and proposed securities.", c:"Reg 230(1)(b)"},
+ {t:"All existing partly paid-up equity shares have either been made fully paid-up or forfeited.", c:"Reg 230(1)(c)"},
+ {t:"All specified securities held by promoters are held in dematerialised form as on the date of filing the offer document.", c:"Reg 230(1)(d)"},
+ {t:"Issuer has entered into tripartite/underwriting and market-making arrangements as applicable and has no unresolved objections from the designated stock exchange.", c:"Reg 230 / Chapter IX conditions"},
+];
+
+/* ================= REGULATION 229 evaluation ================= */
+function evalReg229(){
+  const cap = num('postIssueCapital');
+  const box = document.getElementById('reg229Result');
+  if(!hasVal('postIssueCapital')){
+    box.className='result-banner warn';
+    box.innerHTML = `<div class="ic">✎</div><div><b>Enter post-issue paid-up capital</b><p>Provide the figure to test Regulation 229 gating.</p></div>`;
+    onChecklistChange(); return;
+  }
+  let cls, icon, title, body;
+  if(cap<=10){
+    cls='ok'; icon='✅'; title='Eligible under Regulation 229(a)';
+    body = 'Post-issue paid-up capital is ≤ ₹10 crore — squarely within the SME IPO window.';
+  } else if(cap>10 && cap<=25){
+    cls='warn'; icon='⚠️'; title='Conditionally eligible under Regulation 229(b)';
+    body = 'Post-issue paid-up capital is between ₹10–25 crore. The issuer may still use the SME chapter, but must additionally satisfy all other Chapter IX conditions and the chosen exchange\'s eligibility norms in full.';
+  } else {
+    cls='bad'; icon='⛔'; title='Not eligible for SME IPO';
+    body = 'Post-issue paid-up capital exceeds ₹25 crore — the issuer must pursue a Main Board IPO (Regulation 6 route) instead of the SME chapter.';
+  }
+  if(document.getElementById('entityConversion').value==='yes'){
+    body += ' Note: as a former proprietorship/partnership/LLP, the pre-conversion track record may be reckoned only if the financial statements of the erstwhile entity conform to Schedule III of the Companies Act, 2013 and are duly audited.';
+  }
+  box.className='result-banner '+cls;
+  box.innerHTML = `<div class="ic">${icon}</div><div><b>${title}</b><p>${body}</p></div>`;
+  onChecklistChange();
+}
+
+/* ================= EXCHANGE CHECKLISTS ================= */
+function renderExchange(){
+  const which = document.querySelector('input[name=exch]:checked').value;
+  const box = document.getElementById('exchangeInputs');
+  if(which==='bse'){
+    box.innerHTML = `
+      <div class="two-col-inputs">
+        <div><label class="block">Net worth — each of preceding 2 full financial years (₹ Crore, lower of the two)</label><input type="number" class="wide" id="bse_nw" oninput="evalExchange()"></div>
+        <div><label class="block">Net tangible assets — last preceding full financial year (₹ Crore)</label><input type="number" class="wide" id="bse_nta" oninput="evalExchange()"></div>
+        <div><label class="block">Operational track record (years)</label><input type="number" class="wide" id="bse_track" oninput="evalExchange()"></div>
+        <div><label class="block">Distributable profits u/s 123, Companies Act 2013, in how many of the preceding 3 FYs?</label><input type="number" class="wide" id="bse_distprofit" max="3" oninput="evalExchange()"></div>
+        <div><label class="block">OR Net worth (if profit track record not met) (₹ Crore)</label><input type="number" class="wide" id="bse_nw_alt" oninput="evalExchange()"></div>
+        <div><label class="block">Post-issue paid-up capital (₹ Crore)</label><input type="number" class="wide" id="bse_capital" oninput="evalExchange()"></div>
+      </div>
+      <div class="mini-row" style="margin-top:12px;">
+        <label><input type="checkbox" id="bse_demat" onchange="evalExchange()"> Demat trading facilitated with both NSDL &amp; CDSL</label>
+        <label><input type="checkbox" id="bse_website" onchange="evalExchange()"> Functional company website live</label>
+        <label><input type="checkbox" id="bse_promoterchange" onchange="evalExchange()"> No change in promoters in preceding 1 year</label>
+        <label><input type="checkbox" id="bse_bifr" onchange="evalExchange()"> No BIFR reference / accepted winding-up petition / admitted NCLT proceeding</label>
+      </div>`;
+  } else {
+    box.innerHTML = `
+      <div class="two-col-inputs">
+        <div><label class="block">Post-issue paid-up capital (₹ Crore)</label><input type="number" class="wide" id="nse_capital" oninput="evalExchange()"></div>
+        <div><label class="block">Operating profit / EBITDA — number of years meeting ≥ ₹1 crore (out of preceding 3 FYs)</label><input type="number" class="wide" id="nse_ebitda_years" max="3" oninput="evalExchange()"></div>
+        <div><label class="block">Net worth (₹ Crore) — must be positive</label><input type="number" class="wide" id="nse_nw" oninput="evalExchange()"></div>
+        <div><label class="block">Free Cash Flow to Equity positive in how many of preceding 3 FYs?</label><input type="number" class="wide" id="nse_fcfe_years" max="3" oninput="evalExchange()"></div>
+        <div><label class="block">Operational track record (years)</label><input type="number" class="wide" id="nse_track" oninput="evalExchange()"></div>
+        <div><label class="block">Promoter industry experience (years) &amp; post-issue holding (%)</label>
+          <div style="display:flex; gap:8px;"><input type="number" placeholder="years" id="nse_promexp" style="width:48%" oninput="evalExchange()"><input type="number" placeholder="% held" id="nse_promhold" style="width:48%" oninput="evalExchange()"></div>
+        </div>
+      </div>
+      <p class="field-note">FCFE = Cash flow from operations − Purchase of fixed assets + Net borrowings − Interest×(1−tax rate) + Proceeds from issuance of capital (equity/preference/securities premium received in cash) — per NSE circular effective for DRHPs filed on/after 20 Apr 2026.</p>`;
+  }
+  evalExchange();
+}
+function chip(pass, label){
+  return `<div class="rule" style="display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:13px;">${label}</span>
+    <span style="font-weight:600; font-size:12.5px; color:${pass?'var(--success)':'var(--danger)'}">${pass?'✅ Meets':'❌ Shortfall'}</span>
+  </div>`;
+}
+function evalExchange(){
+  const which = document.querySelector('input[name=exch]:checked').value;
+  const out = document.getElementById('exchangeResult');
+  let rows='', allPass=true, anyInput=false;
+  if(which==='bse'){
+    const checks = [
+      ['bse_nw', v=>v>=1, 'Net worth ≥ ₹1 crore for each of preceding 2 full financial years'],
+      ['bse_nta', v=>v>=3, 'Net tangible assets ≥ ₹3 crore (last preceding full FY)'],
+      ['bse_track', v=>v>=3, 'Operational track record ≥ 3 years (or project appraised/funded by NABARD/SIDBI/Bank/FI)'],
+      ['bse_capital', v=>v<=25, 'Post-issue paid-up capital ≤ ₹25 crore'],
+    ];
+    checks.forEach(([id,test,label])=>{
+      if(hasVal(id)){ anyInput=true; const v=num(id); const p=test(v); if(!p) allPass=false; rows+=chip(p,label); }
+    });
+    if(hasVal('bse_distprofit') || hasVal('bse_nw_alt')){
+      anyInput=true;
+      const profitOK = num('bse_distprofit')>=2;
+      const nwAltOK = num('bse_nw_alt')>=5;
+      const p = profitOK || nwAltOK;
+      if(!p) allPass=false;
+      rows+=chip(p,'Distributable profits (Sec.123) in ≥2 of preceding 3 FYs, OR net worth ≥ ₹5 crore');
+    }
+    ['bse_demat','bse_website','bse_promoterchange','bse_bifr'].forEach(id=>{
+      const el=document.getElementById(id); if(!el) return; anyInput=true;
+      const p = el.checked; if(!p) allPass=false;
+      rows += chip(p, el.parentElement.textContent.trim());
+    });
+  } else {
+    const checks = [
+      ['nse_capital', v=>v<=25, 'Post-issue paid-up capital ≤ ₹25 crore'],
+      ['nse_ebitda_years', v=>v>=2, 'Operating profit (EBITDA) ≥ ₹1 crore in ≥2 of preceding 3 FYs'],
+      ['nse_nw', v=>v>0, 'Net worth positive'],
+      ['nse_fcfe_years', v=>v>=2, 'Positive FCFE in ≥2 of preceding 3 FYs'],
+      ['nse_track', v=>v>=3, 'Operational track record ≥ 3 years'],
+      ['nse_promexp', v=>v>=3, 'At least one promoter with ≥3 years experience in same line of business'],
+      ['nse_promhold', v=>v>=20, 'Promoters hold ≥20% of post-issue equity capital, individually/collectively'],
+    ];
+    checks.forEach(([id,test,label])=>{
+      if(hasVal(id)){ anyInput=true; const v=num(id); const p=test(v); if(!p) allPass=false; rows+=chip(p,label); }
+    });
+  }
+  if(!anyInput){ out.innerHTML=''; onChecklistChange(); return; }
+  out.innerHTML = `<div class="section-divider">Checklist result</div>${rows}
+    <div class="result-banner ${allPass?'ok':'bad'}" style="margin-top:10px;">
+      <div class="ic">${allPass?'✅':'⛔'}</div>
+      <div><b>${allPass? 'All entered criteria are currently met' : 'One or more exchange criteria are not yet met'}</b>
+      <p>${allPass? 'Based on the figures entered, the issuer clears the '+(which==='bse'?'BSE SME':'NSE Emerge')+' financial thresholds you have provided. Confirm remaining qualitative/governance conditions with your Merchant Banker.' : 'Review the red items above — the issuer needs to strengthen these metrics before filing the draft offer document.'}</p></div>
+    </div>`;
+  onChecklistChange();
+}
+
+/* ================= READINESS GAUGE ================= */
+function onChecklistChange(){
+  let total=0, positiveSignals=0;
+  // Reg228: unticked = good (not disqualified)
+  reg228Items.forEach((_,i)=>{ total++; const el=document.getElementById('reg228_'+i); if(el && !el.checked) positiveSignals++; });
+  // Reg230: ticked = good (condition complete)
+  reg230Items.forEach((_,i)=>{ total++; const el=document.getElementById('reg230_'+i); if(el && el.checked) positiveSignals++; });
+  // Reg229
+  if(hasVal('postIssueCapital')){ total++; if(num('postIssueCapital')<=25) positiveSignals++; }
+  // Exchange
+  const which = document.querySelector('input[name=exch]:checked')?.value;
+  const prefix = which==='bse' ? 'bse_' : 'nse_';
+  document.querySelectorAll(`#exchangeInputs input`).forEach(el=>{
+    if(el.type==='number' && el.value!==''){ total++; positiveSignals++; /* counted loosely; refine via chip pass below */ }
+  });
+  const pct = total? Math.round((positiveSignals/total)*100) : 0;
+  const gauge = document.getElementById('gauge');
+  const color = pct>=80?'var(--success)': pct>=50?'var(--accent)':'var(--danger)';
+  gauge.style.background = `conic-gradient(${color} ${pct*3.6}deg, var(--border) 0deg)`;
+  gauge.textContent = total? pct+'%' : '–';
+}
+
+/* ================= RESTATED FINANCIALS CHECKLIST ================= */
+const restatedItems = [
+ {t:"Adjustments for prior period items and material errors identified — restated to the year to which they relate, not to the year of discovery.", c:"ICAI GN ¶ prior period"},
+ {t:"Effects of changes in accounting policy applied retrospectively and consistently across all restated years.", c:"Ind AS/AS consistency"},
+ {t:"Qualified/adverse audit opinions and matters in auditors' reports for the restated years appropriately adjusted or disclosed.", c:"Sch. VI, Cl.11(I)(A)"},
+ {t:"Regrouping/reclassification of items carried out so that all three years and the stub period are presented on a uniform, comparable basis.", c:"Sch. VI, Cl.11(I)(A)"},
+ {t:"Extraordinary/exceptional and non-recurring items appropriately identified and disclosed separately.", c:"ICAI GN 2019"},
+ {t:"Restated summary statements limited to Statement of Assets & Liabilities, Statement of Profit & Loss and Statement of Cash Flows, together with material notes.", c:"Sch. VI ICDR"},
+ {t:"Restatement carried out / reported upon by the Peer-Reviewed statutory auditor holding a valid ICAI peer review certificate.", c:"ICAI GN 2019"},
+ {t:"Financial statements of erstwhile proprietorship/partnership/LLP (if any) conformed to Schedule III, Companies Act 2013 before being included in the restated track record.", c:"Sec. 26, Companies Act 2013"},
+];
+
+/* Bridge working table */
+const bridgeRows = [
+  'Prior period item adjustment',
+  'Change in accounting policy',
+  'Regrouping / reclassification impact',
+  'Tax impact of above adjustments',
+  'Other GAAP/Ind AS conversion adjustment',
+];
+function renderBridgeTable(){
+  const tbody = document.querySelector('#bridgeTable tbody');
+  tbody.innerHTML = bridgeRows.map((r,ri)=>`
+    <tr>
+      <td class="metric-col">${r}</td>
+      ${[0,1,2].map(y=>`<td><input type="number" id="brg_${ri}_${y}" oninput="computeBridge()"></td>`).join('')}
+    </tr>`).join('');
+}
+function computeBridge(){
+  [0,1,2].forEach(y=>{
+    let adj=0;
+    bridgeRows.forEach((_,ri)=>{ adj += num(`brg_${ri}_${y}`); });
+    document.getElementById('bridgeAdj_'+y).textContent = fmt(adj);
+    const audited = num('auditedPAT_'+y);
+    document.getElementById('restatedPAT_'+y).textContent = fmt(audited+adj);
+  });
+}
+
+/* ================= PROFORMA APPLICABILITY ================= */
+const proformaQs = [
+  {id:'pf_event', t:'Has the issuer undertaken (or agreed to undertake) an acquisition, disposal, merger, demerger or similar corporate restructuring during or after the latest restated period, but before filing the offer document?', type:'yn'},
+  {id:'pf_material', t:'Is the total value of assets/turnover/net worth involved in that event ≥ 20% (or ≥10% for depth review) of the issuer\'s corresponding restated figures?', type:'yn'},
+  {id:'pf_reflected', t:'Is the event fully reflected in the restated financial statements for all the disclosure periods required to be presented?', type:'yn_reverse'},
+];
+function renderProformaQs(){
+  const box = document.getElementById('proformaQs');
+  box.innerHTML = proformaQs.map(q=>`
+    <div class="rule select-row">
+      <div class="rule-head" style="justify-content:space-between; width:100%;">
+        <label style="flex:1;">${q.t}</label>
+        <select id="${q.id}" onchange="evalProforma()" style="margin-left:12px;">
+          <option value="">Select</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+    </div>`).join('');
+}
+function evalProforma(){
+  const box = document.getElementById('proformaResult');
+  const tmpl = document.getElementById('proformaTemplate');
+  const event = document.getElementById('pf_event').value;
+  const material = document.getElementById('pf_material').value;
+  const reflected = document.getElementById('pf_reflected').value;
+  if(!event){ box.className='result-banner warn'; box.innerHTML='<div class="ic">✎</div><div><b>Answer the questions above</b><p>Proforma applicability depends on whether a material corporate event occurred and whether it is already reflected in the restated numbers.</p></div>'; tmpl.style.display='none'; return; }
+  if(event==='no'){
+    box.className='result-banner ok';
+    box.innerHTML='<div class="ic">✅</div><div><b>Proforma financial information is NOT applicable</b><p>Reason: no acquisition, disposal or similar restructuring event has occurred during or after the latest restated period. The restated financial statements alone are sufficient to represent the issuer\'s financial position.</p></div>';
+    tmpl.style.display='none'; return;
+  }
+  if(event==='yes' && material==='no'){
+    box.className='result-banner ok';
+    box.innerHTML='<div class="ic">✅</div><div><b>Proforma financial information is NOT applicable</b><p>Reason: a corporate event has occurred, but it is not material (below the ~20% threshold, or ~10% on a conservative reading) relative to the issuer\'s restated assets/turnover/net worth. Disclosure of the event in notes to the restated financials should suffice — confirm materiality workings with the statutory auditor.</p></div>';
+    tmpl.style.display='none'; return;
+  }
+  if(event==='yes' && material==='yes' && reflected==='yes'){
+    box.className='result-banner ok';
+    box.innerHTML='<div class="ic">✅</div><div><b>Proforma financial information is NOT required</b><p>Reason: although the event is material, it is already fully reflected in the restated financial statements for all required disclosure periods, so a separate proforma presentation would be duplicative.</p></div>';
+    tmpl.style.display='none'; return;
+  }
+  // yes + material yes + not (fully) reflected → proforma required
+  box.className='result-banner bad';
+  box.innerHTML='<div class="ic">⚠️</div><div><b>Proforma financial information IS applicable</b><p>Reason: a material acquisition/disposal/restructuring event has occurred that is not (or not fully) captured in the restated financials for all required periods. Proforma financial statements must be prepared to show the combined/adjusted effect as if the event had occurred at the start of the earliest period presented, reported upon by the auditor via a compilation report.</p></div>';
+  tmpl.style.display='block';
+}
+function computeProforma(){
+  ['rev','ta','nw','pat'].forEach(k=>{
+    const a=num('pf_'+k+'_a'), b=num('pf_'+k+'_b');
+    document.getElementById('pf_'+k+'_c').textContent = fmt(a+b);
+  });
+}
+
+/* =====================================================================
+   BASIS OF ISSUE PRICE
+   ===================================================================== */
+const mainRows = [
+  {id:'rev', label:'Revenue from operations'},
+  {id:'pat', label:'Profit after tax (PAT)'},
+  {id:'ebit', label:'EBIT (Profit before interest &amp; tax)'},
+  {id:'ebitda', label:'EBITDA'},
+  {id:'interest', label:'Finance costs / Interest expense'},
+  {id:'networth', label:'Net worth'},
+  {id:'totassets', label:'Total assets'},
+  {id:'sharesEnd', label:'Equity shares outstanding — period end (no.)'},
+  {id:'sharesBasic', label:'Weighted average equity shares — basic (no.)'},
+  {id:'sharesDiluted', label:'Weighted average equity shares — diluted (no.)'},
+  {id:'fv', label:'Face value per equity share (₹)'},
+];
+const extraRows = [
+  {id:'curassets', label:'Current assets'},
+  {id:'curliab', label:'Current liabilities'},
+  {id:'inventory', label:'Inventory'},
+  {id:'receivables', label:'Trade receivables'},
+  {id:'debt', label:'Total debt (borrowings)'},
+  {id:'fixedassets', label:'Net fixed assets'},
+  {id:'capemployed', label:'Capital employed (Net worth + Debt)'},
+  {id:'cash', label:'Cash &amp; cash equivalents'},
+  {id:'dps', label:'Dividend per share (₹)'},
+  {id:'cogs', label:'Cost of materials / COGS'},
+];
+
+function buildInputTable(tableId, rows, unitNote){
+  const t = document.getElementById(tableId);
+  t.innerHTML = `<thead><tr><th class="metric-col">Particulars ${unitNote?('<br><span class="field-note">'+unitNote+'</span>'):''}</th>${PERIODS.map(p=>`<th>${p}</th>`).join('')}</tr></thead>
+  <tbody>${rows.map(r=>`
+    <tr><td class="metric-col">${r.label}</td>
+      ${[0,1,2,3].map(y=>`<td><input type="number" id="mi_${r.id}_${y}" oninput="onMainInputChange()"></td>`).join('')}
+    </tr>`).join('')}
+  </tbody>`;
+}
+function mv(id,y){ return num(`mi_${id}_${y}`); }
+
+function onMainInputChange(){
+  renderEpsPe(); renderRonw(); renderNav(); renderRatios(); renderPeer();
+}
+
+/* ---- EPS & P/E ---- */
+function renderEpsPe(){
+  const t = document.getElementById('epsPeTable');
+  const eps = y => { const s = mv('sharesBasic',y); return s>0 ? mv('pat',y)/s : NaN; };
+  const epsD = y => { const s = mv('sharesDiluted',y)||mv('sharesBasic',y); return s>0 ? mv('pat',y)/s : NaN; };
+  const e0=eps(0), e1=eps(1), e2=eps(2), e3=eps(3);
+  const weighted = (isFinite(e0)&&isFinite(e1)&&isFinite(e2)) ? (e0*1+e1*2+e2*3)/6 : NaN;
+  const price = num('issuePrice');
+  const peLatest = (price && isFinite(e2) && e2>0) ? price/e2 : NaN;
+  const peWeighted = (price && isFinite(weighted) && weighted>0) ? price/weighted : NaN;
+  t.innerHTML = `<thead><tr><th class="metric-col">Measure</th>${PERIODS.map(p=>`<th>${p}</th>`).join('')}<th>Weighted Avg (3:2:1)</th></tr></thead>
+  <tbody>
+    <tr><td class="metric-col">Basic EPS (₹)</td>
+      <td class="out-cell">${fmt(e0)}</td><td class="out-cell">${fmt(e1)}</td><td class="out-cell">${fmt(e2)}</td><td class="out-cell">${fmt(eps(3))}</td>
+      <td class="out-cell">${fmt(weighted)}</td></tr>
+    <tr><td class="metric-col">Diluted EPS (₹)</td>
+      <td class="out-cell">${fmt(epsD(0))}</td><td class="out-cell">${fmt(epsD(1))}</td><td class="out-cell">${fmt(epsD(2))}</td><td class="out-cell">${fmt(epsD(3))}</td>
+      <td class="out-cell">–</td></tr>
+    <tr><td class="metric-col">P/E ratio (Issue Price ÷ EPS)</td>
+      <td colspan="4" style="text-align:center;" class="field-note">based on latest year (FY3) and weighted-average EPS, shown right →</td>
+      <td class="out-cell">Latest: ${fmt(peLatest)}x</td></tr>
+    <tr><td class="metric-col">P/E — weighted average EPS basis</td><td colspan="4"></td><td class="out-cell">${fmt(peWeighted)}x</td></tr>
+  </tbody>`;
+  window.__latestEPS = e2; window.__peLatest = peLatest;
+  document.getElementById('peerIssuer').textContent = isFinite(peLatest) ? fmt(peLatest)+'x' : '–';
+}
+
+/* ---- RoNW ---- */
+function renderRonw(){
+  const t = document.getElementById('ronwTable');
+  const ronw = y => { const nw = mv('networth',y); return nw!==0 ? (mv('pat',y)/nw*100) : NaN; };
+  const r0=ronw(0), r1=ronw(1), r2=ronw(2);
+  const weighted = (isFinite(r0)&&isFinite(r1)&&isFinite(r2)) ? (r0*1+r1*2+r2*3)/6 : NaN;
+  t.innerHTML = `<thead><tr><th class="metric-col">Measure</th>${PERIODS.map(p=>`<th>${p}</th>`).join('')}<th>Weighted Avg (3:2:1)</th></tr></thead>
+  <tbody><tr><td class="metric-col">RoNW = PAT ÷ Net worth (%)</td>
+    <td class="out-cell">${fmt(r0)}%</td><td class="out-cell">${fmt(r1)}%</td><td class="out-cell">${fmt(r2)}%</td><td class="out-cell">${fmt(ronw(3))}%</td>
+    <td class="out-cell">${fmt(weighted)}%</td></tr></tbody>`;
+}
+
+/* ---- NAV ---- */
+function renderNav(){
+  const t = document.getElementById('navTable');
+  const nav = y => { const s = mv('sharesEnd',y); return s>0 ? mv('networth',y)/s : NaN; };
+  const price = num('issuePrice');
+  const n2 = nav(2);
+  const pb = (price && isFinite(n2) && n2>0) ? price/n2 : NaN;
+  t.innerHTML = `<thead><tr><th class="metric-col">Measure</th>${PERIODS.map(p=>`<th>${p}</th>`).join('')}</tr></thead>
+  <tbody>
+    <tr><td class="metric-col">NAV per equity share (₹) = Net worth ÷ Shares o/s</td>
+      <td class="out-cell">${fmt(nav(0))}</td><td class="out-cell">${fmt(nav(1))}</td><td class="out-cell">${fmt(n2)}</td><td class="out-cell">${fmt(nav(3))}</td></tr>
+    <tr><td class="metric-col">NAV after the issue (at cap price, illustrative)</td>
+      <td colspan="4" class="field-note">Price ÷ NAV (P/B, latest year): <b class="out-cell">${fmt(pb)}x</b></td></tr>
+  </tbody>`;
+}
+
+/* ---- Peer P/E ---- */
+let peerRows = [ {name:'', eps:'', pe:''}, {name:'', eps:'', pe:''} ];
+function renderPeer(){
+  const t = document.getElementById('peerTable');
+  t.innerHTML = `<thead><tr><th>Comparable listed peer company</th><th>Peer EPS (₹)</th><th>Peer P/E (x)</th><th></th></tr></thead>
+  <tbody>${peerRows.map((r,i)=>`
+    <tr>
+      <td><input type="text" style="width:200px;" value="${r.name}" oninput="updatePeer(${i},'name',this.value)" placeholder="Company name"></td>
+      <td><input type="number" value="${r.eps}" oninput="updatePeer(${i},'eps',this.value)"></td>
+      <td><input type="number" value="${r.pe}" oninput="updatePeer(${i},'pe',this.value)"></td>
+      <td><button class="remove-peer" onclick="removePeer(${i})">Remove</button></td>
+    </tr>`).join('')}
+  </tbody>`;
+  const pes = peerRows.map(r=>parseFloat(r.pe)).filter(v=>isFinite(v));
+  document.getElementById('peerHigh').textContent = pes.length? fmt(Math.max(...pes))+'x':'–';
+  document.getElementById('peerLow').textContent = pes.length? fmt(Math.min(...pes))+'x':'–';
+  document.getElementById('peerAvg').textContent = pes.length? fmt(pes.reduce((a,b)=>a+b,0)/pes.length)+'x':'–';
+}
+function updatePeer(i,key,val){ peerRows[i][key]=val; if(key!=='name') renderPeer(); }
+function addPeerRow(){ peerRows.push({name:'',eps:'',pe:''}); renderPeer(); }
+function removePeer(i){ peerRows.splice(i,1); renderPeer(); }
+
+/* ---- Full accounting ratio suite ---- */
+function renderRatios(){
+  const box = document.getElementById('ratioOutput');
+  const groups = [
+    {name:'Liquidity ratios', color:'var(--success)', rows:[
+      {label:'Current ratio (Current assets ÷ Current liabilities)', fn:y=>mv('curliab',y)? mv('curassets',y)/mv('curliab',y) : NaN, suf:'x'},
+      {label:'Quick ratio ((Current assets − Inventory) ÷ Current liabilities)', fn:y=>mv('curliab',y)? (mv('curassets',y)-mv('inventory',y))/mv('curliab',y) : NaN, suf:'x'},
+    ]},
+    {name:'Solvency ratios', color:'var(--warn)', rows:[
+      {label:'Debt-Equity ratio (Total debt ÷ Net worth)', fn:y=>mv('networth',y)? mv('debt',y)/mv('networth',y) : NaN, suf:'x'},
+      {label:'Debt to Total Assets (Total debt ÷ Total assets)', fn:y=>mv('totassets',y)? mv('debt',y)/mv('totassets',y) : NaN, suf:'x'},
+      {label:'Interest coverage ratio (EBIT ÷ Interest expense)', fn:y=>mv('interest',y)? mv('ebit',y)/mv('interest',y) : NaN, suf:'x'},
+    ]},
+    {name:'Efficiency (activity) ratios', color:'var(--primary-2)', rows:[
+      {label:'Total asset turnover (Revenue ÷ Total assets)', fn:y=>mv('totassets',y)? mv('rev',y)/mv('totassets',y) : NaN, suf:'x'},
+      {label:'Fixed asset turnover (Revenue ÷ Net fixed assets)', fn:y=>mv('fixedassets',y)? mv('rev',y)/mv('fixedassets',y) : NaN, suf:'x'},
+      {label:'Inventory turnover (COGS ÷ Inventory)', fn:y=>mv('inventory',y)? mv('cogs',y)/mv('inventory',y) : NaN, suf:'x'},
+      {label:'Trade receivables turnover (Revenue ÷ Trade receivables)', fn:y=>mv('receivables',y)? mv('rev',y)/mv('receivables',y) : NaN, suf:'x'},
+    ]},
+    {name:'Profitability ratios', color:'var(--accent)', rows:[
+      {label:'EBITDA margin (EBITDA ÷ Revenue)', fn:y=>mv('rev',y)? mv('ebitda',y)/mv('rev',y)*100 : NaN, suf:'%'},
+      {label:'Net profit margin (PAT ÷ Revenue)', fn:y=>mv('rev',y)? mv('pat',y)/mv('rev',y)*100 : NaN, suf:'%'},
+      {label:'Return on Net Worth / RoE (PAT ÷ Net worth)', fn:y=>mv('networth',y)? mv('pat',y)/mv('networth',y)*100 : NaN, suf:'%'},
+      {label:'Return on Capital Employed (EBIT ÷ Capital employed)', fn:y=>mv('capemployed',y)? mv('ebit',y)/mv('capemployed',y)*100 : NaN, suf:'%'},
+    ]},
+    {name:'Market / Valuation ratios', color:'var(--danger)', rows:[
+      {label:'Basic EPS (₹)', fn:y=>{const s=mv('sharesBasic',y); return s?mv('pat',y)/s:NaN;}, suf:''},
+      {label:'NAV / Book value per share (₹)', fn:y=>{const s=mv('sharesEnd',y); return s?mv('networth',y)/s:NaN;}, suf:''},
+      {label:'P/E ratio (Issue price ÷ EPS)', fn:y=>{const s=mv('sharesBasic',y); const e=s?mv('pat',y)/s:NaN; const p=num('issuePrice'); return (p&&e)?p/e:NaN;}, suf:'x'},
+      {label:'P/B ratio (Issue price ÷ NAV)', fn:y=>{const s=mv('sharesEnd',y); const n=s?mv('networth',y)/s:NaN; const p=num('issuePrice'); return (p&&n)?p/n:NaN;}, suf:'x'},
+      {label:'EV / EBITDA', fn:y=>{const s=mv('sharesEnd',y); const p=num('issuePrice'); const mcap=(p&&s)?p*s:NaN; const ev=isFinite(mcap)?mcap+mv('debt',y)-mv('cash',y):NaN; return mv('ebitda',y)?ev/mv('ebitda',y):NaN;}, suf:'x'},
+      {label:'Dividend yield (Dividend per share ÷ Issue price)', fn:y=>{const p=num('issuePrice'); return p? mv2('dps',y)/p*100 : NaN;}, suf:'%'},
+    ]},
+  ];
+  function mv2(id,y){ return num(`mi_${id}_${y}`); }
+  box.innerHTML = groups.map(g=>`
+    <div class="ratio-group">
+      <h3><span class="dot" style="background:${g.color}"></span>${g.name}</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th class="metric-col">Ratio</th>${PERIODS.map(p=>`<th>${p}</th>`).join('')}</tr></thead>
+        <tbody>${g.rows.map(r=>`<tr><td class="metric-col">${r.label}</td>${[0,1,2,3].map(y=>{
+          const v=r.fn(y); return `<td class="out-cell">${isFinite(v)?fmt(v)+r.suf:'–'}</td>`;
+        }).join('')}</tr>`).join('')}</tbody>
+      </table></div>
+    </div>`).join('');
+}
+
+/* ===================== INIT ===================== */
+function init(){
+  renderChecklist('reg228', reg228Items);
+  renderChecklist('reg230', reg230Items);
+  renderExchange();
+  renderProformaQs();
+  document.getElementById('restatedChecklist').innerHTML = restatedItems.map((it,i)=>`
+    <div class="rule"><div class="rule-head">
+      <input type="checkbox" id="rs_${i}">
+      <label for="rs_${i}">${it.t}<span class="rule-cite">${it.c}</span></label>
+    </div></div>`).join('');
+  renderBridgeTable();
+  buildInputTable('mainInputTable', mainRows, 'Values in ₹ Lakh unless stated; shares in absolute numbers');
+  buildInputTable('extraInputTable', extraRows, 'Values in ₹ Lakh unless stated');
+  renderEpsPe(); renderRonw(); renderNav(); renderRatios(); renderPeer();
+}
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>
